@@ -1,8 +1,8 @@
 ---
 name: claude-memory-kit
-description: "Persistent memory for Claude Code agents with an agent-audit-ritual architecture. User only talks; agent captures, audits, proposes promotions, and writes. Four layers — daily logs, hot cache (MEMORY.md), role-based reference skills (Anthropic-native, user-invocable: false), canonical rules. /close-day runs the audit ritual at end of day. Multi-project isolation via projects/<name>/. Zero external dependencies."
-tags: [memory, context-management, productivity, claude-code, agent-memory, knowledge-base, reference-skills, multi-project]
-version: 4.0.0
+description: "Persistent memory for Claude Code agents with an agent-audit-ritual architecture. User only talks; the agent captures, audits, proposes promotions, and writes. Memory lives in layers — daily logs, hot cache (MEMORY.md), topical knowledge articles (knowledge/concepts/), and canonical rules (.claude/rules/) — plus multi-project isolation via projects/<name>/ and an experiments/ sandbox. /close-day runs the end-of-day audit ritual. Zero external dependencies."
+tags: [memory, context-management, productivity, claude-code, agent-memory, knowledge-base, multi-project]
+version: 4.1.3
 author: awrshift
 license: MIT
 repository: https://github.com/awrshift/claude-memory-kit
@@ -10,21 +10,22 @@ repository: https://github.com/awrshift/claude-memory-kit
 
 # Claude Memory Kit v4
 
-Persistent memory for Claude Code agents. Four-layer architecture, agent-driven promotion, zero manual file editing.
+Persistent memory for Claude Code agents. Layered memory, agent-driven promotion, zero manual file editing.
 
-## Core invariant
+## Two core invariants
 
-**User only talks. Agent captures, proposes, writes.** Every architectural decision passes this test.
+1. **User only talks. Agent captures, proposes, writes.** Every architectural decision passes this test.
+2. **Every memory entry carries a `[YYYY-MM-DD]` date tag.** This is what lets `/close-day` detect cross-session repetition and propose promotions.
 
 ## What's different from v3.2
 
-- **Agent-driven promotion ritual** via `/close-day` (was: background `promote-patterns.py` detection, killed as unreliable)
-- **Role-based reference skills** (`.claude/skills/<role>-guidance/SKILL.md` with `user-invocable: false`) alongside topic-based `knowledge/concepts/` — two axes, no overlap. Uses Anthropic-native auto-invoke via `description` matching — no custom trigger tables.
+- **Agent-driven promotion ritual** via `/close-day` (was: background `promote-patterns.py` detection + `flush.py` auto-flush, both killed as unreliable and invariant-violating)
 - **Multi-project isolation** via `projects/<name>/` — shared layers load always, per-project scope on demand
-- **`/memory-audit`** operator for oversized-reference-skill detection + semantic split execution
-- **Killed:** `experiences/` staging layer, `promote-patterns.py` background script, `flush.py` auto-flush, separate `playbooks/` directory (merged into reference skills)
+- **`experiments/<name>-YYYYMMDD/`** sandbox layer next to `projects/` — different lifecycle, no direct promotion to rules
+- **Date-tagging promoted to a documented load-bearing invariant** (was implicit machinery, now stated)
+- **Killed:** `experiences/` staging layer, `promote-patterns.py` + `flush.py` background scripts, `playbooks/` and `<role>-guidance/` reference-skill seeds, the `/memory-audit` operator, and the `knowledge/connections/` + `knowledge/meetings/` subdirs. The role-guidance pattern still works if you add it per-project (see `.kit/ARCHITECTURE.md` § "Adding role-guidance yourself"); the kit just doesn't ship templates.
 
-See [CHANGELOG.md](CHANGELOG.md) for full migration notes.
+See [.kit/CHANGELOG.md](.kit/CHANGELOG.md) for full migration notes.
 
 ## Quick start
 
@@ -49,25 +50,26 @@ Tomorrow starts where today left off.
 | Skill | Description |
 |---|---|
 | `/close-day` | End-of-day audit ritual: synthesis + promotion proposals |
-| `/memory-audit` | Oversized-reference-skill structural check + split proposals |
-| `/memory-lint` | Hygiene (broken links, sparse articles, orphans, oversized reference skills) |
+| `/tour` | Interactive guided walkthrough on your own files |
 | `/memory-compile` | Compile daily logs into `knowledge/concepts/` articles |
-| `/memory-query` | Natural-language search across all memory layers |
-| `/tour` | Interactive guided walkthrough |
+| `/memory-query` | Natural-language search across the knowledge base |
+| `/memory-lint` | Structural hygiene (broken links, sparse articles, orphans) |
 
 ## Architecture
 
-Four layers, each with its own purpose:
+Memory lives in layers, each answering a different question:
 
 | Layer | Answers | Written by |
 |---|---|---|
-| `daily/YYYY-MM-DD.md` | «what happened today» | `/close-day` |
+| `daily/YYYY-MM-DD.md` | «what happened today» | agent via `/close-day` |
 | `.claude/memory/MEMORY.md` | «what patterns repeat across sessions» | agent as you speak |
-| `.claude/skills/<role>-guidance/SKILL.md` | «how should a <role> think about X» | `/close-day` promotion |
-| `.claude/rules/*.md` | «what must always / never happen» | `/close-day` after 6+ months stable |
+| `knowledge/concepts/*.md` | «facts and rationale by topic» | agent after your "yes" on `/close-day` |
+| `.claude/rules/*.md` | «what must always / never happen» | agent after a long-stable pattern |
 
-See [ARCHITECTURE.md](ARCHITECTURE.md) for full details and [CLAUDE.md](CLAUDE.md) for the agent's session workflow.
+Promotion runs liquid → amber → crystal: an observation in `daily/` becomes a date-tagged pattern in `MEMORY.md`, which `/close-day` may promote to a `knowledge/concepts/` article or a `.claude/rules/` constraint — always agent-written, always on your verbal confirmation.
+
+See [.kit/ARCHITECTURE.md](.kit/ARCHITECTURE.md) for full details and [CLAUDE.md](CLAUDE.md) for the agent's session workflow.
 
 ## Built from production use
 
-Iteration on 700+ real sessions across 7+ projects. Every component earns its place; `experiences/` and background-detection scripts didn't survive review.
+Iteration on 700+ real sessions across 7+ projects. Every component earns its place; `experiences/`, background-detection scripts, and generic role-guidance seeds didn't survive review.

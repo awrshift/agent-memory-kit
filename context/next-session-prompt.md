@@ -33,7 +33,7 @@ Format: `- [YYYY-MM-DD] item description (carried from N sessions ago if not new
 
 <!-- Which `projects/<name>/` folder(s) are active right now. Agent switches on verbal command. -->
 
-- _example_client — template; replace with your first real project
+- my-first-project — guided onboarding; replace with your first real project
 
 ## Active experiments
 

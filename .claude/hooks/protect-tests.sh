@@ -4,7 +4,8 @@
 # Exit code 0 = allowed (proceed)
 #
 # Triggered on PreToolUse for Edit and Write tools.
-# Covers: poker tests, lead-gen tests, any *test* files.
+# Covers common test conventions (test_*.py, *_test.py, /tests/, /__tests__/,
+# *.test.*, *.spec.*). Harmless no-op for projects with no tests — exits 0.
 #
 # Write (new file creation) is allowed. Only Edit (modifying existing) is blocked.
 
