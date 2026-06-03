@@ -2,6 +2,35 @@
 
 All notable changes to Memory Kit are documented here. Breaking changes marked **BREAKING**.
 
+## [4.2.0] — 2026-06-03 — Default surface trimmed to two operators; usage telemetry + /close-day backfill
+
+The three Python-backed memory commands were the heaviest, most developer-flavoured part of the kit — and where the v4.1.x defects lived. For the kit's non-technical audience the daily loop is fully covered by `/close-day` + `/tour`; the wiki-maintenance commands are power-user tooling. This release trims the default surface to those two, moves the rest to opt-in `.kit/advanced/`, and adds the two things the kit actually lacked: a data-driven "what's safe to prune" signal, and a way to recover days the user forgot to close.
+
+### Removed
+
+- **BREAKING: `/memory-compile`** — command + `compile.py` deleted. Auto-folding daily logs into wiki articles was unreliable in practice; `/close-day` already writes `knowledge/concepts/` articles directly, on the user's verbal "yes". This also removes the auto-write path that sat closest to the "user only talks" invariant.
+
+### Changed
+
+- **BREAKING: `/memory-lint` + `/memory-query` moved to `.kit/advanced/`.** They no longer auto-register as slash commands. `.kit/advanced/README.md` documents how to enable (copy into `.claude/`) and why each was demoted. The default operator set is now just `/close-day` + `/tour`.
+- **`lint.py` dropped the orphan-sources check** (it depended on the removed compile state file): 6 checks → 5.
+- **All docs synced** to the new split — README, CLAUDE.md, root SKILL.md, ARCHITECTURE.md, tour, CONTRIBUTING, daily/README, knowledge/index.
+
+### Added
+
+- **`/memory-usage`** (`aggregate_usage.py` + `usage_config.py`) in `.kit/advanced/` — a read-only telemetry report parsed from your Claude Code session transcripts: **hot files** (used a lot, recently) vs **cold candidates** (zero reads in 30 days → safe to archive). Turns "what can I prune?" into data instead of a guess, and feeds the `/close-day` archival proposal. Stdlib-only, writes one report, never touches memory — invariant-safe. (Ported from the maintainers' production rnd-hub stack.)
+- **`/close-day` auto-backfill of missed working days.** New Phase 0 (gap analysis): before synthesizing today, the skill finds working days (non-merge commits) in the last 14 days with no `daily/YYYY-MM-DD.md`, shows them, takes one batch approval, and reconstructs each from git history (commit messages + `[YYYY-MM-DD]` MEMORY tags). Backfilled days are marked as reconstructed and never invented; pauses for confirmation if >7 days are missing; skips silently when there's no git. Removes the "remember to run it every day" burden — one call catches up the layer.
+- **MEMORY.md overflow nudge** in `session-start.py` — when MEMORY.md exceeds 200 lines, the injected context now carries a one-line prompt to run `/close-day` (promote settled patterns, prune absorbed ones). Display-only; no automatic writes.
+
+### Migration from v4.1.x
+
+1. **If you used `/memory-compile`** — stop; it's gone. `/close-day` writes concept articles directly now.
+2. **If you used `/memory-lint` or `/memory-query`** — copy them back from `.kit/advanced/` (see that folder's README): `cp .kit/advanced/scripts/*.py .claude/memory/scripts/ && cp .kit/advanced/commands/*.md .claude/commands/`.
+3. **To try `/memory-usage`** — same copy step, then run `/memory-usage` after you have a few weeks of sessions.
+4. No changes needed to your memory content — only the command surface moved.
+
+---
+
 ## [4.1.3] — 2026-06-03 — Audit cleanup: repair /memory-query, drop dead code & doc drift
 
 A full audit of the v4.1.2 tree surfaced three real defects and several doc-drift items left over from the v4.1.0 minimization. No architecture change — this release makes the shipped code match what the docs already claim.
