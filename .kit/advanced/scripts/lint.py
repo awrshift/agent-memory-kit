@@ -1,8 +1,8 @@
 """
 Lint the knowledge base for structural health.
 
-6 structural checks — all free, no LLM calls needed:
-broken links, orphan pages, orphan sources, missing backlinks,
+5 structural checks — all free, no LLM calls needed:
+broken links, orphan pages, missing backlinks,
 sparse articles, missing frontmatter.
 
 Usage:
@@ -18,9 +18,7 @@ from pathlib import Path
 
 from config import (
     CONCEPTS_DIR,
-    DAILY_DIR,
     KNOWLEDGE_DIR,
-    STATE_FILE,
     today_iso,
 )
 
@@ -103,36 +101,6 @@ def check_orphan_pages() -> list[dict]:
                     "check": "orphan_page",
                     "file": f"{target}.md",
                     "detail": f"No articles or index link to [[{target}]]",
-                })
-
-    return issues
-
-
-def check_orphan_sources() -> list[dict]:
-    """Daily logs that haven't been compiled yet."""
-    import json
-
-    state = {}
-    if STATE_FILE.exists():
-        try:
-            state = json.loads(STATE_FILE.read_text(encoding="utf-8"))
-        except (json.JSONDecodeError, OSError):
-            pass
-
-    ingested = state.get("ingested", {})
-    issues = []
-
-    if DAILY_DIR.exists():
-        for log_path in sorted(DAILY_DIR.glob("*.md")):
-            # Skip non-log scaffolding (README, TEMPLATE, etc.) — they aren't logs
-            if log_path.stem.upper() in {"README", "TEMPLATE", "INDEX"}:
-                continue
-            if log_path.name not in ingested:
-                issues.append({
-                    "severity": "warning",
-                    "check": "orphan_source",
-                    "file": f"daily/{log_path.name}",
-                    "detail": f"Uncompiled daily log: {log_path.name}",
                 })
 
     return issues
@@ -276,7 +244,6 @@ def main():
     checks = [
         ("Broken links", check_broken_links),
         ("Orphan pages", check_orphan_pages),
-        ("Orphan sources", check_orphan_sources),
         ("Missing backlinks", check_missing_backlinks),
         ("Sparse articles", check_sparse_articles),
         ("Missing frontmatter", check_missing_frontmatter),
