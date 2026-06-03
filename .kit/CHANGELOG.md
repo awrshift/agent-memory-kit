@@ -2,6 +2,31 @@
 
 All notable changes to Memory Kit are documented here. Breaking changes marked **BREAKING**.
 
+## [4.1.3] — 2026-06-03 — Audit cleanup: repair /memory-query, drop dead code & doc drift
+
+A full audit of the v4.1.2 tree surfaced three real defects and several doc-drift items left over from the v4.1.0 minimization. No architecture change — this release makes the shipped code match what the docs already claim.
+
+### Fixed
+
+- **BREAKING (for anyone scripting against it): `/memory-query` was dead on arrival.** `query.py` imported `CONNECTIONS_DIR`, a constant removed from `config.py` in v4.1.0 when `knowledge/connections/` + `knowledge/meetings/` were collapsed into `concepts/`. The command raised `ImportError` before doing anything. The v4.1.0 cleanup updated `compile.py` and `lint.py` but missed `query.py`. Dropped the stale import and its prompt reference; verified the module imports and `lint.py` / `compile.py --dry-run` stay green.
+
+### Removed
+
+- **4 committed macOS Finder duplicate files** — `compile 2.py`, `config 2.py`, `lint 2.py`, `query 2.py` under `.claude/memory/scripts/`. They were the pre-v4.1.0 versions (still referencing the removed `CONNECTIONS_DIR` / `MEETINGS_WIKI_DIR` layers) — junk and actively misleading.
+- **`flush.py`** — the CHANGELOG marked it removed back in v4.0.0-alpha.1 ("auto-flush was unreliable and invariant-violating — spawned behind the user's back"), but the 235-line file was still shipping. Not wired by any hook, and it directly contradicts the load-bearing "user only talks, agent writes" invariant. Deleted.
+
+### Changed
+
+- **Root `SKILL.md` rewritten to the real v4.1 architecture.** It still advertised the dead v4.0.0 shape: version `4.0.0`, "role-based reference skills (`user-invocable: false`)", a `/memory-audit` operator, and "four layers". Now: two core invariants, three memory layers (`daily/` → `MEMORY.md` → `knowledge/concepts/`) plus `.claude/rules/`, the 5 shipped commands, `projects/` + `experiments/`. Version `4.1.3`.
+- **`protect-tests.sh`** comment scrubbed — it leaked private project names ("poker tests, lead-gen tests") into the public template. Replaced with a generic description of the conventions it matches.
+- **`context/next-session-prompt.md`** active-project name aligned from `_example_client` to the shipped `projects/my-first-project/`.
+
+### Note
+
+The v4.0.0 "16-test verification suite" was evidently not re-run after the v4.1.0 layer removal — it checks that "Python scripts compile + import", which would have caught the `query.py` regression. Re-running it (or a CI equivalent) before each release is recommended.
+
+---
+
 ## [4.1.2] — 2026-04-27 — Tighten CLAUDE.md operational instructions
 
 Patch — close 3 operational gaps in the auto-loaded agent brain so Claude Code doesn't need to read `.kit/` docs or guess for common operations. CLAUDE.md grew by zero lines (replaced existing items with tighter versions).
