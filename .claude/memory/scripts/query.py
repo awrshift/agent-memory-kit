@@ -18,7 +18,6 @@ import subprocess
 
 from config import (
     CONCEPTS_DIR,
-    CONNECTIONS_DIR,
     INDEX_FILE,
     ROOT_DIR,
 )
@@ -40,7 +39,7 @@ the wiki in `knowledge/` (project root).
 ## How to Answer
 
 1. Read the INDEX below to find relevant articles (3-7 articles typically)
-2. Use Read tool to read those articles from {CONCEPTS_DIR} and {CONNECTIONS_DIR}
+2. Use Read tool to read those articles from {CONCEPTS_DIR}
 3. Synthesize a clear, thorough answer
 4. Cite sources using [[wikilinks]] (e.g., [[concepts/neo4j-patterns]])
 5. If the knowledge base doesn't contain relevant information, say so honestly
