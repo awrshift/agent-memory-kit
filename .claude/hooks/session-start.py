@@ -100,6 +100,11 @@ def build_stats(session_num: int) -> str:
             f"MEMORY.md: {mem_lines}/200 lines ({capacity}% full) — updated {human_age(days)}{stale}"
         )
         lines.append(f"Knowledge wiki: {knowledge_count} articles")
+        if mem_lines > 200:
+            lines.append(
+                f"⚠ MEMORY.md is over 200 lines ({mem_lines}). Run /close-day to promote settled "
+                "patterns into knowledge/concepts/ (or .claude/rules/) and prune what's already absorbed."
+            )
     else:
         lines.append("No MEMORY.md found")
     lines.append("")
