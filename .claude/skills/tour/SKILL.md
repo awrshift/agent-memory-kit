@@ -22,10 +22,10 @@ Open `.claude/memory/MEMORY.md`. Say: "This is my hot cache. Date-tagged one-lin
 List any `.claude/rules/*.md` files. If folder is empty (only `_example.md.disabled`), say: "This is where hard project rules live. 'Don't use X', 'always check Y'. They auto-load by keyword. Empty for now — they'll appear when you start dictating rules and I propose them on `/close-day`."
 
 ### Stop 5 — Knowledge concepts
-List `knowledge/concepts/*.md`. Say: "Deep memory with facts. 'What's our typography scale', 'what we know about SEO for AI'. Reference articles. Empty now — they fill in via `/memory-compile` when enough daily observations stack up around a topic."
+List `knowledge/concepts/*.md`. Say: "Deep memory with facts. 'What's our typography scale', 'what we know about SEO for AI'. Reference articles. Empty now — I write them during `/close-day` when enough daily observations stack up around a topic."
 
 ### Stop 6 — Daily logs
-Show `daily/`. Say: "Chronological session logs. The agent writes these via `/close-day` — you don't open them. Searchable via `/memory-query`."
+Show `daily/`. Say: "Chronological session logs. The agent writes these via `/close-day` — you don't open them. Just ask me 'what did we do last Tuesday?' and I read them back."
 
 ### Stop 7 — Projects
 List `projects/*/`. Say: "Each client or initiative gets a folder. BACKLOG.md for tasks, drop in any PDF or md as reference. Say 'we're working on <name>' and I switch context to that one."
@@ -34,7 +34,7 @@ List `projects/*/`. Say: "Each client or initiative gets a folder. BACKLOG.md fo
 Mention `.claude/hooks/` exists but don't deep-dive. Say: "Five safety hooks run silently. They make sure state survives — block compaction until saved, log session lifecycle, periodic state-save prompts."
 
 ### Stop 9 — Operators
-List slash operators: `/close-day`, `/memory-compile`, `/memory-query`, `/memory-lint`, `/tour`. Say: "Type any of these to invoke. `/close-day` is the most important — that's the daily audit ritual where I propose what should be remembered."
+List the two default operators: `/close-day` and `/tour`. Say: "Type either to invoke. `/close-day` is the most important — that's the daily audit ritual where I propose what should be remembered, and it also catches up any days you forgot to close. There are a few power-user commands (search, hygiene, usage stats) parked in `.kit/advanced/` if you ever want them — but you don't need them to start."
 
 ## Closing
 

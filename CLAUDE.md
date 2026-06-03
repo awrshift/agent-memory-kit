@@ -59,11 +59,9 @@ Chronological (grep-on-demand) ────────────────�
   daily/YYYY-MM-DD.md             — session logs by date
 
 Operators (you invoke by user request) ────────────────────────
-  /close-day        end-of-day audit ritual
-  /memory-compile   daily → knowledge wiki
-  /memory-query     natural-language search
-  /memory-lint      structural health checks
+  /close-day        end-of-day audit ritual (+ auto-backfill of missed days)
   /tour             guided walkthrough
+  (opt-in, see .kit/advanced/: /memory-usage, /memory-lint, /memory-query)
 ```
 
 ## projects/ vs experiments/ — when to use which
@@ -96,6 +94,7 @@ Full spec: `experiments/README.md`.
 ### On `/close-day`
 This is the **audit ritual**. Don't just dump — audit.
 
+0. **Gap analysis first.** Find working days (non-merge commits) in the last 14 days with no `daily/YYYY-MM-DD.md` file. Show them, take one batch approval, and backfill each from git history (commit messages + `[YYYY-MM-DD]` MEMORY tags) — marked as reconstructed, never invented. Skip silently if there's no git. Full spec in the skill body.
 1. Synthesize all sessions of today into `daily/YYYY-MM-DD.md`.
 2. Read date-tagged entries in `MEMORY.md` for the last 7-14 days. Look for repetition: "did this pattern appear on 3+ different dates?"
 3. Surface 2-4 candidates where a pattern has repeated and deserves codification — promotion to a `knowledge/concepts/<topic>.md` article or a new `.claude/rules/*.md` constraint. Be specific: "noticed [2026-04-21], [2026-04-24], [2026-04-27] you said X — codify as a rule or an article?"

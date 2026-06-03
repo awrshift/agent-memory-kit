@@ -22,7 +22,7 @@ Any contribution that pushes users toward editing memory files manually — a sc
   - Pure Markdown for docs
   - Stdlib-only Python (no `pip install`)
   - English in everything tracked by git (skill examples can illustrate any-language conversation; the prose is English)
-- Test scripts locally before pushing: `python3 .claude/memory/scripts/lint.py` on your changes
+- Test scripts locally before pushing: `python3 .kit/advanced/scripts/lint.py` on your changes (the Python tooling lives in `.kit/advanced/`)
 - If you change behavior, update `.kit/CHANGELOG.md` (Added / Changed / Removed / Migration sections) and mention the change in the PR description
 
 ## Ground rules
@@ -37,8 +37,8 @@ Any contribution that pushes users toward editing memory files manually — a sc
 
 | If your contribution is... | It lives in... |
 |---|---|
-| New slash operator | `.claude/commands/<name>.md` (thin wrapper) + `.claude/skills/<name>/SKILL.md` (logic) |
-| Fix to a script | `.claude/memory/scripts/<file>.py` |
+| New default slash operator | `.claude/commands/<name>.md` (thin wrapper) + `.claude/skills/<name>/SKILL.md` (logic) |
+| New opt-in command / fix to a script | `.kit/advanced/commands/<name>.md` + `.kit/advanced/scripts/<file>.py` |
 | New hook | `.claude/hooks/<name>.{sh,py}` + register in `.claude/settings.json` |
 | Doc fix | `README.md`, `CLAUDE.md`, or `.kit/*.md` |
 

@@ -46,11 +46,12 @@ v4 aligns tightly with Anthropic-canonical Claude Code primitives. Every layer m
 ╠══════════════════════════════════════════════════════════════╣
 ║  OPERATORS (invoked by user speech)                          ║
 ║  ──────────────────────────────────────────────────────────  ║
-║  /close-day       end-of-day AUDIT ritual                    ║
-║  /memory-compile  daily → knowledge/concepts                 ║
-║  /memory-query    natural-language search                    ║
-║  /memory-lint     structural health checks                   ║
+║  /close-day       end-of-day AUDIT ritual + backfill         ║
 ║  /tour            interactive walkthrough                    ║
+║  ── opt-in (.kit/advanced/, copy into .claude/ to enable) ── ║
+║  /memory-usage    hot/cold telemetry (archival candidates)   ║
+║  /memory-lint     structural health checks                   ║
+║  /memory-query    natural-language search                    ║
 ╚══════════════════════════════════════════════════════════════╝
 ```
 
@@ -240,6 +241,8 @@ Per-project folders can use any naming: `projects/client-nestle/`, `projects/nac
 - **`playbooks/`** — draft-era separate directory for role wisdom; killed in v4.0.0-alpha.2
 - **Role-guidance reference skills** (`<role>-guidance/SKILL.md` with `user-invocable: false`) — shipped in v4.0.0, killed in v4.1.0 as kit-shipped seeds. Pattern still works if you want to add your own per-project, but the kit doesn't ship templates
 - **`/memory-audit` operator** — was paired with role-guidance; removed in v4.1.0
+- **`/memory-compile` operator** — auto-folding daily logs into wiki articles was unreliable; removed in v4.2.0. `/close-day` writes `knowledge/concepts/` articles directly, on user "yes".
+- **`/memory-lint`, `/memory-query`, `/memory-usage` in the default surface** — moved to opt-in `.kit/advanced/` in v4.2.0. Default operators are just `/close-day` + `/tour`; the rest are power-user tooling you copy in when your knowledge base has grown.
 - **`knowledge/connections/` + `knowledge/meetings/`** — extra subdirs that nobody filled; collapsed into single `knowledge/concepts/` in v4.1.0
 - **Custom trigger keyword tables in CLAUDE.md** — Claude auto-invokes skills from their `description`; no hand-maintained routing
 - **`wisdom/`**, **`lessons/`** — synonyms of existing layers, kept out

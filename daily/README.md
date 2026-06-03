@@ -6,7 +6,7 @@ Chronological session logs, one file per working day: `daily/YYYY-MM-DD.md`.
 
 Do not edit files here manually. If you want to add context or correct a log, say so in conversation — the agent will revise. Manual edits break the `/close-day` dedup check and the "user only talks" invariant.
 
-These logs are searchable via `/memory-query` and compiled into topical articles in `knowledge/concepts/` via `/memory-compile`.
+During `/close-day` the agent distils these into topical articles in `knowledge/concepts/`. To search them, just ask the agent in conversation ("what did we decide about X?").
 
 ## Privacy
 

@@ -23,7 +23,8 @@ Persistent memory for Claude Code agents. Layered memory, agent-driven promotion
 - **Multi-project isolation** via `projects/<name>/` — shared layers load always, per-project scope on demand
 - **`experiments/<name>-YYYYMMDD/`** sandbox layer next to `projects/` — different lifecycle, no direct promotion to rules
 - **Date-tagging promoted to a documented load-bearing invariant** (was implicit machinery, now stated)
-- **Killed:** `experiences/` staging layer, `promote-patterns.py` + `flush.py` background scripts, `playbooks/` and `<role>-guidance/` reference-skill seeds, the `/memory-audit` operator, and the `knowledge/connections/` + `knowledge/meetings/` subdirs. The role-guidance pattern still works if you add it per-project (see `.kit/ARCHITECTURE.md` § "Adding role-guidance yourself"); the kit just doesn't ship templates.
+- **Killed:** `experiences/` staging layer, `promote-patterns.py` + `flush.py` background scripts, `playbooks/` and `<role>-guidance/` reference-skill seeds, the `/memory-audit` and `/memory-compile` operators, and the `knowledge/connections/` + `knowledge/meetings/` subdirs. The role-guidance pattern still works if you add it per-project (see `.kit/ARCHITECTURE.md` § "Adding role-guidance yourself"); the kit just doesn't ship templates.
+- **Default surface trimmed to two operators** (`/close-day` + `/tour`). The wiki-maintenance commands (`/memory-lint`, `/memory-query`) plus a usage-telemetry tool (`/memory-usage`) moved to opt-in `.kit/advanced/` — see its README to enable.
 
 See [.kit/CHANGELOG.md](.kit/CHANGELOG.md) for full migration notes.
 
@@ -47,13 +48,20 @@ Tomorrow starts where today left off.
 
 ## Included skills
 
+Default — the whole daily loop:
+
 | Skill | Description |
 |---|---|
-| `/close-day` | End-of-day audit ritual: synthesis + promotion proposals |
+| `/close-day` | End-of-day audit ritual: synthesis + promotion proposals. Auto-backfills missed working days from git history. |
 | `/tour` | Interactive guided walkthrough on your own files |
-| `/memory-compile` | Compile daily logs into `knowledge/concepts/` articles |
-| `/memory-query` | Natural-language search across the knowledge base |
+
+Opt-in (`.kit/advanced/`, copy into `.claude/` to enable):
+
+| Skill | Description |
+|---|---|
+| `/memory-usage` | Read-only telemetry: hot files vs cold archival candidates |
 | `/memory-lint` | Structural hygiene (broken links, sparse articles, orphans) |
+| `/memory-query` | Natural-language search across the knowledge base |
 
 ## Architecture
 

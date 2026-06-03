@@ -58,7 +58,7 @@ Claude auto-loads context — project state, recent decisions, knowledge base. Y
 Talk to Claude. Write copy. Do research. Lock the tone. Safety hooks run silently — they save progress every ~50 messages and before context compacts.
 
 ### 3. Close the day
-When you're done — say `/close-day`. Claude **doesn't just** dump logs. It **audits** what happened today, compares it against accumulated memory, and proposes: "noticed you rejected em-dashes in three short copies this week — make it a tone-of-voice rule?". You say "yes". It writes.
+When you're done — say `/close-day`. Claude **doesn't just** dump logs. It **audits** what happened today, compares it against accumulated memory, and proposes: "noticed you rejected em-dashes in three short copies this week — make it a tone-of-voice rule?". You say "yes". It writes. Forgot to close yesterday — or all last week? It catches up: any working day with no log gets backfilled from your git history in the same pass.
 
 **Tomorrow you continue exactly where you left off.**
 
@@ -105,7 +105,7 @@ Say "we're working on Nestlé" — Claude unloads other clients and loads that s
 
 ![](.github/assets/06-hooks-and-operators.png)
 
-Five hooks run silently — they survive your context across compaction and crashes. Five slash operators give you direct control.
+Five hooks run silently — they survive your context across compaction and crashes. Two slash operators give you direct control: `/close-day` (the daily ritual) and `/tour`. A few power-user commands (search, hygiene, usage stats) sit in `.kit/advanced/` for when you want them.
 
 Everything in plain text files. No databases. No external services. `git checkout` restores anything.
 
@@ -144,7 +144,7 @@ Yes. On install, tell Claude you already have a project — it analyses it and i
 <details>
 <summary><b>What if I forget to run /close-day?</b></summary>
 
-Nothing breaks. Safety hooks save progress automatically. `/close-day` is the cherry on top — a deliberate end-of-day audit. Not critical.
+Nothing breaks. Safety hooks save progress automatically. `/close-day` is the cherry on top — a deliberate end-of-day audit. And next time you do run it, it notices the days you skipped (any day with commits but no log) and offers to backfill them from your git history — so the record stays complete even if you forget for a week.
 
 </details>
 
@@ -177,10 +177,11 @@ daily/                  ← Daily logs (private by default, gitignored)
 knowledge/              ← Knowledge base (grows over time)
 context/                ← Session-to-session handoff
 .claude/                ← Kit core: memory, hooks, skills, rules
-.kit/                   ← Documentation about the kit ITSELF (version
-                          history, architecture, contributor guide).
-                          Safe to delete after onboarding — it's about
-                          the kit, not your project.
+.kit/                   ← Docs about the kit ITSELF (version history,
+                          architecture, contributor guide) + advanced/
+                          (opt-in power-user commands). The docs are safe
+                          to delete after onboarding; keep advanced/ if you
+                          might enable the extra commands later.
 ```
 
 **`projects/` vs `experiments/`** — `projects/<name>/` for real client work (polished, indefinite lifetime, patterns promote to rules); `experiments/<name>-YYYYMMDD/` for hypotheses and prototypes (rough OK, days-to-weeks lifetime, distill into projects/concepts on close, then delete). Full spec: [`experiments/README.md`](experiments/README.md).

@@ -2,7 +2,7 @@
 
 `knowledge/concepts/` is the **facts + rationale** layer. Topic-oriented articles that explain *what* and *why*.
 
-**Agent writes these.** Articles compile from `daily/*.md` via `/memory-compile` once enough observations accumulate around a single topic.
+**Agent writes these.** The agent distils articles from `daily/*.md` during `/close-day` once enough observations accumulate around a single topic.
 
 ---
 
@@ -40,9 +40,9 @@ When you append a new section to an existing article, prefix the section heading
 
 ## Index
 
-<!-- Agent maintains this list via /memory-compile. One line per concept. -->
+<!-- Agent maintains this list during /close-day. One line per concept. -->
 
-(empty — `/memory-compile` will populate when enough daily observations accumulate)
+(empty — `/close-day` will populate when enough daily observations accumulate)
 
 ---
 

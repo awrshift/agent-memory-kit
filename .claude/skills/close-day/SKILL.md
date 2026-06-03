@@ -125,9 +125,9 @@ Today you did something that contradicts an existing rule or concept article. Ex
 #### Signal D: Article-worthy topic emerged
 Today's work surfaced a topic that's been touched several times across `daily/*.md` with accumulating detail (5+ times) and the facts are stable.
 
-**What to do:** Propose compiling a `knowledge/concepts/<topic>.md` article via `/memory-compile`.
+**What to do:** Propose writing a `knowledge/concepts/<topic>.md` article (you write it directly on the user's "yes" — pull the rationale together from those daily logs yourself).
 
-> "Topic 'Stripe webhook patterns' came up on [2026-04-08], [2026-04-15], [2026-04-22], [2026-04-25], [2026-04-27] — 5 distinct days across 3 weeks. Want me to compile a `knowledge/concepts/stripe-webhooks.md` article that pulls together the rationale from those daily logs?"
+> "Topic 'Stripe webhook patterns' came up on [2026-04-08], [2026-04-15], [2026-04-22], [2026-04-25], [2026-04-27] — 5 distinct days across 3 weeks. Want me to write a `knowledge/concepts/stripe-webhooks.md` article that pulls together the rationale from those daily logs?"
 
 #### Signal E: Experiment hygiene
 Folders in `experiments/<name>-YYYYMMDD/` older than 30 days that haven't been closed are stale.
