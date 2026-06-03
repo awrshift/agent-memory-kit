@@ -1,13 +1,57 @@
 ---
 name: close-day
-description: End-of-day audit ritual — synthesize sessions into daily log, audit patterns against MEMORY.md and existing concepts/rules, propose promotions verbally, write approved patches
+description: End-of-day audit ritual — auto-detect missed working days (commits with no daily file) and backfill them, synthesize today into a daily log, audit patterns against MEMORY.md and existing concepts/rules, propose promotions verbally, write approved patches. One call catches up the whole daily layer.
 ---
 
-# /close-day — The audit ritual
+# /close-day — The audit ritual (with auto-backfill of missed days)
 
 You are closing the user's working day. This is NOT just "dump today into a file". This is the **audit moment** where you inspect what the day produced, compare it against accumulated memory, and propose what should grow into the user's knowledge base or rules.
 
-## Your goal in two phases
+People forget to run `/close-day` every day — that's expected and fine. So this skill also **catches up**: before synthesizing today, it finds working days that have no daily log yet and offers to backfill them in the same pass. One call recovers the whole layer.
+
+## Your goal in three phases
+
+### Phase 0: GAP ANALYSIS — find missed days (runs first)
+
+Before anything else, work out which days are missing a daily log. A "working day" = a day with at least one commit. A "missed day" = a working day in the recent window that has no `daily/YYYY-MM-DD.md` file yet.
+
+```bash
+TODAY=$(date +%Y-%m-%d)
+WINDOW=14   # default look-back; widen only if the user asks
+
+# Working days = dates with non-merge commits in the window
+WORKING_DAYS=$(git log --no-merges --since="$WINDOW days ago" --until="tomorrow" \
+  --pretty=format:"%cd" --date=short 2>/dev/null | sort -u)
+
+# Days that already have a daily file
+EXISTING=$(ls daily/*.md 2>/dev/null | xargs -n1 basename 2>/dev/null \
+  | sed 's/.md$//' | grep -E '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' | sort -u)
+
+# Missed = working days with no daily file
+MISSED=$(comm -23 <(echo "$WORKING_DAYS") <(echo "$EXISTING"))
+```
+
+Detection rules:
+- **Window is the last 14 days, not "since the last daily."** A gap can sit anywhere in the window — an older working day might never have gotten a daily even if newer ones did.
+- **Today is always a candidate** — include it if there's uncommitted work or a commit today and no `daily/$TODAY.md` yet.
+- **Skip days with no real work** — a date with only merge commits or a trivial typo fix isn't worth a daily. Note it in the report and move on.
+- **If more than ~7 days are missing**, pause and confirm the window with the user before backfilling — older gaps are often deliberate skips (weekends, time off).
+- **No git, or a brand-new project with no commits?** Skip Phase 0 silently and just synthesize today.
+
+If the gap set is non-empty, show it and **ask for one batch approval** before backfilling:
+
+```
+Found 3 working days with no daily log yet:
+  - 2026-05-29 — 4 commits
+  - 2026-05-30 — 2 commits
+  - 2026-06-02 — 6 commits
+Plus today (2026-06-03).
+
+I'll reconstruct a daily for each from that day's commits + memory date-tags, then
+synthesize today in full. Backfill all? (or name days to skip)
+```
+
+One "yes" → loop through Phase 1 for each approved day, then today. No per-day pauses unless the user asked.
 
 ### Phase 1: SYNTHESIZE
 
@@ -20,9 +64,25 @@ Create `daily/YYYY-MM-DD.md` (today's date in ISO format). Include:
 - **Open threads.** What's left unfinished and should be picked up next session.
 - **Notable moments.** Things the user reacted strongly to (positive or negative). These are high-signal for the audit.
 
-Format: concise, structured markdown. This file is the chronological record. Target 200-500 words.
+Format: concise, structured markdown (follow `daily/TEMPLATE.md`). This file is the chronological record. Target 200-500 words.
 
-Also update `context/next-session-prompt.md` (NSP) with the immediate-action handoff: "Tomorrow: continue X. Open questions: Y, Z."
+**For today**, use the live conversation as your source, and also update `context/next-session-prompt.md` (NSP) with the immediate-action handoff: "Tomorrow: continue X. Open questions: Y, Z."
+
+**For a backfilled (missed) day**, you don't have the conversation — reconstruct from what git remembers:
+
+```bash
+DATE=2026-05-29   # the missed day
+git log --no-merges --since="$DATE 00:00" --until="$DATE 23:59" --pretty=format:"%h %s"   # what shipped
+git log --no-merges --since="$DATE 00:00" --until="$DATE 23:59" --name-only --pretty=format: | sort -u   # files touched
+grep -E "\[$DATE\]" .claude/memory/MEMORY.md   # patterns captured that day
+```
+
+Then:
+- **Use commit messages verbatim as the narrative.** They were written that day; trust them.
+- **Don't invent.** If it's not in a commit message, a touched file, or a `[$DATE]` MEMORY entry — don't write it. A terse commit stays terse.
+- **Mark it as reconstructed.** Put one line at the top of the body: `> Backfilled on YYYY-MM-DD from git history — lower detail than a same-day log; the commits are the source of truth.`
+- **Don't touch NSP for past days** — only today's close-day updates the handoff.
+- **Never overwrite an existing daily.** If `daily/$DATE.md` already exists, skip it.
 
 ### Phase 2: AUDIT
 
@@ -111,7 +171,11 @@ When synthesizing today's daily log, include ALL sessions of the day, not just t
 When the user types `/close-day`, respond in this shape:
 
 ```
-Synthesizing the day...
+Gap check: 2 missed working days found (2026-04-22, 2026-04-23) + today. Backfill all? yes
+
+Backfilled daily/2026-04-22.md (from 4 commits).
+Backfilled daily/2026-04-23.md (from 2 commits).
+Synthesizing today...
 [brief note: X sessions, projects Y, Z, key decisions]
 
 daily/2026-04-24.md written.
@@ -143,3 +207,5 @@ After user confirms each, execute patches and confirm briefly.
 Memory Kit's invariant: **user only talks, agent writes**. Prior versions tried to automate promotion detection with background scripts — unreliable + violated the invariant by implicitly pushing users to edit files. `/close-day` replaces that with an agent-in-the-loop ritual: the agent has full conversational context at end of day, can spot patterns a script would miss, and does the writing itself.
 
 The user's job is to **notice what they notice** during the day's work. Yours is to **catch it and structure it**.
+
+Auto-backfill (Phase 0) exists because the honest reality is that people skip `/close-day` on busy days — the README even says that's fine. Rather than lose those days, the ritual reconstructs them from git history on the next run, so the daily layer stays complete enough for the cross-session audit to work. Backfilled days are lower-fidelity by nature (git remembers commits, not conversations), which is why they're marked as reconstructed and never invented.
