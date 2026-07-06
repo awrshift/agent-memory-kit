@@ -47,6 +47,14 @@ DEFAULT_BUDGET = 50_000
 BUDGET = int(os.environ.get("CMK_INJECT_BUDGET", DEFAULT_BUDGET))
 TOP_CONCEPTS_COUNT = 3
 
+# MEMORY.md overflow discipline — THREE independent caps, not just line count.
+# Line count alone lies: when several sessions get concatenated into ONE physical line,
+# `wc -l` stays low while content density grows unbounded. The byte + max-line caps catch
+# that class. Any one tripping is a signal to run /close-day and prune. Tunable via env.
+MEMORY_LINE_CAP = int(os.environ.get("CMK_MEMORY_LINE_CAP", 200))
+MEMORY_BYTE_CAP = int(os.environ.get("CMK_MEMORY_BYTE_CAP", 40_000))
+MEMORY_MAXLINE_CAP = int(os.environ.get("CMK_MEMORY_MAXLINE_CAP", 3_000))
+
 
 def bump_session_counter() -> int:
     STATE_DIR.mkdir(parents=True, exist_ok=True)
@@ -90,19 +98,30 @@ def build_stats(session_num: int) -> str:
     if MEMORY_FILE.exists():
         content = MEMORY_FILE.read_text(encoding="utf-8")
         mem_lines = len(content.splitlines())
-        capacity = min(100, mem_lines * 100 // 200)
+        mem_bytes = len(content.encode("utf-8"))
+        max_line = max((len(l) for l in content.splitlines()), default=0)
+        capacity = min(100, mem_lines * 100 // MEMORY_LINE_CAP)
         knowledge_count = 0
         if KNOWLEDGE_DIR.exists():
             knowledge_count = sum(1 for _ in KNOWLEDGE_DIR.rglob("*.md"))
         days = age_days(MEMORY_FILE)
         stale = " !! STALE" if days is not None and days >= 5 else ""
         lines.append(
-            f"MEMORY.md: {mem_lines}/200 lines ({capacity}% full) — updated {human_age(days)}{stale}"
+            f"MEMORY.md: {mem_lines}/{MEMORY_LINE_CAP} lines ({capacity}% full), "
+            f"{mem_bytes // 1000}KB / {MEMORY_BYTE_CAP // 1000}KB, max-line {max_line}/{MEMORY_MAXLINE_CAP} "
+            f"— updated {human_age(days)}{stale}"
         )
         lines.append(f"Knowledge wiki: {knowledge_count} articles")
-        if mem_lines > 200:
+        tripped = []
+        if mem_lines > MEMORY_LINE_CAP:
+            tripped.append(f"lines {mem_lines}>{MEMORY_LINE_CAP}")
+        if mem_bytes > MEMORY_BYTE_CAP:
+            tripped.append(f"bytes {mem_bytes}>{MEMORY_BYTE_CAP}")
+        if max_line > MEMORY_MAXLINE_CAP:
+            tripped.append(f"max-line {max_line}>{MEMORY_MAXLINE_CAP} (sessions concatenated into one line?)")
+        if tripped:
             lines.append(
-                f"⚠ MEMORY.md is over 200 lines ({mem_lines}). Run /close-day to promote settled "
+                f"⚠ MEMORY.md tripped a cap ({'; '.join(tripped)}). Run /close-day to promote settled "
                 "patterns into knowledge/concepts/ (or .claude/rules/) and prune what's already absorbed."
             )
     else:
