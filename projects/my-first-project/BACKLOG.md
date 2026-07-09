@@ -47,7 +47,7 @@ The agent will walk you through the stops of the Memory Kit on YOUR actual files
 
 **Acceptance criteria:**
 - [ ] Agent showed all stops
-- [ ] You understood: "what is MEMORY.md / what is rules / what is skills / what is daily"
+- [ ] You understood: "what is MEMORY.md / what is rules / what is skills / what is handoffs"
 - [ ] At least one "aha" moment about how the system works
 
 ---
@@ -72,18 +72,18 @@ After the agent responds, you can say: "fact-check" — the agent will verify cl
 
 ---
 
-### T-004: Close your first day
+### T-004: Close your first session
 **Status:** TODO
 **Priority:** P1
 
 When done with work for today, say:
 
-> "/close-day"
+> "/close-session"
 
-The agent will synthesize today, audit for patterns, and propose 1-3 things to add to your knowledge base or rules. Confirm verbally ("yes" / "not now").
+The agent will audit this session for patterns, propose 1-3 things to add to your knowledge base or rules, refresh the current-state header, and leave a handoff note for next time. Confirm verbally ("yes" / "not now").
 
 **Acceptance criteria:**
-- [ ] Ran `/close-day`
+- [ ] Ran `/close-session`
 - [ ] Got 1+ proposals
 - [ ] Confirmed or rejected each verbally
 
@@ -97,7 +97,7 @@ Tomorrow morning: open a new Claude Code tab and say:
 
 > "Read context"
 
-The agent will read NSP, MEMORY, knowledge index — and pick up exactly where you left off.
+The agent will read the newest handoff, MEMORY, and the knowledge index — and pick up exactly where you left off.
 
 **Acceptance criteria:**
 - [ ] Opened fresh session next day

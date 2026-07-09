@@ -2,6 +2,59 @@
 
 All notable changes to Memory Kit are documented here. Breaking changes marked **BREAKING**.
 
+## [5.0.0] — 2026-07-09 — Lean core: handoffs replace the daily chronicle; three memory caps; stale-refs detector
+
+This release rebuilds the default around what actually survived long-running production use
+(the maintainers run this pattern across their own repos). The chronicle-shaped defaults —
+daily logs + the rolling next-session-prompt — were the parts that silently rotted: days went
+unclosed, the NSP froze while still LOOKING authoritative (one production instance carried
+phantom "open" items for 35 days), and MEMORY.md once packed 51.5 KB into 152 lines without
+tripping the old line-count check. v5 keeps the kit's soul (date-tagged memory, audit-driven
+promotion, "user only talks") and swaps the fragile layer for one that fails loudly.
+
+### Changed
+
+- **BREAKING: session close is `/close-session`, not `/close-day`.** The new ritual: capture
+  dated patterns → audit for 3+-date repetition → promote on your "yes" → REPLACE the MEMORY.md
+  header (current state, never a chronicle) → write a per-session handoff.
+- **BREAKING: `context/next-session-prompt.md` retired.** "Where we left off" now lives in
+  `context/handoffs/<topic>-<date>.md` — one immutable note per closed session; the SessionStart
+  hook injects the newest one. No rolling file to rot.
+- **BREAKING: `daily/` journal moved to opt-in `.kit/advanced/close-day-layer/`** together with
+  the `/close-day` skill and the NSP template. One `cp` re-enables it (see that folder's README);
+  it composes with the v5 core.
+- **`session-start.py` rewritten:** injects newest handoff + memory stats + projects/experiments
+  overview + knowledge index (budget trimmed 50K → 20K chars — the old injection was the single
+  biggest per-session context tax).
+- **`pre-compact.sh`** now requires MEMORY.md to be BOTH fresh and under its line cap before
+  allowing compaction (fresh-but-oversized used to slip through).
+
+### Added
+
+- **Three independent MEMORY.md caps, hook-enforced: 180 lines / 32 KB / 3000 chars per line.**
+  Line count alone lies — content densifies into ever-longer lines while `wc -l` stays flat.
+  When any cap trips, the next session opens with an audit prompt.
+- **Stale-refs detector** (`.claude/memory/scripts/stale-refs.py`): every session start, file
+  paths mentioned in CLAUDE.md + MEMORY.md are checked against disk; unresolved ones are
+  surfaced. The #1 memory failure is a stale belief that looks current — this catches the
+  file-path class of it deterministically.
+- **MEMORY.md header discipline:** the header is «current state», 2-3 sentences, replaced at
+  every close. Chronicles belong in handoffs.
+- **`context/handoffs/HANDOFF-TEMPLATE.md`** — the five-section session-close note.
+- All docs synced to the lean core: README, CLAUDE.md, root SKILL.md, ARCHITECTURE, CONTRIBUTING,
+  tour, knowledge/index, experiments/README, the starter BACKLOG, advanced/memory-usage — and the
+  README diagrams (02-workflow, 03-layers, 04-promotion, 06-hooks) regenerated for v5.
+
+### Migration from v4.2
+
+1. Run `/close-day` one last time (if you used it), then copy your `daily/` folder anywhere you
+   like — or enable the layer back: `.kit/advanced/close-day-layer/README.md`.
+2. Turn your current `context/next-session-prompt.md` into the first handoff: save it as
+   `context/handoffs/migrated-from-nsp-<today>.md`.
+3. Replace `CLAUDE.md`, `.claude/hooks/`, `.claude/memory/MEMORY.md` header, and add
+   `context/handoffs/` from v5. Your MEMORY entries, knowledge/, rules/, projects/ carry over as-is.
+4. Or simplest, per the README: clone v5 fresh and tell Claude "I have a v4 kit at <path>, migrate it".
+
 ## [4.2.0] — 2026-06-03 — Default surface trimmed to two operators; usage telemetry + /close-day backfill
 
 The three Python-backed memory commands were the heaviest, most developer-flavoured part of the kit — and where the v4.1.x defects lived. For the kit's non-technical audience the daily loop is fully covered by `/close-day` + `/tour`; the wiki-maintenance commands are power-user tooling. This release trims the default surface to those two, moves the rest to opt-in `.kit/advanced/`, and adds the two things the kit actually lacked: a data-driven "what's safe to prune" signal, and a way to recover days the user forgot to close.

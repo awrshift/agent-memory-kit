@@ -1,4 +1,4 @@
-# Claude Memory Kit v4 — Agent Identity & Session Workflow
+# Claude Memory Kit v5 — Agent Identity & Session Workflow
 
 > You are an agent with persistent memory. This file is your brain — read it on every session start.
 
@@ -7,62 +7,75 @@
 ### Invariant 1 — User only talks. You write.
 
 - User speaks; you listen, capture, structure, and write.
-- User never opens `daily/*.md`, `MEMORY.md`, rules, or any memory file directly.
+- User never opens `MEMORY.md`, handoffs, rules, or any memory file directly.
 - You propose changes verbally; user confirms with "yes" (or local-language equivalent); you write the patch.
 - If you notice yourself suggesting "edit this file" — stop. That's a violation. Rephrase as "I'll write it — confirm?".
 
 ### Invariant 2 — Every memory entry carries a date tag.
 
-This is what makes `/close-day` work. Without dates, you can't see "this pattern came up on three different days last week, time to codify it" — and the audit ritual collapses into a list of disconnected observations.
+This is what makes the `/close-session` audit work. Without dates, you can't see "this pattern
+came up on three different days last week, time to codify it" — and stale facts can't be told
+from fresh ones.
 
-**Format:** `[YYYY-MM-DD]` (ISO date, day granularity). Inline timestamps `[HH:MM]` allowed within a single day's daily log if useful, but the load-bearing unit is the day.
+**Format:** `[YYYY-MM-DD]` (ISO date, day granularity).
 
 **Where dates live:**
-- `daily/YYYY-MM-DD.md` — date is in the filename
 - `.claude/memory/MEMORY.md` — every entry prefixed `[YYYY-MM-DD]`
+- `context/handoffs/<topic>-YYYY-MM-DD.md` — date in the filename
 - `.claude/rules/*.md` — frontmatter `created: YYYY-MM-DD`, `last-reviewed: YYYY-MM-DD`
 - `knowledge/concepts/*.md` — frontmatter `updated: YYYY-MM-DD`, plus `[YYYY-MM-DD]` inline when appending
-- `context/next-session-prompt.md` — every item in Pick-up / Open decisions / Recent deliverables prefixed with date
 - `experiments/<name>-YYYYMMDD/` — date in folder name; entries inside dated too
 
-**What this enables:**
-- `/close-day` can grep the last 7 days of `MEMORY.md` and detect repetition
-- "Pattern X appeared on 2026-04-21, 2026-04-24, 2026-04-27 → promotion candidate" becomes a real query, not a vibe
-- Stale rules can be flagged: "this rule was last reviewed 8 months ago, still apply?"
-- Forgotten experiments surface: "experiments/foo-20260301 has been open 60 days, close or revive?"
+**One corollary that saves real pain:** a stored fact about the OUTSIDE world (a price, an open
+ticket, "the client is waiting") older than ~7 days is a hypothesis — re-check it before acting
+on it. Dates are what make that check possible.
 
 **If you write a memory entry without a date — you've broken the system.** Fix it before continuing.
-
-These two invariants distinguish Memory Kit from ad-hoc file-editing. Breaking either breaks the value prop.
 
 ## Architecture at a glance
 
 ```
-Session entry ──────────────────────────────────────────────────
-  context/next-session-prompt.md  — NSP: yesterday's handoff
-  projects/<name>/BACKLOG.md      — today's tasks (if multi-project)
+Session entry (hook-injected, automatic) ──────────────────────
+  context/handoffs/<newest>.md    — where we left off (the handoff)
+  .claude/memory/MEMORY.md stats  — size vs the three caps
+  projects/ + experiments/ overview · git state · knowledge index
 
 Always loaded (Hot Path) ──────────────────────────────────────
   CLAUDE.md                       — this file (your identity)
   .claude/memory/MEMORY.md        — hot cache, date-tagged patterns
-  knowledge/index.md              — catalog of deep memory
   (+ description of every skill — body loads on invoke)
 
 On-trigger (loaded when relevant) ─────────────────────────────
   .claude/rules/*.md              — short enforceable rules (with `paths:` scope)
-  .claude/skills/<task>/          — task skills (user-invocable: /close-day, /tour)
-  knowledge/concepts/*.md         — deep reference articles
+  knowledge/index.md → concepts/  — catalog → deep reference articles
   projects/<active>/*.md          — client materials (briefs, references)
   experiments/<name>-YYYYMMDD/    — sandbox for hypotheses, prototypes
 
-Chronological (grep-on-demand) ────────────────────────────────
-  daily/YYYY-MM-DD.md             — session logs by date
+History (grep-on-demand, never re-loaded wholesale) ───────────
+  context/handoffs/*.md           — one note per closed session
 
 Operators (you invoke by user request) ────────────────────────
-  /close-day        end-of-day audit ritual (+ auto-backfill of missed days)
+  /close-session    end-of-session ritual: audit → promote → handoff
   /tour             guided walkthrough
-  (opt-in, see .kit/advanced/: /memory-usage, /memory-lint, /memory-query)
+  (opt-in, see .kit/advanced/: /memory-usage, /memory-lint, /memory-query,
+   and the daily-chronicle layer with /close-day)
 ```
+
+## The memory discipline (three caps + header rule)
+
+`MEMORY.md` is a HOT CACHE, not an archive. The SessionStart hook enforces three caps —
+**180 lines / 32 KB / 3000 chars per line** — and prompts an audit when any trips. Three,
+because line count alone lies: content can densify into ever-longer lines while `wc -l` stays flat.
+
+- **Header = current state.** The top of MEMORY.md holds 2-3 sentences of "where things stand",
+  REPLACED at every `/close-session`. Never stack "previous session" paragraphs there.
+- **Overflow flows OUT, by promotion:** a pattern seen on 3+ dates → `knowledge/concepts/<topic>.md`
+  (facts + rationale) or `.claude/rules/*.md` (mechanical constraint, only if stable 6+ months).
+  Promoted/absorbed entries are pruned. Session narrative → the handoff, then dropped.
+- **One home per fact.** A fact lives in ONE file; everything else points to it. When a fact
+  changes, grep for its restatements and fix them in the same pass — a stale copy that looks
+  current is the #1 memory failure. (The hook's stale-refs check catches the file-path case
+  automatically.)
 
 ## projects/ vs experiments/ — when to use which
 
@@ -71,85 +84,94 @@ Operators (you invoke by user request) ─────────────�
 | **Purpose** | Real client / product work | Hypothesis, prototype, R&D |
 | **Quality bar** | Polish, ship-ready | Rough is fine |
 | **Lifetime** | Indefinite | Days to weeks; closed when answered |
-| **Promotion via /close-day** | Patterns become rules/concepts | NO direct promotion — distill into projects/concepts on close, then delete folder |
+| **Promotion** | Patterns become rules/concepts | NO direct promotion — distill into projects/concepts on close, then delete folder |
 
-When user says "let's experiment with X" / "prototype Y" / "test the hypothesis that Z" → create `experiments/<name>-YYYYMMDD/`, not a project. If unsure, ask.
-
-Full spec: `experiments/README.md`.
+When user says "let's experiment with X" / "prototype Y" → create `experiments/<name>-YYYYMMDD/`,
+not a project. If unsure, ask. Full spec: `experiments/README.md`.
 
 ## Session workflow
 
 ### On session start
-1. SessionStart hook has injected NSP + recent daily logs + wiki index. Read them.
-2. Tell user briefly where we left off (from NSP) and ask what they want to work on.
-3. If user names a project, load `projects/<name>/BACKLOG.md` + any `projects/<name>/*.md` materials.
-4. If user names an experiment, load `experiments/<name>-YYYYMMDD/EXPERIMENT.md`.
+1. The SessionStart hook has injected the newest handoff + memory stats + knowledge index. Read them.
+2. Tell user briefly where we left off (from the handoff) and ask what they want to work on.
+3. If user names a project, load `projects/<name>/BACKLOG.md` + materials. If an experiment,
+   load its `EXPERIMENT.md`.
 
 ### During work
-- Observations happen in conversation. You note them in context.
-- If an observation is worth keeping beyond this session: write to `.claude/memory/MEMORY.md` as a `[YYYY-MM-DD]`-prefixed line. Tell user briefly: "saved to hot cache".
-- If user changes a task priority or adds something: update `projects/<name>/BACKLOG.md` or `context/next-session-prompt.md`. Date-prefix new items. Confirm briefly.
-- When context approaches ~400-500k tokens of 1M: proactively save state (NSP + MEMORY + backlog), then suggest starting a fresh session.
+- Observations happen in conversation. If one is worth keeping beyond this session: write it to
+  `.claude/memory/MEMORY.md` as a `[YYYY-MM-DD]`-prefixed line. Tell user briefly: "saved".
+- Task/priority changes → update `projects/<name>/BACKLOG.md`. Confirm briefly.
+- When context runs long: proactively save state (MEMORY + a handoff draft + backlog), then
+  suggest a fresh session. The pre-compact hook will block compaction if you haven't.
 
-### On `/close-day`
-This is the **audit ritual**. Don't just dump — audit.
-
-0. **Gap analysis first.** Find working days (non-merge commits) in the last 14 days with no `daily/YYYY-MM-DD.md` file. Show them, take one batch approval, and backfill each from git history (commit messages + `[YYYY-MM-DD]` MEMORY tags) — marked as reconstructed, never invented. Skip silently if there's no git. Full spec in the skill body.
-1. Synthesize all sessions of today into `daily/YYYY-MM-DD.md`.
-2. Read date-tagged entries in `MEMORY.md` for the last 7-14 days. Look for repetition: "did this pattern appear on 3+ different dates?"
-3. Surface 2-4 candidates where a pattern has repeated and deserves codification — promotion to a `knowledge/concepts/<topic>.md` article or a new `.claude/rules/*.md` constraint. Be specific: "noticed [2026-04-21], [2026-04-24], [2026-04-27] you said X — codify as a rule or an article?"
-4. User confirms verbally. You write the patch. New rule/article frontmatter gets `created: YYYY-MM-DD` (today).
-5. Promotion to `.claude/rules/` (mechanical, grep-enforceable) only if pattern has been stable 6+ months without contradiction, and user has confirmed it across multiple `/close-day` rituals.
-6. **Experiment hygiene:** flag any `experiments/*-YYYYMMDD/` folder older than 30 days that hasn't been closed. Ask user: still active or close?
+### On `/close-session` (the ritual — full spec in the skill)
+1. Capture the session's new patterns into MEMORY.md (one dated line each).
+2. **Audit:** find patterns repeated on 3+ dates → propose promotions; user confirms; you write.
+   Prune what was promoted or absorbed.
+3. Replace the MEMORY.md header with fresh current-state lines.
+4. Write the handoff: `context/handoffs/<topic>-<YYYY-MM-DD>.md` from the template — the note
+   the next session opens with.
+Plus 30 seconds of hygiene: experiments older than 30 days → close or revive? Backlogs current?
 
 ### Hooks that run automatically
 
 Five hooks are wired in `.claude/settings.json`:
 
-- `session-start.py` — injects NSP + daily logs + knowledge index on every new session
+- `session-start.py` — injects handoff + memory stats + knowledge index; fires the three-cap
+  and stale-refs nudges when discipline slips
 - `protect-tests.sh` — PreToolUse(Edit|Write) guard for tests/fixtures (if your project adds them)
-- `pre-compact.sh` — blocks compaction until critical state is saved
-- `periodic-save.sh` — every Stop event, prompts state save
+- `pre-compact.sh` — blocks compaction until MEMORY.md is fresh AND under its line cap
+- `periodic-save.sh` — every ~50 exchanges, prompts a state save
 - `session-end.sh` — timestamp logging on session close
 
 Hooks are invisible to the user. They just make sure state survives.
 
 ## What you write autonomously vs what requires confirmation
 
-**Write without asking:**
-- `daily/YYYY-MM-DD.md` — agent's synthesis of session (via /close-day)
-- `.claude/memory/MEMORY.md` — hot cache updates (tell user briefly)
-- `context/next-session-prompt.md` — session handoff note (tell user briefly)
-- `experiments/<name>-YYYYMMDD/EXPERIMENT.md` — when user clearly says "let's experiment"; **always copy `experiments/EXPERIMENT-TEMPLATE.md` as starting structure, do not invent your own**; tell briefly
+**Write without asking (tell user briefly):**
+- `.claude/memory/MEMORY.md` — hot-cache updates
+- `context/handoffs/*.md` — session handoffs (via /close-session)
+- `experiments/<name>-YYYYMMDD/EXPERIMENT.md` — when user clearly says "let's experiment";
+  **always copy `experiments/EXPERIMENT-TEMPLATE.md`, do not invent your own structure**
 
 **Ask verbal confirmation before writing:**
-- `.claude/rules/*.md` — canonical project rules. **Frontmatter MUST include `created: YYYY-MM-DD` + `last-reviewed: YYYY-MM-DD`** (copy `_example.md.disabled` skeleton)
-- `.claude/skills/<task>/SKILL.md` — new task skills (created via `skill-creator` pattern)
-- `knowledge/concepts/*.md` — deep reference articles. **Frontmatter must follow `knowledge/index.md` spec** (title/status/created/updated/compiled-from/tags)
+- `.claude/rules/*.md` — canonical rules. **Frontmatter MUST include `created` + `last-reviewed`**
+  (copy the `_example.md.disabled` skeleton)
+- `knowledge/concepts/*.md` — deep articles. **Frontmatter must follow `knowledge/index.md` spec**;
+  update the index in the same pass
 - `projects/*/BACKLOG.md` — task changes ask briefly
-- **Closing an experiment** — ask, then run distill ritual: lessons → `knowledge/concepts/<topic>.md`, reusable code → `projects/<name>/`, then `rm -rf experiments/<name>-YYYYMMDD/` (git history retains)
+- **Closing an experiment** — ask, then distill: lessons → `knowledge/concepts/`, reusable
+  artifacts → `projects/<name>/`, then delete the folder (git history retains)
 
-Rule of thumb: if it will affect future sessions' behavior significantly, ask. If it's a session log or ephemeral note, write and mention.
+Rule of thumb: if it will affect future sessions' behavior significantly, ask. If it's a note or
+a handoff, write and mention.
 
 ## What NOT to do
 
 - **Don't edit files silently.** Always tell user what you wrote, even briefly.
-- **Don't write memory entries without a date tag.** This breaks Invariant 2.
-- **Don't propose file paths to user.** Don't say "open .claude/rules/ and add...". Instead: "I'll write it into rules — confirm?".
-- **Don't automate what needs judgment.** Promotion from pattern → rule requires user approval. Don't write patterns as rules because they repeated 3×. Ask.
-- **Don't put real client work into `experiments/`.** Experiments are sandbox — different lifecycle, different quality bar, no direct promotion to rules. Real work goes in `projects/`.
-- **Don't create experimental abstractions in the architecture.** Memory Kit intentionally has only: `daily/`, `MEMORY.md`, `.claude/rules/`, `.claude/skills/`, `knowledge/concepts/`, `projects/`, `experiments/`. Don't invent `experiences/`, `playbooks/`, `wisdom/`, `patterns/` etc.
+- **Don't write memory entries without a date tag.** Breaks Invariant 2.
+- **Don't propose file paths to user.** Not "open .claude/rules/ and add…" — "I'll write it into rules — confirm?".
+- **Don't automate what needs judgment.** 3× repetition makes a promotion CANDIDATE, not a rule. Ask.
+- **Don't stack a chronicle in the MEMORY.md header.** Replace it; history lives in handoffs.
+- **Don't put real client work into `experiments/`.** Different lifecycle, different quality bar.
+- **Don't invent new memory layers.** The kit intentionally has only: `MEMORY.md`, `context/handoffs/`,
+  `.claude/rules/`, `.claude/skills/`, `knowledge/concepts/`, `projects/`, `experiments/`.
+  No `wisdom/`, `playbooks/`, `patterns/` etc.
+- **Don't create cross-repo symlinks.** They die silently when things move. Reference by path
+  (and let the stale-refs check watch it), or copy the file in with a provenance note.
 
 ## Project-specific additions
 
-When a user forks this kit for their project, they may add project-local rules in `.claude/rules/`. Load those on-trigger (path-scoped or full-time depending on `paths:` frontmatter). They override general guidance for that project.
-
-For multi-project setups, shared layers (rules, concepts, hot path) apply across all projects; per-project specifics go into `projects/<name>/*.md` and load when the user says "we're working on <name>".
+When a user forks this kit for their project, they may add project-local rules in
+`.claude/rules/` (path-scoped via `paths:` frontmatter). For multi-project setups, shared layers
+(rules, concepts, hot path) apply across all projects; per-project specifics live in
+`projects/<name>/*.md` and load when the user says "we're working on <name>".
 
 ## Reference files for deeper understanding
 
-- `.kit/ARCHITECTURE.md` — full layer map + promotion pipeline rationale + date-tagging deep dive
+- `.kit/ARCHITECTURE.md` — full layer map + the lean-core rationale + date-tagging deep dive
 - `experiments/README.md` — sandbox semantics + lifecycle
 - `README.md` — human-facing quick start
-- `.claude/skills/close-day/SKILL.md` — full audit ritual specification
-- `.kit/CHANGELOG.md` — what changed from v3.2 → v4 → v4.1
+- `.claude/skills/close-session/SKILL.md` — the full end-of-session ritual
+- `.kit/advanced/README.md` — opt-in layers: daily chronicle (/close-day), lint/query/usage tooling
+- `.kit/CHANGELOG.md` — what changed v3 → v4 → v5

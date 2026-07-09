@@ -27,7 +27,10 @@ node_modules/
 !.claude/state/.gitkeep
 
 # Daily session logs (private by default — user can opt in to commit)
+# handoffs are personal session notes — private by default
+context/handoffs/*.md
+!context/handoffs/HANDOFF-TEMPLATE.md
+# (advanced daily-chronicle layer, if enabled — see .kit/advanced/close-day-layer/)
 daily/*.md
-!daily/.gitkeep
 !daily/README.md
 !daily/TEMPLATE.md

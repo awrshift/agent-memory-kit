@@ -70,7 +70,7 @@ if [ "$SINCE_LAST" -ge "$SAVE_INTERVAL" ] && [ "$EXCHANGE_COUNT" -gt 0 ]; then
     cat << HOOKJSON
 {
   "decision": "block",
-  "reason": "PERIODIC SAVE checkpoint (${EXCHANGE_COUNT} exchanges). Before continuing, save your progress:\n\n1. .claude/memory/MEMORY.md — any new patterns from this session (currently ${MEMORY_LINES}/200 lines)\n2. context/next-session-prompt.md — update your project section\n3. projects/*/BACKLOG.md — update task statuses if changed\n\nContinue your work after saving."
+  "reason": "PERIODIC SAVE checkpoint (${EXCHANGE_COUNT} exchanges). Before continuing, save your progress:\n\n1. .claude/memory/MEMORY.md — any new date-tagged patterns from this session (currently ${MEMORY_LINES}/180 lines; caps 180 / 32 KB / 3000-per-line)\n2. context/handoffs/ — write/refresh this session's handoff (what was done + immediate next)\n3. projects/*/BACKLOG.md — update task statuses if changed\n\nContinue your work after saving."
 }
 HOOKJSON
 else

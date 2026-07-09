@@ -28,8 +28,8 @@ if [ -f "$MEMORY_FILE" ]; then
     NOW=$(date +%s)
     if [ -n "$MEMORY_MTIME" ]; then
         AGE_SECONDS=$((NOW - MEMORY_MTIME))
-        if [ "$AGE_SECONDS" -lt 120 ]; then
-            echo "[$(date '+%H:%M:%S')] MEMORY.md fresh ($AGE_SECONDS sec ago), allowing compact" >> "$STATE_DIR/hook.log"
+        if [ "$AGE_SECONDS" -lt 120 ] && [ "$MEMORY_LINES" -le 180 ]; then
+            echo "[$(date '+%H:%M:%S')] MEMORY.md fresh ($AGE_SECONDS sec ago, $MEMORY_LINES lines), allowing compact" >> "$STATE_DIR/hook.log"
             echo '{}'
             exit 0
         fi
@@ -48,6 +48,6 @@ echo "[$(date '+%H:%M:%S')] BLOCKING compact — MEMORY.md last updated $MEMORY_
 cat << HOOKJSON
 {
   "decision": "block",
-  "reason": "CONTEXT COMPRESSION IMMINENT. Your memory files are stale (MEMORY.md: ${MEMORY_LINES}/200 lines, last updated ${MEMORY_AGE}). You MUST save before compaction proceeds:\n\n1. Update .claude/memory/MEMORY.md — save new patterns from this session (keep < 200 lines)\n2. Update context/next-session-prompt.md — your project section only (what was done + IMMEDIATE NEXT)\n3. Update project BACKLOG.md — task statuses (${PROJECT_COUNT} project(s) active)\n\nWrite to these files NOW. Compaction will proceed after files are updated."
+  "reason": "CONTEXT COMPRESSION IMMINENT. Your memory files are stale (MEMORY.md: ${MEMORY_LINES}/180 lines, last updated ${MEMORY_AGE}). You MUST save before compaction proceeds:\n\n1. Update .claude/memory/MEMORY.md — REPLACE the header current-state lines + add new date-tagged patterns (caps: 180 lines / 32 KB / 3000 chars per line)\n2. Write/refresh this session's handoff in context/handoffs/ (copy HANDOFF-TEMPLATE.md) — what was done + immediate next\n3. Update project BACKLOG.md — task statuses (${PROJECT_COUNT} project(s) active)\n\nWrite to these files NOW. Compaction will proceed after files are updated."
 }
 HOOKJSON

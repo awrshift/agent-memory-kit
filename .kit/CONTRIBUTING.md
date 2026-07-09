@@ -30,7 +30,7 @@ Any contribution that pushes users toward editing memory files manually — a sc
 - **Zero dependencies.** Scripts use Python stdlib only. No `pip install`. No external services beyond the `claude -p` subprocess.
 - **Pure Markdown for content.** Keep the wiki and memory plain `.md` so any editor works.
 - **Obsidian remains optional.** Don't add features that require Obsidian to be installed (wikilinks are the only Obsidian-style convention; they degrade cleanly to plain text).
-- **Don't invent new layers.** The kit ships exactly: `daily/`, `MEMORY.md`, `.claude/rules/`, `.claude/skills/<task>/`, `knowledge/concepts/`, `projects/`. Proposals to add `experiences/`, `playbooks/`, `wisdom/`, `lessons/`, `<role>-guidance/` etc. need a high bar. We've killed each of those at least once because real users didn't fill them.
+- **Don't invent new layers.** The v5 core ships exactly: `MEMORY.md`, `context/handoffs/`, `.claude/rules/`, `.claude/skills/<task>/`, `knowledge/concepts/`, `projects/`, `experiments/`. Proposals to add `playbooks/`, `wisdom/`, `lessons/`, `<role>-guidance/` etc. need a high bar. We've killed each of those at least once because real users didn't fill them — and in v5 the `daily/` chronicle layer itself was demoted to opt-in (`.kit/advanced/close-day-layer/`) for the same reason.
 - **Be kind in issues and PRs.** Assume good intent.
 
 ## What lives where (cheat sheet)

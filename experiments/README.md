@@ -10,7 +10,7 @@ Sandbox layer. Hypothesis testing, prototypes, throwaway research, R&D — anyth
 | **Quality bar** | Polish, ship-ready | Rough is fine |
 | **Lifetime** | Indefinite (active client) | Days to weeks; closed when answered |
 | **Promotion to rules/concepts** | YES — patterns become canonical | NO — first distill into projects/ or knowledge/concepts/, THEN close |
-| **Survives `/close-day` audit** | YES — agent proposes promotions | Limited — `/close-day` does NOT promote experiment patterns directly |
+| **Survives `/close-session` audit** | YES — agent proposes promotions | Limited — `/close-session` does NOT promote experiment patterns directly |
 
 ## Naming convention
 
@@ -23,7 +23,7 @@ experiments/
 └── claude-tts-prototype-20260322/
 ```
 
-Why date-tagged (not numbered): aligns with the kit-wide date-tagging convention. Lets you sort chronologically, see at a glance how old something is, and `/close-day` can check freshness ("3 experiments older than 30 days — still active or close them?").
+Why date-tagged (not numbered): aligns with the kit-wide date-tagging convention. Lets you sort chronologically, see at a glance how old something is, and `/close-session` can check freshness ("3 experiments older than 30 days — still active or close them?").
 
 ## Inside an experiment
 
@@ -44,8 +44,8 @@ Optionally:
 3. **Close** — when user says "the experiment is done" / "we have an answer", agent runs the **distill ritual**:
    - Successful: lessons → `knowledge/concepts/<topic>.md`, code → `projects/<name>/`, then `rm -rf experiments/<name>-YYYYMMDD/` (git history remembers)
    - Failed with lessons: `knowledge/concepts/<topic>-failed.md` capturing why, then delete folder
-   - Inconclusive: leave as-is, revisit on next `/close-day`
-4. **Forgotten experiments** — `/close-day` flags experiments older than 30 days that haven't been closed; agent asks user
+   - Inconclusive: leave as-is, revisit on next `/close-session`
+4. **Forgotten experiments** — `/close-session` flags experiments older than 30 days that haven't been closed; agent asks user
 
 ## Agent triggers
 

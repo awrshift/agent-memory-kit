@@ -1,75 +1,54 @@
 #!/usr/bin/env python3
-"""
-SessionStart hook — context injection via hookSpecificOutput.additionalContext.
+"""SessionStart hook — context injection via hookSpecificOutput.additionalContext.
 
-Adapted from coleam00/claude-memory-compiler hooks/session-start.py (Karpathy's
-knowledge-base pattern) with Memory Kit v3 extensions: MEMORY stats, projects,
-experiments, git status baked into the injected context.
+v5.0 (lean core): injects, in priority order —
+    1. Memory-discipline nudges, only when they fire: the three MEMORY.md caps
+       (lines / bytes / longest line) + stale file references.
+    2. Session stats: MEMORY.md size vs caps, projects/experiments overview, git state.
+    3. The newest session handoff from context/handoffs/ (your "where we left off").
+    4. knowledge/index.md (the catalog of deep memory).
 
-The hook prints a single JSON object to stdout:
-    {
-      "hookSpecificOutput": {
-        "hookEventName": "SessionStart",
-        "additionalContext": "..."
-      }
-    }
+Retired in v5.0: NSP + daily-log injection (the daily-chronicle layer moved to
+.kit/advanced/close-day-layer/ — see .kit/CHANGELOG.md).
 
-Budget: default 50K chars (configurable via CMK_INJECT_BUDGET env var).
-Priority order when truncating:
-    1. Session stats (MEMORY, projects, experiments, git)
-    2. knowledge/index.md (full)
-    3. Latest daily/YYYY-MM-DD.md
-    4. Second-latest daily log
-    5. Top 3 recently-modified knowledge/concepts/*.md
+Output: {"hookSpecificOutput": {"hookEventName": "SessionStart", "additionalContext": "..."}}
 """
 
 from __future__ import annotations
 
 import json
 import os
+import re
 import subprocess
 import sys
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from pathlib import Path
 
 PROJECT_DIR = Path(os.environ.get("CLAUDE_PROJECT_DIR", Path(__file__).resolve().parent.parent.parent))
 STATE_DIR = PROJECT_DIR / ".claude" / "state"
 MEMORY_FILE = PROJECT_DIR / ".claude" / "memory" / "MEMORY.md"
-KNOWLEDGE_DIR = PROJECT_DIR / "knowledge"
-INDEX_FILE = KNOWLEDGE_DIR / "index.md"
-CONCEPTS_DIR = KNOWLEDGE_DIR / "concepts"
-DAILY_DIR = PROJECT_DIR / "daily"
+INDEX_FILE = PROJECT_DIR / "knowledge" / "index.md"
+HANDOFFS_DIR = PROJECT_DIR / "context" / "handoffs"
 PROJECTS_DIR = PROJECT_DIR / "projects"
 EXPERIMENTS_DIR = PROJECT_DIR / "experiments"
+STALE_REFS_SCRIPT = PROJECT_DIR / ".claude" / "memory" / "scripts" / "stale-refs.py"
 SESSION_FILE = STATE_DIR / "session_count"
 
-DEFAULT_BUDGET = 50_000
+DEFAULT_BUDGET = 20_000
 BUDGET = int(os.environ.get("CMK_INJECT_BUDGET", DEFAULT_BUDGET))
-TOP_CONCEPTS_COUNT = 3
 
-# MEMORY.md overflow discipline — THREE independent caps, not just line count.
-# Line count alone lies: when several sessions get concatenated into ONE physical line,
-# `wc -l` stays low while content density grows unbounded. The byte + max-line caps catch
-# that class. Any one tripping is a signal to run /close-day and prune. Tunable via env.
-MEMORY_LINE_CAP = int(os.environ.get("CMK_MEMORY_LINE_CAP", 200))
-MEMORY_BYTE_CAP = int(os.environ.get("CMK_MEMORY_BYTE_CAP", 40_000))
-MEMORY_MAXLINE_CAP = int(os.environ.get("CMK_MEMORY_MAXLINE_CAP", 3_000))
+# Three independent MEMORY.md caps. Line count alone is not enough: content can
+# densify into ever-longer lines while `wc -l` stays flat (a real production
+# failure: 51.5 KB packed into 152 lines). Each cap catches a different shape.
+# Tunable via env (kept from PR #2).
+MEMORY_LINE_CAP = int(os.environ.get("CMK_MEMORY_LINE_CAP", 180))
+MEMORY_BYTE_CAP = int(os.environ.get("CMK_MEMORY_BYTE_CAP", 32_768))  # 32 KiB
+MEMORY_MAX_LINE_CHARS = int(os.environ.get("CMK_MEMORY_MAXLINE_CAP", 3_000))  # «giant single-line chronicle» guard
 
+HANDOFF_INJECT_CAP = 6_000
 
-def bump_session_counter() -> int:
-    STATE_DIR.mkdir(parents=True, exist_ok=True)
-    current = 0
-    if SESSION_FILE.exists():
-        try:
-            current = int(SESSION_FILE.read_text(encoding="utf-8").strip() or "0")
-        except (ValueError, OSError):
-            current = 0
-    new = current + 1
-    try:
-        SESSION_FILE.write_text(str(new), encoding="utf-8")
-    except OSError:
-        pass
-    return new
+# Stale-ref auto-check scope = the always-loaded layer only.
+HOT_MEMORY_TARGETS = ["CLAUDE.md", ".claude/memory/MEMORY.md"]
 
 
 def age_days(path: Path) -> int | None:
@@ -90,155 +69,169 @@ def human_age(days: int | None) -> str:
     return f"{days} days ago"
 
 
-def build_stats(session_num: int) -> str:
-    lines = [f"=== SESSION START (#{session_num}) ===", ""]
+def maybe_caps_prompt() -> str:
+    """Active prompt when MEMORY.md trips ANY of the three caps."""
+    if not MEMORY_FILE.exists():
+        return ""
+    try:
+        content = MEMORY_FILE.read_text(encoding="utf-8")
+    except OSError:
+        return ""
 
-    # Memory
+    lines = content.splitlines()
+    reasons: list[str] = []
+    if len(lines) > MEMORY_LINE_CAP:
+        reasons.append(f"lines = {len(lines)} (cap {MEMORY_LINE_CAP})")
+    byte_count = len(content.encode("utf-8"))
+    if byte_count > MEMORY_BYTE_CAP:
+        reasons.append(f"size = {byte_count / 1024:.1f} KB (cap {MEMORY_BYTE_CAP // 1024} KB)")
+    max_line = max((len(ln) for ln in lines), default=0)
+    if max_line > MEMORY_MAX_LINE_CHARS:
+        reasons.append(
+            f"longest line = {max_line} chars (cap {MEMORY_MAX_LINE_CHARS}) — likely a stacked chronicle in one line"
+        )
+    if not reasons:
+        return ""
+
+    reason_block = "\n".join(f"  - {r}" for r in reasons)
+    return (
+        "## ⚠ MEMORY DISCIPLINE TRIGGER\n\n"
+        f"MEMORY.md tripped {len(reasons)} of 3 caps:\n{reason_block}\n\n"
+        "Run the `/close-session` audit BEFORE other work: promote settled patterns to "
+        "`knowledge/concepts/`, drop absorbed ones, and REPLACE the header with fresh "
+        "current-state lines. The header is «current state», never a chronicle.\n"
+    )
+
+
+def maybe_stale_refs_hint() -> str:
+    """Nudge when the always-loaded layer references files that no longer exist.
+
+    The #1 memory failure is stale beliefs — memory asserting paths/facts that
+    changed on disk. Deterministic detect-half; non-blocking.
+    """
+    if not STALE_REFS_SCRIPT.exists():
+        return ""
+    try:
+        result = subprocess.run(
+            ["python3", str(STALE_REFS_SCRIPT), *HOT_MEMORY_TARGETS],
+            cwd=str(PROJECT_DIR),
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+    except (subprocess.SubprocessError, OSError):
+        return ""
+    match = re.search(r"(\d+) unresolved", result.stdout)
+    if not match or int(match.group(1)) == 0:
+        return ""
+    detail = "\n".join(
+        ln for ln in result.stdout.splitlines() if ln.startswith("✗") or ln.strip().startswith("L")
+    )
+    return (
+        "## ⚠ Stale memory references\n\n"
+        f"{match.group(1)} path reference(s) in memory no longer resolve on disk:\n\n"
+        f"{detail}\n\n"
+        "Verify each (renamed? moved? deleted?) and update/remove the entry.\n"
+    )
+
+
+def bump_session_counter() -> int:
+    STATE_DIR.mkdir(parents=True, exist_ok=True)
+    current = 0
+    if SESSION_FILE.exists():
+        try:
+            current = int(SESSION_FILE.read_text(encoding="utf-8").strip() or "0")
+        except (ValueError, OSError):
+            current = 0
+    new = current + 1
+    try:
+        SESSION_FILE.write_text(str(new), encoding="utf-8")
+    except OSError:
+        pass
+    return new
+
+
+def list_dirs(base: Path) -> list[Path]:
+    if not base.exists():
+        return []
+    return sorted(
+        (p for p in base.iterdir() if p.is_dir() and not p.name.startswith(".")),
+        key=lambda p: p.stat().st_mtime,
+        reverse=True,
+    )
+
+
+def build_stats(session_num: int) -> str:
+    today = datetime.now().strftime("%Y-%m-%d")
+    lines = [f"=== SESSION START — {today} (hook run #{session_num}) ===", ""]
+
     lines.append("## Memory")
     if MEMORY_FILE.exists():
         content = MEMORY_FILE.read_text(encoding="utf-8")
-        mem_lines = len(content.splitlines())
+        mem_lines_list = content.splitlines()
+        mem_lines = len(mem_lines_list)
         mem_bytes = len(content.encode("utf-8"))
-        max_line = max((len(l) for l in content.splitlines()), default=0)
+        mem_max_line = max((len(ln) for ln in mem_lines_list), default=0)
         capacity = min(100, mem_lines * 100 // MEMORY_LINE_CAP)
-        knowledge_count = 0
-        if KNOWLEDGE_DIR.exists():
-            knowledge_count = sum(1 for _ in KNOWLEDGE_DIR.rglob("*.md"))
         days = age_days(MEMORY_FILE)
         stale = " !! STALE" if days is not None and days >= 5 else ""
         lines.append(
             f"MEMORY.md: {mem_lines}/{MEMORY_LINE_CAP} lines ({capacity}% full), "
-            f"{mem_bytes // 1000}KB / {MEMORY_BYTE_CAP // 1000}KB, max-line {max_line}/{MEMORY_MAXLINE_CAP} "
-            f"— updated {human_age(days)}{stale}"
+            f"{mem_bytes / 1024:.1f} KB / {MEMORY_BYTE_CAP // 1024} KB cap, "
+            f"max-line {mem_max_line} / {MEMORY_MAX_LINE_CHARS} cap — updated {human_age(days)}{stale}"
         )
-        lines.append(f"Knowledge wiki: {knowledge_count} articles")
-        tripped = []
-        if mem_lines > MEMORY_LINE_CAP:
-            tripped.append(f"lines {mem_lines}>{MEMORY_LINE_CAP}")
-        if mem_bytes > MEMORY_BYTE_CAP:
-            tripped.append(f"bytes {mem_bytes}>{MEMORY_BYTE_CAP}")
-        if max_line > MEMORY_MAXLINE_CAP:
-            tripped.append(f"max-line {max_line}>{MEMORY_MAXLINE_CAP} (sessions concatenated into one line?)")
-        if tripped:
-            lines.append(
-                f"⚠ MEMORY.md tripped a cap ({'; '.join(tripped)}). Run /close-day to promote settled "
-                "patterns into knowledge/concepts/ (or .claude/rules/) and prune what's already absorbed."
-            )
     else:
         lines.append("No MEMORY.md found")
     lines.append("")
 
-    # Projects
-    lines.append("## Projects")
-    found_projects = False
-    if PROJECTS_DIR.exists():
-        for project_dir in sorted(PROJECTS_DIR.iterdir()):
-            if not project_dir.is_dir():
-                continue
-            backlog = project_dir / "BACKLOG.md"
-            if not backlog.exists():
-                continue
-            found_projects = True
-            try:
-                content = backlog.read_text(encoding="utf-8")
-            except OSError:
-                continue
-            active = sum(
-                1
-                for line in content.splitlines()
-                if "Status:" in line and any(s in line for s in ("IN PROGRESS", "TODO", "BLOCKED"))
-            )
-            completed = sum(1 for line in content.splitlines() if line.startswith("- **T-"))
-            days = age_days(backlog)
-            stale = f" !! STALE ({days} days)" if days is not None and days >= 5 else ""
-            lines.append(f"- {project_dir.name}: {active} active, {completed} completed{stale}")
-    if not found_projects:
-        lines.append("No projects yet")
-    lines.append("")
+    projects = list_dirs(PROJECTS_DIR)
+    if projects:
+        lines.append("## Projects")
+        for p in projects[:6]:
+            lines.append(f"- projects/{p.name}/ — touched {human_age(age_days(p))}")
+        lines.append("")
 
-    # Experiments
-    lines.append("## Experiments")
-    exp_count = 0
-    if EXPERIMENTS_DIR.exists():
-        for exp_dir in sorted(EXPERIMENTS_DIR.iterdir()):
-            if not exp_dir.is_dir():
-                continue
-            exp_file = exp_dir / "EXPERIMENT.md"
-            if not exp_file.exists():
-                continue
-            exp_count += 1
-            try:
-                first_lines = exp_file.read_text(encoding="utf-8").splitlines()[:10]
-            except OSError:
-                first_lines = []
-            status = ""
-            for line in first_lines:
-                if "Status:" in line:
-                    status = line.split("Status:")[-1].strip().strip("*").strip()
-                    break
-            lines.append(f"- {exp_dir.name}{': ' + status if status else ''}")
-    if exp_count == 0:
-        lines.append("No active experiments")
-    lines.append("")
+    experiments = list_dirs(EXPERIMENTS_DIR)
+    if experiments:
+        lines.append("## Experiments")
+        for e in experiments[:6]:
+            days = age_days(e)
+            flag = "  ⚠ open 30+ days — close or revive?" if days is not None and days >= 30 else ""
+            lines.append(f"- experiments/{e.name}/ — touched {human_age(days)}{flag}")
+        lines.append("")
 
-    # Git
     lines.append("## Git")
     try:
         branch = subprocess.run(
             ["git", "-C", str(PROJECT_DIR), "branch", "--show-current"],
-            capture_output=True,
-            text=True,
-            timeout=3,
+            capture_output=True, text=True, timeout=3,
         ).stdout.strip()
         status = subprocess.run(
             ["git", "-C", str(PROJECT_DIR), "status", "--short"],
-            capture_output=True,
-            text=True,
-            timeout=3,
+            capture_output=True, text=True, timeout=3,
         ).stdout.strip()
         if branch:
             lines.append(f"branch: {branch}")
+        tracked = [ln for ln in status.splitlines() if not ln.startswith("??")] if status else []
+        lines.append(
+            f"working tree: {len(tracked)} tracked change(s)"
+            + (" (clean — only untracked files)" if not tracked else "")
+        )
         if status:
-            short_status = "\n".join(status.splitlines()[:5])
-            lines.append(short_status)
+            lines.append("\n".join(status.splitlines()[:5]))
     except (subprocess.SubprocessError, OSError):
         lines.append("(git unavailable)")
-    lines.append("")
 
-    lines.append("=== Read context/next-session-prompt.md for full context ===")
     return "\n".join(lines)
 
 
-def read_index() -> str:
-    if not INDEX_FILE.exists():
-        return ""
-    try:
-        return INDEX_FILE.read_text(encoding="utf-8")
-    except OSError:
-        return ""
-
-
-def find_recent_dailies(limit: int = 2) -> list[Path]:
-    if not DAILY_DIR.exists():
-        return []
-    today = datetime.now(timezone.utc).astimezone()
-    dailies = []
-    for offset in range(14):
-        date = today - timedelta(days=offset)
-        path = DAILY_DIR / f"{date.strftime('%Y-%m-%d')}.md"
-        if path.exists():
-            dailies.append(path)
-        if len(dailies) >= limit:
-            break
-    return dailies
-
-
-def find_top_concepts(limit: int = 3) -> list[Path]:
-    if not CONCEPTS_DIR.exists():
-        return []
-    concepts = list(CONCEPTS_DIR.glob("*.md"))
-    concepts.sort(key=lambda p: p.stat().st_mtime, reverse=True)
-    return concepts[:limit]
+def newest_handoff() -> Path | None:
+    if not HANDOFFS_DIR.exists():
+        return None
+    files = [p for p in HANDOFFS_DIR.glob("*.md") if p.name != "HANDOFF-TEMPLATE.md"]
+    if not files:
+        return None
+    return max(files, key=lambda p: p.stat().st_mtime)
 
 
 def read_file_safe(path: Path) -> str:
@@ -249,53 +242,59 @@ def read_file_safe(path: Path) -> str:
 
 
 def build_context() -> str:
-    """Assemble additionalContext payload honoring BUDGET."""
     session_num = bump_session_counter()
     parts: list[str] = []
     remaining = BUDGET
 
-    def add_section(title: str, body: str) -> bool:
+    def add_section(title: str, body: str) -> None:
         nonlocal remaining
         if not body.strip():
-            return False
+            return
         chunk = f"## {title}\n\n{body.rstrip()}\n"
         if len(chunk) > remaining:
             if remaining > 500:
-                truncated = chunk[: remaining - 20].rstrip() + "\n\n...(truncated)\n"
-                parts.append(truncated)
+                parts.append(chunk[: remaining - 20].rstrip() + "\n\n...(truncated)\n")
                 remaining = 0
-            return False
+            return
         parts.append(chunk)
         remaining -= len(chunk)
-        return True
 
-    # 1. Session stats (always included)
+    # Discipline nudges first (agent must see them before anything else).
+    for hint in (maybe_caps_prompt(), maybe_stale_refs_hint()):
+        if hint:
+            parts.append(hint + "\n")
+            remaining = max(0, remaining - len(hint) - 1)
+
+    # Session stats (always).
     stats = build_stats(session_num)
     parts.append(stats + "\n")
     remaining = max(0, remaining - len(stats) - 1)
 
-    # 2. Knowledge index
-    add_section("Knowledge Base Index", read_index())
+    # Newest handoff — "where we left off". Replaces the v4 NSP injection.
+    hand = newest_handoff()
+    if hand is not None:
+        body = read_file_safe(hand)
+        if len(body) > HANDOFF_INJECT_CAP:
+            body = body[:HANDOFF_INJECT_CAP].rstrip() + "\n\n…(truncated — read the full file on demand)\n"
+        days = age_days(hand)
+        add_section(f"Latest handoff — context/handoffs/{hand.name} (updated {human_age(days)})", body)
+    else:
+        add_section(
+            "Latest handoff",
+            "No handoffs yet — first session. `/close-session` writes the first one at the end of this session.",
+        )
 
-    # 3. Recent daily logs (latest first)
-    dailies = find_recent_dailies(limit=2)
-    for daily in dailies:
-        add_section(f"Daily Log — {daily.stem}", read_file_safe(daily))
-
-    # 4. Top recent concepts
-    for concept in find_top_concepts(limit=TOP_CONCEPTS_COUNT):
-        rel = concept.relative_to(KNOWLEDGE_DIR)
-        add_section(f"Recent Concept — {rel}", read_file_safe(concept))
+    # Knowledge index (the cheap pointer layer).
+    add_section("Knowledge Base Index", read_file_safe(INDEX_FILE))
 
     return "\n---\n\n".join(parts).rstrip() + "\n"
 
 
 def main() -> None:
-    context = build_context()
     output = {
         "hookSpecificOutput": {
             "hookEventName": "SessionStart",
-            "additionalContext": context,
+            "additionalContext": build_context(),
         }
     }
     json.dump(output, sys.stdout)
