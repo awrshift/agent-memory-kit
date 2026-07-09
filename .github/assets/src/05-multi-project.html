@@ -1,0 +1,65 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..900&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{ --bg:#17150F; --text:#F1ECDF; --muted:#9C9480; --faint:#55503E; --accent:#CFEF4A; --ember:#E08A4A; }
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:2752px;height:1536px;background:var(--bg);overflow:hidden;}
+body{font-family:'Hanken Grotesk',sans-serif;color:var(--text);position:relative;}
+.art{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+.grain{position:absolute;inset:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.83' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");mix-blend-mode:overlay;opacity:0.08;pointer-events:none;z-index:50;}
+.stage{position:relative;z-index:5;width:100%;height:100%;}
+.panel{background:rgba(23,21,15,0.62);border-radius:20px;padding:28px 36px;}
+h1{position:absolute;top:70px;left:0;right:0;text-align:center;font-family:'Fraunces',serif;font-weight:620;font-variation-settings:'SOFT' 15,'WONK' 0;font-size:88px;color:var(--text);}
+.sub{position:absolute;top:196px;left:0;right:0;text-align:center;font-size:32px;color:var(--muted);}
+.quote{position:absolute;left:120px;top:340px;width:820px;}
+.quote .bubble{font-family:'Fraunces',serif;font-style:italic;font-weight:500;font-size:38px;color:var(--text);}
+.quote .cap{margin-top:16px;font-family:'JetBrains Mono',monospace;font-size:18px;color:var(--accent);}
+.tree{position:absolute;left:120px;top:560px;width:900px;font-family:'JetBrains Mono',monospace;font-size:24px;line-height:1.75;color:var(--faint);background:rgba(23,21,15,0.92);}
+.tree .active{color:var(--accent);}
+.tree .file{color:var(--muted);}
+.right-title{position:absolute;right:180px;top:330px;font-family:'JetBrains Mono',monospace;font-size:20px;letter-spacing:0.18em;text-transform:uppercase;color:var(--muted);}
+.rows{position:absolute;right:180px;top:390px;width:900px;}
+.rowitem{margin-bottom:26px;}
+.rowitem .path{font-family:'JetBrains Mono',monospace;font-size:26px;color:var(--accent);}
+.rowitem .desc{font-size:19px;color:var(--muted);margin-top:4px;}
+.footer{position:absolute;bottom:80px;left:0;right:0;text-align:center;font-size:24px;color:var(--muted);}
+.footer b{color:var(--text);font-family:'JetBrains Mono',monospace;font-weight:500;}
+</style>
+</head>
+<body>
+<img class="art" src="05-art.png">
+<div class="grain"></div>
+<div class="stage">
+  <h1>Multi-project context</h1>
+  <div class="sub">One agent, many clients. Talk to switch.</div>
+  <div class="quote panel">
+    <div class="bubble">"we're working on Nestlé"</div>
+    <div class="cap">→ agent loads that scope only</div>
+  </div>
+  <div class="tree panel">
+projects/<br>
+├── <span class="active">nestle/</span><br>
+│&nbsp;&nbsp;&nbsp;├── <span class="file">BACKLOG.md</span><br>
+│&nbsp;&nbsp;&nbsp;├── <span class="file">brand-guide.pdf</span><br>
+│&nbsp;&nbsp;&nbsp;└── <span class="file">tone-of-voice.md</span><br>
+├── ikea/<br>
+│&nbsp;&nbsp;&nbsp;└── <span class="file">BACKLOG.md</span><br>
+└── my-first-project/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;└── <span class="file">BACKLOG.md</span>
+  </div>
+  <div class="right-title panel">Always loaded (shared)</div>
+  <div class="rows panel">
+    <div class="rowitem"><div class="path">CLAUDE.md</div><div class="desc">agent identity</div></div>
+    <div class="rowitem"><div class="path">.claude/memory/MEMORY.md</div><div class="desc">hot cache</div></div>
+    <div class="rowitem"><div class="path">knowledge/concepts/</div><div class="desc">wiki</div></div>
+    <div class="rowitem"><div class="path">.claude/rules/</div><div class="desc">constraints — apply across every project</div></div>
+  </div>
+  <div class="footer">Per-project = <b>projects/&lt;name&gt;/</b>. Shared = everything else.</div>
+</div>
+</body>
+</html>

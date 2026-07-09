@@ -1,0 +1,60 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..900&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{ --bg:#17150F; --text:#F1ECDF; --muted:#9C9480; --faint:#55503E; --accent:#CFEF4A; --ember:#E08A4A; }
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:1376px;height:768px;background:var(--bg);overflow:hidden;}
+body{font-family:'Hanken Grotesk',sans-serif;color:var(--text);position:relative;}
+.art{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+.grain{position:absolute;inset:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.83' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");mix-blend-mode:overlay;opacity:0.08;pointer-events:none;z-index:50;}
+.stage{position:relative;z-index:5;width:100%;height:100%;}
+h1{position:absolute;top:34px;left:64px;font-family:'Fraunces',serif;font-weight:620;font-variation-settings:'SOFT' 15,'WONK' 0;font-size:50px;color:var(--text);}
+.sub{position:absolute;top:100px;left:64px;font-size:20px;color:var(--muted);}
+.col{position:absolute;top:158px;width:250px;background:rgba(23,21,15,0.6);border-radius:14px;padding:14px 16px;}
+.c1{left:100px;}
+.c2{left:425px;}
+.c3{left:750px;}
+.c4{left:1075px;}
+.col .kicker{font-family:'JetBrains Mono',monospace;font-size:19px;letter-spacing:0.1em;text-transform:uppercase;font-weight:700;margin-bottom:8px;}
+.c1 .kicker{color:var(--accent);}
+.c2 .kicker,.c3 .kicker,.c4 .kicker{color:var(--text);}
+.col .path{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--faint);margin-bottom:10px;}
+.col .desc{font-size:15px;line-height:1.4;color:var(--muted);}
+.footer{position:absolute;bottom:20px;left:0;right:0;text-align:center;font-size:16px;color:var(--muted);}
+</style>
+</head>
+<body>
+<img class="art" src="03-art.png">
+<div class="grain"></div>
+<div class="stage">
+  <h1>Memory layers</h1>
+  <div class="sub">Four places memory lives. Agent writes all of them.</div>
+  <div class="col c1">
+    <div class="kicker">Hot cache</div>
+    <div class="path">.claude/memory/MEMORY.md</div>
+    <div class="desc">Date-tagged one-liners + a current-state header. Capped 180 lines.</div>
+  </div>
+  <div class="col c2">
+    <div class="kicker">Handoffs</div>
+    <div class="path">context/handoffs/*.md</div>
+    <div class="desc">One note per closed session — what happened, what's next.</div>
+  </div>
+  <div class="col c3">
+    <div class="kicker">Wiki</div>
+    <div class="path">knowledge/concepts/*.md</div>
+    <div class="desc">Facts + rationale, promoted from repeated patterns.</div>
+  </div>
+  <div class="col c4">
+    <div class="kicker">Rules</div>
+    <div class="path">.claude/rules/*.md</div>
+    <div class="desc">Always/never constraints. Mechanical, enforceable.</div>
+  </div>
+  <div class="footer">Promotion: pattern → article → rule. Always agent-written. Never user-edited.</div>
+</div>
+</body>
+</html>

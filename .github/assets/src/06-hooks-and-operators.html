@@ -1,0 +1,60 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..900&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{ --bg:#17150F; --text:#F1ECDF; --muted:#9C9480; --faint:#55503E; --accent:#CFEF4A; --ember:#E08A4A; }
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:1376px;height:768px;background:var(--bg);overflow:hidden;}
+body{font-family:'Hanken Grotesk',sans-serif;color:var(--text);position:relative;}
+.art{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+.grain{position:absolute;inset:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.83' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");mix-blend-mode:overlay;opacity:0.08;pointer-events:none;z-index:50;}
+.stage{position:relative;z-index:5;width:100%;height:100%;}
+.panel{background:rgba(23,21,15,0.62);border-radius:14px;padding:16px 22px;}
+h1{position:absolute;top:26px;left:64px;font-family:'Fraunces',serif;font-weight:620;font-variation-settings:'SOFT' 15,'WONK' 0;font-size:46px;color:var(--text);}
+.sub{position:absolute;top:88px;left:64px;font-size:18px;color:var(--muted);}
+.hooks{position:absolute;left:56px;top:140px;width:560px;}
+.hooks .kicker{font-family:'JetBrains Mono',monospace;font-size:17px;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);margin-bottom:12px;}
+.hookrow{font-size:14px;line-height:1.4;margin-bottom:10px;color:var(--muted);}
+.hookrow b{font-family:'JetBrains Mono',monospace;color:var(--text);font-weight:500;}
+.ops{position:absolute;right:56px;top:140px;width:520px;}
+.ops .kicker{font-family:'JetBrains Mono',monospace;font-size:17px;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);margin-bottom:12px;}
+.opbox{margin-bottom:14px;}
+.opbox .cmd{font-family:'JetBrains Mono',monospace;font-size:16px;color:var(--text);}
+.opbox .desc{font-size:13px;color:var(--muted);margin-top:2px;}
+.advanced{position:absolute;left:56px;right:56px;top:560px;}
+.advanced .kicker{font-family:'JetBrains Mono',monospace;font-size:14px;letter-spacing:0.08em;text-transform:uppercase;color:var(--ember);margin-bottom:8px;}
+.advanced .list{font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--muted);}
+.footer{position:absolute;bottom:24px;left:64px;right:64px;text-align:center;font-size:14px;color:var(--muted);}
+</style>
+</head>
+<body>
+<img class="art" src="06-art.png">
+<div class="grain"></div>
+<div class="stage">
+  <h1>Hooks &amp; operators</h1>
+  <div class="sub">Five silent guards. Two commands you type. Extras when you want them.</div>
+  <div class="hooks panel">
+    <div class="kicker">Hooks — run silently</div>
+    <div class="hookrow"><b>session-start.py</b> — injects handoff + memory stats, checks 3 caps + stale refs</div>
+    <div class="hookrow"><b>pre-compact.sh</b> — blocks compaction until memory saved and under cap</div>
+    <div class="hookrow"><b>periodic-save.sh</b> — save prompt every ~50 messages</div>
+    <div class="hookrow"><b>protect-tests.sh</b> — guards test files</div>
+    <div class="hookrow"><b>session-end.sh</b> — timestamps the close</div>
+  </div>
+  <div class="ops panel">
+    <div class="kicker">Operators — you type them</div>
+    <div class="opbox"><div class="cmd">/close-session</div><div class="desc">audit · promote · handoff</div></div>
+    <div class="opbox"><div class="cmd">/tour</div><div class="desc">guided walkthrough</div></div>
+  </div>
+  <div class="advanced panel">
+    <div class="kicker">.kit/advanced/ — opt-in</div>
+    <div class="list">/memory-usage · /memory-lint · /memory-query · daily-journal layer (/close-day)</div>
+  </div>
+  <div class="footer">Plain text files only. No databases. git checkout restores anything.</div>
+</div>
+</body>
+</html>
