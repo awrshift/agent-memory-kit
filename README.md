@@ -4,12 +4,9 @@
 
 **Your Claude remembers everything. Every client, every brief, every decision. Across sessions. Zero setup.**
 
-[![Version](https://img.shields.io/github/v/release/awrshift/claude-memory-kit?label=version&color=CFEF4A)](https://github.com/awrshift/claude-memory-kit/releases)
-[![License: MIT](https://img.shields.io/badge/License-MIT-55503E?labelColor=55503E&color=55503E)](LICENSE)
-[![Claude Code](https://img.shields.io/badge/Claude_Code-compatible-CFEF4A)](https://docs.anthropic.com/en/docs/claude-code/overview)
-
-> *"I wake up already knowing where we left off."* — the agent this kit builds.
-> Read [its day](https://awrshift.com).
+[![Version](https://img.shields.io/github/v/release/awrshift/claude-memory-kit?label=version&color=brightgreen)](https://github.com/awrshift/claude-memory-kit/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Claude Code](https://img.shields.io/badge/Claude_Code-compatible-6366f1)](https://docs.anthropic.com/en/docs/claude-code/overview)
 
 ## The problem
 
@@ -56,20 +53,20 @@ That's it. Claude sets itself up and asks a couple of questions (your name, what
 
 Three steps. That's the entire workflow:
 
-### 1. Open a session — Claude wakes up already knowing where you left off
+### 1. Open a session
 Claude auto-loads context: the **handoff** (the note the previous session left), memory health
 stats, your projects, the knowledge index. You do nothing — you just see "here's where we left
 off" and continue.
 
-### 2. Work as usual — the habits run without you asking
+### 2. Work as usual
 Talk to Claude. Write copy. Do research. Lock the tone. When something worth keeping comes up,
 Claude saves it as a dated one-liner and tells you "saved". Safety hooks run silently — they
 prompt a save every ~50 messages and physically block context compaction until state is written.
 
-### 3. Close the session — the note to tomorrow's you
+### 3. Close the session
 Say `/close-session`. Claude **doesn't just** dump logs — it audits: "noticed you rejected
 em-dashes on three different dates — make it a tone-of-voice rule?" You say "yes", it writes.
-Then it leaves a note for tomorrow-you. **Tomorrow's session opens with that note
+Then it leaves a handoff note for tomorrow-you. **Tomorrow's session opens with that note
 already loaded.**
 
 ---
@@ -80,12 +77,12 @@ already loaded.**
 
 Four places, each answering a different question. Claude writes all of them — you only talk.
 
-| Layer | Site calls it | Answers | Written |
-|---|---|---|---|
-| `.claude/memory/MEMORY.md` | hot memory | "what patterns repeat" + "where things stand" | while you talk |
-| `context/handoffs/*.md` | the note to tomorrow's me | "what happened, session by session" | at `/close-session` |
-| `knowledge/concepts/*.md` | cold memory | "facts and rationale by topic" | after your "yes" |
-| `.claude/rules/*.md` | habits | "what must always / never happen" | after months of stable pattern |
+| Layer | Answers | Written |
+|---|---|---|
+| `.claude/memory/MEMORY.md` | "what patterns repeat" + "where things stand" | while you talk |
+| `context/handoffs/*.md` | "what happened, session by session" | at `/close-session` |
+| `knowledge/concepts/*.md` | "facts and rationale by topic" | after your "yes" |
+| `.claude/rules/*.md` | "what must always / never happen" | after months of stable pattern |
 
 **A pattern's journey:** noticed in conversation → saved as a dated line in MEMORY →
 repeats on 3+ dates → Claude proposes promotion → your "yes" → becomes a knowledge article or
