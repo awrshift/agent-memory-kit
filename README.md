@@ -22,6 +22,10 @@ The first 10 minutes of every session go to re-explaining what Claude **already 
 
 **Memory Kit fixes this. Free. Runs on top of your Claude Pro or Max subscription.**
 
+Built for **automators and consultants running many clients**: one clone of the kit per client
+or vertical — each with its own accumulated memory, all with the same working discipline.
+([The story](#origin): 1000+ sessions, 12 months in production, one operator.)
+
 ## Quick start
 
 ```bash
@@ -270,6 +274,8 @@ and prototypes (rough OK, days-to-weeks lifetime, distill on close, then delete)
 ---
 
 ## Origin
+
+![](.github/assets/08-one-operator-many-clones.png)
 
 This is not a template written in an afternoon — it's an architecture distilled from
 **1000+ real sessions over 12 months of continuous daily Claude Code work**, by one operator,
