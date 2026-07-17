@@ -86,4 +86,4 @@ See [.kit/ARCHITECTURE.md](.kit/ARCHITECTURE.md) for full details and [CLAUDE.md
 
 ## Built from production use
 
-Iteration on 800+ real sessions across 8+ projects. Every component earns its place; `experiences/`, background-detection scripts, generic role-guidance seeds — and, in v5, the daily-chronicle default — didn't survive review.
+Distilled from 1000+ real sessions over 12 months of continuous daily Claude Code work by one operator across many verticals (marketing, sales, lead generation, business analysis, R&D, production code with backend/frontend engineers) — the same agent architecture cloned per vertical. Every component earns its place; `experiences/`, background-detection scripts, generic role-guidance seeds — and, in v5, the daily-chronicle default — didn't survive review.

@@ -271,11 +271,20 @@ and prototypes (rough OK, days-to-weeks lifetime, distill on close, then delete)
 
 ## Origin
 
-Ideas from [Andrej Karpathy](https://karpathy.ai/) and [Cole Medin](https://github.com/coleam00).
-Rebuilt around Anthropic-native Claude Code primitives.
+This is not a template written in an afternoon — it's an architecture distilled from
+**1000+ real sessions over 12 months of continuous daily Claude Code work**, by one operator,
+across very different verticals: marketing, sales, lead generation, business analysis,
+research & development, and shipping production code side-by-side with backend and frontend
+engineers.
 
-800+ real sessions across 8+ projects. v5 is what survived all the iterations — including the
-parts we had to retire because they rotted in our own production use.
+One person. One agent architecture. Cloned per vertical — each clone accumulating its own
+memory, rules, and knowledge base while the working discipline stays the same. That's exactly
+who it fits best: **automators and consultants running many clients** — spin up a clone per
+client, and memory keeps every engagement scoped, accumulated, and instantly resumable.
+
+Everything here survived that year of production use — including the scars: the parts that
+quietly rotted (the daily chronicle, the rolling status file) were retired, and what remains
+is what kept earning its place.
 
 ## Help
 
