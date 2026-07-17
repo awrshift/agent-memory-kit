@@ -2,6 +2,7 @@
 
 # Claude Memory Kit
 
+**The starter kit for Claude Code — persistent memory edition.**
 **Your Claude remembers everything. Every client, every brief, every decision. Across sessions. Zero setup.**
 
 [![Version](https://img.shields.io/github/v/release/awrshift/claude-memory-kit?label=version&color=CFEF4A)](https://github.com/awrshift/claude-memory-kit/releases)
@@ -132,8 +133,10 @@ Say "we're working on Nestlé" — Claude unloads other clients and loads that s
 
 Five hooks run silently — they make state survive compaction and crashes, and they watch the
 memory caps. Two slash operators give you direct control: `/close-session` (the end-of-session
-ritual) and `/tour`. Power-user extras (search, hygiene, usage stats, and an optional day-by-day
-journal layer with `/close-day`) sit in `.kit/advanced/` for when you want them.
+ritual) and `/tour`. Power-user extras sit in `.kit/advanced/` for when you want them: hygiene
+and usage-stats commands, an optional day-by-day journal layer (`/close-day`), and an
+**orchestration layer** for building with subagents (executor/recon/idea-validator agents,
+`/session-review`, `/second-opinion`).
 
 Everything in plain text files. No databases. No external services. `git checkout` restores anything.
 
@@ -161,8 +164,11 @@ probably already have). No additional cost.
 <details>
 <summary><b>Is my data private?</b></summary>
 
-Yes. Everything is stored on your computer in plain text files. Nothing leaves. Handoffs and
-memory are gitignored by default, so they stay private even if you push the repo.
+Yes. Everything is stored on your computer in plain text files. Nothing leaves. Your personal
+layers — `MEMORY.md` and the session handoffs — are gitignored by default, so they stay private
+even if you push the repo (the kit creates your `MEMORY.md` from a template on first run).
+`knowledge/` articles and `.claude/rules/` ARE tracked — they're your curated wiki, meant to
+live in the repo; keep the repo private (or prune them) before publishing it anywhere.
 
 </details>
 
@@ -185,7 +191,11 @@ get promoted to permanent knowledge and the handoff note gets written.
 <details>
 <summary><b>What if I accidentally break a memory file?</b></summary>
 
-Everything is in git. `git checkout .claude/memory/` reverts in a second.
+The kit's tracked files revert with one `git checkout`. Your private layers (`MEMORY.md`,
+handoffs) are gitignored, so git can't restore those — but the hooks checkpoint them
+continuously, and if `MEMORY.md` ever disappears the session-start hook recreates it from the
+template. If you want your private memory versioned too, remove those two lines from
+`.gitignore` in your own (private) clone.
 
 </details>
 
@@ -223,8 +233,9 @@ knowledge/              ← Knowledge base (grows over time)
 context/handoffs/       ← One note per closed session (private by default)
 .claude/                ← Kit core: memory, hooks, skills, rules
 .kit/                   ← Docs about the kit ITSELF (architecture, changelog,
-                          contributor guide) + advanced/ (opt-in layers:
-                          power commands + the daily-journal layer)
+                          contributor guide) + advanced/ (opt-in layers: power
+                          commands, the daily-journal layer, the orchestration
+                          layer for multi-agent development)
 ```
 
 **`projects/` vs `experiments/`** — `projects/<name>/` for real client work (polished,

@@ -37,7 +37,7 @@ Any contribution that pushes users toward editing memory files manually — a sc
 
 | If your contribution is... | It lives in... |
 |---|---|
-| New default slash operator | `.claude/commands/<name>.md` (thin wrapper) + `.claude/skills/<name>/SKILL.md` (logic) |
+| New default slash operator | `.claude/skills/<name>/SKILL.md` (Claude Code auto-registers it; a thin `.claude/commands/<name>.md` wrapper is optional — the opt-in `.kit/advanced/` commands use that form) |
 | New opt-in command / fix to a script | `.kit/advanced/commands/<name>.md` + `.kit/advanced/scripts/<file>.py` |
 | New hook | `.claude/hooks/<name>.{sh,py}` + register in `.claude/settings.json` |
 | Doc fix | `README.md`, `CLAUDE.md`, or `.kit/*.md` |

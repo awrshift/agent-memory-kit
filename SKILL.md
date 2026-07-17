@@ -2,7 +2,7 @@
 name: claude-memory-kit
 description: "Persistent memory for Claude Code agents with an agent-audit-ritual architecture. User only talks; the agent captures, audits, proposes promotions, and writes. Memory lives in layers — a hot cache (MEMORY.md) held under three size caps, per-session handoffs (context/handoffs/), topical knowledge articles (knowledge/concepts/), and canonical rules (.claude/rules/) — plus multi-project isolation via projects/<name>/ and an experiments/ sandbox. /close-session runs the end-of-session audit ritual. Zero external dependencies."
 tags: [memory, context-management, productivity, claude-code, agent-memory, knowledge-base, multi-project]
-version: 5.0.0
+version: 5.1.0
 author: awrshift
 license: MIT
 repository: https://github.com/awrshift/claude-memory-kit
@@ -61,7 +61,13 @@ Opt-in (`.kit/advanced/`, copy into `.claude/` to enable):
 | `/close-day` | Day-by-day journal layer (`close-day-layer/`) — synthesizes a daily log, backfills missed days from git history |
 | `/memory-usage` | Read-only telemetry: hot files vs cold archival candidates |
 | `/memory-lint` | Structural hygiene (broken links, sparse articles, orphans) |
-| `/memory-query` | Natural-language search across the knowledge base |
+| `/session-review` | Orchestration layer — end-of-session adversarial review with independent reviewers |
+| `/second-opinion` | Orchestration layer — cross-check a high-stakes answer (Devil's Advocate · Boardroom · Round-Table) |
+
+The orchestration layer (`.kit/advanced/orchestration-layer/`) also ships three agents —
+`executor` (builds to a decided spec in a worktree), `recon` (read-only fact-gatherer),
+`idea-validator` (isolated adversarial critic) — and four rules (orchestrator fact-check ·
+parallel development · doc governance · decisions log) for multi-agent development.
 
 ## Architecture
 

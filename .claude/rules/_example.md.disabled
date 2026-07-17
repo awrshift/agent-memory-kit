@@ -39,16 +39,16 @@ If no mechanical check exists yet, note «informal — agent self-checks» and o
 
 - Concept article explaining the deeper rationale (`knowledge/concepts/<topic>.md`)
 - Other rules that interact with this one
-- Daily log where the triggering incident was captured (`daily/YYYY-MM-DD.md`)
+- Handoff where the triggering incident was captured (`context/handoffs/<topic>-YYYY-MM-DD.md`)
 
 ## Review history
 
-Date-tag every meaningful review. Agent updates `last-reviewed` in frontmatter on each `/close-day` confirmation that the rule still applies.
+Date-tag every meaningful review. Agent updates `last-reviewed` in frontmatter on each `/close-session` confirmation that the rule still applies.
 
 - [YYYY-MM-DD] created — promoted from MEMORY pattern observed on dates X, Y, Z
 - [YYYY-MM-DD] reviewed, still active
-- [YYYY-MM-DD] modified clause N — see `daily/YYYY-MM-DD.md` for context
+- [YYYY-MM-DD] modified clause N — see `context/handoffs/<topic>-YYYY-MM-DD.md` for context
 
 ---
 
-**Rule lifecycle:** Rules are the most stable layer. They promote from `MEMORY.md` patterns only after the same observation appears on 3+ distinct dates without contradiction across 6+ months, on agent proposal during `/close-day` with user verbal confirmation. Rules do NOT change often. When they do — date-tag the change.
+**Rule lifecycle:** Rules are the most stable layer. They promote from `MEMORY.md` patterns only after the same observation appears on 3+ distinct dates without contradiction across 6+ months, on agent proposal during `/close-session` with user verbal confirmation. Rules do NOT change often. When they do — date-tag the change.

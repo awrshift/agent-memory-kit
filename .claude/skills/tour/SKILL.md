@@ -34,7 +34,7 @@ List `projects/*/`. Say: "Each client or initiative gets a folder. BACKLOG.md fo
 Mention `.claude/hooks/` exists but don't deep-dive. Say: "Five safety hooks run silently. They make sure state survives — block compaction until saved, log session lifecycle, periodic state-save prompts."
 
 ### Stop 9 — Operators
-List the two default operators: `/close-session` and `/tour`. Say: "Type either to invoke. `/close-session` is the most important — the end-of-session ritual where I audit what happened, propose what should be remembered forever, and leave the handoff note for next time. There are power-user commands (search, hygiene, usage stats) and an optional daily-journal layer parked in `.kit/advanced/` — but you don't need them to start."
+List the two default operators: `/close-session` and `/tour`. Say: "Type either to invoke. `/close-session` is the most important — the end-of-session ritual where I audit what happened, propose what should be remembered forever, and leave the handoff note for next time. There are power-user extras parked in `.kit/advanced/` — hygiene and usage-stats commands, an optional daily-journal layer, and an orchestration layer for multi-agent development — but you don't need them to start."
 
 ## Closing
 

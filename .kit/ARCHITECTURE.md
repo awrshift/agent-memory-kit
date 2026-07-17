@@ -57,8 +57,9 @@ Every layer still maps to a native Claude Code concept documented at `code.claud
 ║  ── opt-in (.kit/advanced/, copy into .claude/ to enable) ── ║
 ║  /memory-usage    hot/cold telemetry (archival candidates)   ║
 ║  /memory-lint     structural health checks                   ║
-║  /memory-query    natural-language search                    ║
 ║  /close-day       day-by-day journal layer (close-day-layer) ║
+║  /session-review  adversarial close loop (orchestration)     ║
+║  /second-opinion  cross-check before commit (orchestration)  ║
 ╚══════════════════════════════════════════════════════════════╝
 ```
 
@@ -285,7 +286,9 @@ Switch command (in conversation): "we're working on client-a" → agent unloads 
 Five hooks wired in `.claude/settings.json`:
 
 - **session-start.py** — on every new Claude session, injects (in priority order) the
-  memory-discipline nudges that fire, session stats, the newest handoff, and the knowledge index
+  memory-discipline nudges that fire, session stats, the newest handoff, and the knowledge index.
+  On a fresh clone it also creates `.claude/memory/MEMORY.md` from `MEMORY-TEMPLATE.md`
+  (MEMORY.md is gitignored — personal data stays private even if the repo is pushed)
 - **protect-tests.sh** — PreToolUse(Edit|Write) guard for `tests/fixtures/canonical/` (if your project adds them)
 - **pre-compact.sh** — before context compaction, blocks until MEMORY.md is BOTH fresh AND under its line cap (a fresh-but-oversized file used to slip through)
 - **periodic-save.sh** — every ~50 exchanges, prompts the agent to save new patterns
@@ -317,9 +320,13 @@ Per-project folders can use any naming: `projects/client-nestle/`, `projects/nac
   because generic seeds were noise. The pattern still works if you add your own per-project.
 - **`/memory-audit` + `/memory-compile` operators** — removed in v4; the audit ritual writes
   `knowledge/concepts/` articles directly, on user "yes".
-- **`/memory-lint`, `/memory-query`, `/memory-usage` in the default surface** — moved to opt-in
+- **`/memory-lint` + `/memory-usage` in the default surface** — moved to opt-in
   `.kit/advanced/`. Default operators are just `/close-session` + `/tour`; the rest are power-user
-  tooling you copy in when your knowledge base has grown.
+  tooling you copy in when your knowledge base has grown. (`/memory-query` was removed entirely
+  in v5.1 — asking the agent in conversation covers it.)
+- **Subagent orchestration in the default surface** — the executor/recon/idea-validator agents,
+  `/session-review`, `/second-opinion`, and the fact-check/parallel/doc-governance rules live in
+  opt-in `.kit/advanced/orchestration-layer/`. Memory-only users never need them.
 - **`knowledge/connections/` + `knowledge/meetings/`** — extra subdirs that nobody filled; collapsed into single `knowledge/concepts/`.
 - **Custom trigger keyword tables in CLAUDE.md** — Claude auto-invokes skills from their `description`; no hand-maintained routing.
 - **`wisdom/`**, **`lessons/`** — synonyms of existing layers, kept out.
@@ -334,6 +341,6 @@ If you want the role-guidance pattern back for your project, create skills under
 - `README.md` — human-facing value prop (project root)
 - `CLAUDE.md` — agent-facing session workflow (project root)
 - `.claude/skills/close-session/SKILL.md` — the full end-of-session ritual
-- `.kit/advanced/README.md` — opt-in layers (power commands + the daily-chronicle layer)
+- `.kit/advanced/README.md` — opt-in layers (power commands + the daily-chronicle layer + the orchestration layer)
 - `.kit/CHANGELOG.md` — version history including the v5.0 lean-core pivot
 - Anthropic docs: `code.claude.com/docs/en/skills`, `code.claude.com/docs/en/memory`, `code.claude.com/docs/en/best-practices`

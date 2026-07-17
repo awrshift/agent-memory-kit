@@ -11,10 +11,8 @@ MECHANICAL_PATHS = [
     "*/MEMORY.md",
     "*/CLAUDE.md",
     "*/knowledge/index.md",
-    "*/knowledge/log.md",
     "*/.claude/rules/*.md",
     "*/.claude/CLAUDE.md",
-    "*/next-session-prompt.md",
 ]
 
 # Burst detection: more than BURST_THRESHOLD tool calls on the same (tool, target)

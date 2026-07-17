@@ -2,7 +2,7 @@
 #
 # SessionEnd hook — log session close timestamp to state/.
 #
-# v4: No auto-flush. End-of-day synthesis is done via `/close-day` skill
+# No auto-flush. Session-close synthesis is done via the `/close-session` skill
 # (user-invoked, agent-driven audit ritual). See ARCHITECTURE.md §"audit ritual".
 #
 # This hook only records that a session closed; it does not spawn any

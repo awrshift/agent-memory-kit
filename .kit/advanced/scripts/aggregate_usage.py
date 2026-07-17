@@ -8,7 +8,7 @@ skills, and tools you actually use.
 The point: it turns "what can I archive / what's dead weight?" from a guess into
 data. Files read a lot recently = hot (load-bearing). Files with zero reads in
 30 days = cold candidates (safe to archive or prune). The agent surfaces the cold
-list at /close-day and proposes archival — you say yes, the agent writes.
+list at /close-session and proposes archival — you say yes, the agent writes.
 
 Filters mechanical reads (auto-loaded paths like MEMORY.md / CLAUDE.md, which the
 session-start hook loads for you) and collapses bursts (multi-edit on a single
@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import fnmatch
 import json
+import re
 import sys
 from collections import Counter, defaultdict
 from datetime import datetime, timedelta, timezone
@@ -32,7 +33,9 @@ from pathlib import Path
 
 PROJECT_DIR = Path(__file__).resolve().parents[3]
 CLAUDE_PROJECTS_DIR = Path.home() / ".claude" / "projects"
-ENCODED_PATH = str(PROJECT_DIR).replace("/", "-")
+# Claude Code encodes the project path by replacing every non-alphanumeric
+# character (not just "/") with "-", e.g. /Users/x/my.app → -Users-x-my-app
+ENCODED_PATH = re.sub(r"[^A-Za-z0-9]", "-", str(PROJECT_DIR))
 SESSIONS_DIR = CLAUDE_PROJECTS_DIR / ENCODED_PATH
 OUTPUT = PROJECT_DIR / "knowledge" / "usage-frequency.md"
 
@@ -213,7 +216,7 @@ def render_report(stats: dict, now: datetime, total_events: int, after_burst: in
         f"**Filter:** mechanical-paths blacklist + burst (> {BURST_THRESHOLD} same key in {BURST_WINDOW_MINUTES} min → 1 use)",
         "",
         "> ⚠ **Frequency ≠ value.** A cold concept may be foundational, just rarely re-read.",
-        "> Use the cold list as ONE input to a `/close-day` archival proposal, not an auto-delete trigger.",
+        "> Use the cold list as ONE input to a `/close-session` archival proposal, not an auto-delete trigger.",
         "",
         "## Tool surface (all-time)",
         "",

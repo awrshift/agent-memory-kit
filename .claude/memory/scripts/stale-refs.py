@@ -1,20 +1,20 @@
 #!/usr/bin/env python3
 """Stale-reference check for the LIVE memory layer.
 
-Motivated by Continual Learning Bench (arXiv 2606.05661): the #1 empirical
-failure of LLM memory systems is *stale beliefs* — memory keeps asserting
-facts that have since changed, and that actively hurts vs. running fresh.
+The #1 empirical failure of LLM memory systems is *stale beliefs* — memory
+keeps asserting facts that have since changed, and that actively hurts vs.
+running fresh (see Continual Learning Bench, arXiv 2606.05661).
 
-This is the deterministic "detect & discard" half: scan the TRUSTED,
+This is the deterministic "detect" half: scan the TRUSTED,
 re-applied-every-session memory docs for file-path references that no longer
 resolve to a file (in this repo, a sibling repo, or $HOME). A no-resolve hit is
-a candidate for "verify → update → delete" — never auto-deleted (human-in-loop,
-same gate as /memory-audit).
+a candidate for "verify → update → delete" — never auto-deleted (the agent
+proposes, the user confirms — the same gate as every memory write).
 
-Deliberately NOT scanned by default: `docs/decisions-log.md` (append-only
-history — stale refs there are expected). `tmp/` paths are skipped everywhere.
+`tmp/` paths and template placeholders are skipped everywhere.
 
 Free: no LLM calls. Advisory: prints a report, exit 0.
+The session-start hook runs this automatically on the always-loaded layer.
 
 Usage:  python3 .claude/memory/scripts/stale-refs.py [extra/path.md ...]
 """
@@ -27,22 +27,17 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]          # <repo>/.claude/memory/scripts → <repo>
 HOME = Path.home()
 
-# Declared external dependencies the Manager legitimately references (CLAUDE.md § External
-# references + § Genes): the rnd-hub orchestrator, the DNA experiment, its backend-sandbox. A ref
-# resolving here is NOT stale. Checked via direct .exists() only (no walk — these are large repos).
-# If a file is later renamed in ALL of these, the ref still fails → genuine rot is still caught.
-_DNA_EXP = HOME / "dev/rnd-hub/experiments/site-dna-product-spec-20260505"
-EXTERNAL_ROOTS = [
-    HOME / "dev/rnd-hub",
-    _DNA_EXP,
-    _DNA_EXP / "backend-sandbox",
-]
+# Declared external dependencies your memory legitimately references (e.g. a
+# sibling repo your notes point into). A ref resolving under one of these is NOT
+# stale. Empty by default — add absolute Paths for your own setup, e.g.:
+#     EXTERNAL_ROOTS = [HOME / "dev/my-other-repo"]
+# Checked via direct .exists() only (no directory walk — cheap on large repos).
+EXTERNAL_ROOTS: list[Path] = []
 
 # Trusted, auto-loaded or memory-curated docs — where a stale ref does real harm.
 DEFAULT_TARGETS = [
     "CLAUDE.md",
     ".claude/memory/MEMORY.md",
-    "docs/STATUS.md",
     *[str(p.relative_to(ROOT)) for p in sorted((ROOT / "knowledge" / "concepts").glob("*.md"))],
     *[str(p.relative_to(ROOT)) for p in sorted((ROOT / ".claude" / "rules").glob("*.md"))],
 ]
@@ -98,7 +93,7 @@ def resolves(cand: str, doc_dir: Path, repo_set: set[str]) -> bool:
         return True
     if (ROOT.parent / cand).exists():                      # bare sibling repo
         return True
-    for ext in EXTERNAL_ROOTS:                             # declared external deps (rnd-hub / DNA experiment)
+    for ext in EXTERNAL_ROOTS:                             # user-declared external deps
         if (ext / cand).exists():
             return True
     return False

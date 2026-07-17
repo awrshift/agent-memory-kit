@@ -2,6 +2,69 @@
 
 All notable changes to Memory Kit are documented here. Breaking changes marked **BREAKING**.
 
+## [5.1.0] — 2026-07-17 — Full-tree audit: real memory privacy, the orchestration layer, v4-rudiment sweep
+
+A file-by-file audit (four independent review passes: doc/reality cross-check, code review,
+portability/privacy, skills consistency) plus one addition: the maintainers' multi-agent
+orchestration practice, generalized into an opt-in layer.
+
+### Added
+
+- **Orchestration layer** (`.kit/advanced/orchestration-layer/`, opt-in): three agents —
+  `executor` (builds to an already-decided spec in a git worktree, deviations REGISTERED),
+  `recon` (read-only fact-gatherer, file:line evidence), `idea-validator` (isolated adversarial
+  critic) — two skills — `/session-review` (end-of-session adversarial review loop) and
+  `/second-opinion` (Devil's Advocate · Boardroom Debate · Round-Table) — and four rules
+  (orchestrator fact-check: "a report is INPUT" · parallel development + worktree isolation ·
+  doc governance anti-drift · the lean decisions log). One `cp` set enables it.
+- **`MEMORY-TEMPLATE.md` + hook self-heal**: `session-start.py` creates `MEMORY.md` from the
+  template on first run, so the privacy change below costs zero setup.
+
+### Changed
+
+- **`MEMORY.md` is now actually gitignored.** The README claimed "handoffs and memory are
+  gitignored by default" — only handoffs were. Your hot memory (client names, decisions,
+  preferences) would have been committed and pushed with the repo. The FAQ now also states
+  plainly that `knowledge/` and rules ARE tracked by design.
+- **v4-rudiment sweep**: `_example.md.disabled` (the default rule scaffold) and the opt-in
+  `/close-day` skill still referenced the retired `/close-day`-as-default ritual, `daily/` as a
+  default folder, and the retired next-session-prompt (NSP) — a user following them would have
+  written files nothing reads. All repointed to `/close-session` + handoffs; the close-day
+  layer now genuinely composes with the v5 core.
+- **`periodic-save.sh` counted tool results as human messages** (both arrive as `role: user`),
+  firing the ~50-exchange checkpoint several times too often. Now counts real human turns only.
+- **`pre-compact.sh` fresh-gate now checks all three caps** (lines + bytes + longest line), not
+  just the line cap — matching the documented three-cap doctrine.
+- **`lint.py` wikilink checks fixed**: article existence and backlinks now resolve against
+  `knowledge/concepts/` (bare `[[slug]]` convention); previously every real concept would have
+  been flagged broken/orphan.
+- **`aggregate_usage.py` transcript-dir encoding fixed** for project paths containing dots.
+- **`stale-refs.py` cleaned of the maintainers' private-project paths** (leaked hardcoded
+  `EXTERNAL_ROOTS` + a foreign docstring); the mechanism stays, the list is now yours to fill.
+- **`settings.json` pre-approvals narrowed**: `rm`, `mv`, `chmod` no longer bypass the
+  permission prompt — the one guardrail a non-technical user relies on.
+- **`protect-tests.sh`**: JSON parsed with python3 (not grep/sed), and `.md`/`.txt` files are
+  never blocked (notes under a `tests/` folder are not code tests).
+- Repo weight: `.github/assets/social/` (~16 MB of unreferenced social-post graphics) removed
+  from the tree — every clone was paying for images no doc references.
+
+### Removed
+
+- **BREAKING: `/memory-query`** (`query.py` + its command) — by the kit's own admission it
+  rarely earned its subprocess; asking the agent in conversation covers it. `/memory-lint` and
+  `/memory-usage` stay.
+- `knowledge/log.md` — an orphaned append-only log nothing wrote to since `/memory-compile`
+  was deleted in v4.2 (exactly the "quietly rotting chronicle" v5 exists to prevent).
+- Dead constants in `config.py` left over from the retired v4 compile pipeline.
+
+### Migration from v5.0
+
+1. `git pull`. Your existing `.claude/memory/MEMORY.md` keeps working — it's simply untracked
+   now (run `git rm --cached .claude/memory/MEMORY.md` in your own clone if git still tracks it).
+2. If you enabled `/memory-query`, delete your copies (`.claude/commands/memory-query.md`,
+   `.claude/memory/scripts/query.py`) — or keep them; they still run, just unsupported.
+3. If you enabled the close-day layer, re-copy it (`cp -r .kit/advanced/close-day-layer/skills/close-day .claude/skills/close-day`) to drop the NSP writes.
+
 ## [5.0.0] — 2026-07-09 — Lean core: handoffs replace the daily chronicle; three memory caps; stale-refs detector
 
 This release rebuilds the default around what actually survived long-running production use
@@ -71,7 +134,7 @@ The three Python-backed memory commands were the heaviest, most developer-flavou
 
 ### Added
 
-- **`/memory-usage`** (`aggregate_usage.py` + `usage_config.py`) in `.kit/advanced/` — a read-only telemetry report parsed from your Claude Code session transcripts: **hot files** (used a lot, recently) vs **cold candidates** (zero reads in 30 days → safe to archive). Turns "what can I prune?" into data instead of a guess, and feeds the `/close-day` archival proposal. Stdlib-only, writes one report, never touches memory — invariant-safe. (Ported from the maintainers' production rnd-hub stack.)
+- **`/memory-usage`** (`aggregate_usage.py` + `usage_config.py`) in `.kit/advanced/` — a read-only telemetry report parsed from your Claude Code session transcripts: **hot files** (used a lot, recently) vs **cold candidates** (zero reads in 30 days → safe to archive). Turns "what can I prune?" into data instead of a guess, and feeds the `/close-day` archival proposal. Stdlib-only, writes one report, never touches memory — invariant-safe. (Ported from the maintainers' production stack.)
 - **`/close-day` auto-backfill of missed working days.** New Phase 0 (gap analysis): before synthesizing today, the skill finds working days (non-merge commits) in the last 14 days with no `daily/YYYY-MM-DD.md`, shows them, takes one batch approval, and reconstructs each from git history (commit messages + `[YYYY-MM-DD]` MEMORY tags). Backfilled days are marked as reconstructed and never invented; pauses for confirmation if >7 days are missing; skips silently when there's no git. Removes the "remember to run it every day" burden — one call catches up the layer.
 - **MEMORY.md overflow nudge** in `session-start.py` — when MEMORY.md exceeds 200 lines, the injected context now carries a one-line prompt to run `/close-day` (promote settled patterns, prune absorbed ones). Display-only; no automatic writes.
 

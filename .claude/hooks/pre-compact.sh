@@ -24,11 +24,15 @@ MEMORY_LINES=0
 MEMORY_AGE="unknown"
 if [ -f "$MEMORY_FILE" ]; then
     MEMORY_LINES=$(wc -l < "$MEMORY_FILE" | tr -d ' ')
+    MEMORY_BYTES=$(wc -c < "$MEMORY_FILE" | tr -d ' ')
+    MEMORY_MAX_LINE=$(awk '{ if (length($0) > m) m = length($0) } END { print m + 0 }' "$MEMORY_FILE")
     MEMORY_MTIME=$(stat -f '%m' "$MEMORY_FILE" 2>/dev/null || stat -c '%Y' "$MEMORY_FILE" 2>/dev/null)
     NOW=$(date +%s)
     if [ -n "$MEMORY_MTIME" ]; then
         AGE_SECONDS=$((NOW - MEMORY_MTIME))
-        if [ "$AGE_SECONDS" -lt 120 ] && [ "$MEMORY_LINES" -le 180 ]; then
+        # Fresh AND under all three caps (180 lines / 32 KB / 3000 chars-per-line)
+        if [ "$AGE_SECONDS" -lt 120 ] && [ "$MEMORY_LINES" -le 180 ] \
+           && [ "$MEMORY_BYTES" -le 32768 ] && [ "$MEMORY_MAX_LINE" -le 3000 ]; then
             echo "[$(date '+%H:%M:%S')] MEMORY.md fresh ($AGE_SECONDS sec ago, $MEMORY_LINES lines), allowing compact" >> "$STATE_DIR/hook.log"
             echo '{}'
             exit 0

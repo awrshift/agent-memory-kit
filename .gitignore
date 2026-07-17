@@ -26,6 +26,10 @@ node_modules/
 .claude/state/*
 !.claude/state/.gitkeep
 
+# Hot memory is personal — private by default (the session-start hook creates it
+# from MEMORY-TEMPLATE.md on first run; commit deliberately if you want it shared)
+.claude/memory/MEMORY.md
+
 # Daily session logs (private by default — user can opt in to commit)
 # handoffs are personal session notes — private by default
 context/handoffs/*.md

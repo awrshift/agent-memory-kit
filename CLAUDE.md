@@ -57,8 +57,9 @@ History (grep-on-demand, never re-loaded wholesale) ─────────�
 Operators (you invoke by user request) ────────────────────────
   /close-session    end-of-session ritual: audit → promote → handoff
   /tour             guided walkthrough
-  (opt-in, see .kit/advanced/: /memory-usage, /memory-lint, /memory-query,
-   and the daily-chronicle layer with /close-day)
+  (opt-in, see .kit/advanced/: /memory-usage, /memory-lint, the daily-chronicle
+   layer with /close-day, and the orchestration layer — executor/recon/idea-validator
+   agents + /session-review + /second-opinion)
 ```
 
 ## The memory discipline (three caps + header rule)
@@ -173,5 +174,5 @@ When a user forks this kit for their project, they may add project-local rules i
 - `experiments/README.md` — sandbox semantics + lifecycle
 - `README.md` — human-facing quick start
 - `.claude/skills/close-session/SKILL.md` — the full end-of-session ritual
-- `.kit/advanced/README.md` — opt-in layers: daily chronicle (/close-day), lint/query/usage tooling
+- `.kit/advanced/README.md` — opt-in layers: daily chronicle (/close-day), lint/usage tooling, the orchestration layer
 - `.kit/CHANGELOG.md` — what changed v3 → v4 → v5

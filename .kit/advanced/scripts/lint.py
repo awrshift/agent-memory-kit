@@ -34,10 +34,18 @@ def extract_wikilinks(content: str) -> list[str]:
     return re.findall(r"\[\[([^\]]+)\]\]", content)
 
 
+def normalize_link(link: str) -> str:
+    """Canonical form of a wikilink target: the bare article slug.
+
+    The kit's convention is bare [[slug]] for articles in knowledge/concepts/;
+    a [[concepts/slug]] form is accepted and normalized to the same slug.
+    """
+    return link.removeprefix("concepts/")
+
+
 def wiki_article_exists(link: str) -> bool:
-    """Check if a wikilinked article exists on disk."""
-    path = KNOWLEDGE_DIR / f"{link}.md"
-    return path.exists()
+    """Check if a wikilinked article exists in knowledge/concepts/."""
+    return (CONCEPTS_DIR / f"{normalize_link(link)}.md").exists()
 
 
 def get_word_count(path: Path) -> int:
@@ -76,30 +84,28 @@ def check_broken_links() -> list[dict]:
 def check_orphan_pages() -> list[dict]:
     """Articles with zero inbound links from other articles."""
     issues = []
-    # Build set of all link targets across all articles
-    all_targets: dict[str, int] = {}
-    for article in list_wiki_articles():
-        link_key = str(article.relative_to(KNOWLEDGE_DIR)).replace(".md", "").replace("\\", "/")
-        all_targets[link_key] = 0
+    # Build set of all link targets (bare slugs) across all articles
+    all_targets: dict[str, int] = {article.stem: 0 for article in list_wiki_articles()}
 
     for article in list_wiki_articles():
         content = article.read_text(encoding="utf-8")
         for link in extract_wikilinks(content):
-            if link in all_targets:
-                all_targets[link] += 1
+            slug = normalize_link(link)
+            if slug in all_targets and slug != article.stem:
+                all_targets[slug] += 1
+
+    index_content = ""
+    index_path = KNOWLEDGE_DIR / "index.md"
+    if index_path.exists():
+        index_content = index_path.read_text(encoding="utf-8")
 
     for target, count in all_targets.items():
         if count == 0:
-            # Check if referenced in index.md
-            index_content = ""
-            index_path = KNOWLEDGE_DIR / "index.md"
-            if index_path.exists():
-                index_content = index_path.read_text(encoding="utf-8")
-            if f"[[{target}]]" not in index_content:
+            if f"[[{target}]]" not in index_content and f"[[concepts/{target}]]" not in index_content:
                 issues.append({
                     "severity": "warning",
                     "check": "orphan_page",
-                    "file": f"{target}.md",
+                    "file": f"concepts/{target}.md",
                     "detail": f"No articles or index link to [[{target}]]",
                 })
 
@@ -112,12 +118,15 @@ def check_missing_backlinks() -> list[dict]:
     for article in list_wiki_articles():
         content = article.read_text(encoding="utf-8")
         rel = article.relative_to(KNOWLEDGE_DIR)
-        source_link = str(rel).replace(".md", "").replace("\\", "/")
+        source_link = article.stem
 
         for link in extract_wikilinks(content):
             if link.startswith("daily/"):
                 continue
-            target_path = KNOWLEDGE_DIR / f"{link}.md"
+            slug = normalize_link(link)
+            if slug == source_link:
+                continue
+            target_path = CONCEPTS_DIR / f"{slug}.md"
             if target_path.exists():
                 target_content = target_path.read_text(encoding="utf-8")
                 if f"[[{source_link}]]" not in target_content:
@@ -125,8 +134,8 @@ def check_missing_backlinks() -> list[dict]:
                         "severity": "suggestion",
                         "check": "missing_backlink",
                         "file": str(rel),
-                        "detail": f"[[{source_link}]] → [[{link}]] (no backlink)",
-                        "fix": {"target": link, "add_link": source_link},
+                        "detail": f"[[{source_link}]] → [[{slug}]] (no backlink)",
+                        "fix": {"target": slug, "add_link": source_link},
                     })
     return issues
 
@@ -174,7 +183,7 @@ def fix_missing_backlinks(issues: list[dict]) -> int:
             continue
 
         fix = issue["fix"]
-        target_path = KNOWLEDGE_DIR / f"{fix['target']}.md"
+        target_path = CONCEPTS_DIR / f"{fix['target']}.md"
         if not target_path.exists():
             continue
 

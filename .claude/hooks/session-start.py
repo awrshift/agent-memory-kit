@@ -27,6 +27,7 @@ from pathlib import Path
 PROJECT_DIR = Path(os.environ.get("CLAUDE_PROJECT_DIR", Path(__file__).resolve().parent.parent.parent))
 STATE_DIR = PROJECT_DIR / ".claude" / "state"
 MEMORY_FILE = PROJECT_DIR / ".claude" / "memory" / "MEMORY.md"
+MEMORY_TEMPLATE = PROJECT_DIR / ".claude" / "memory" / "MEMORY-TEMPLATE.md"
 INDEX_FILE = PROJECT_DIR / "knowledge" / "index.md"
 HANDOFFS_DIR = PROJECT_DIR / "context" / "handoffs"
 PROJECTS_DIR = PROJECT_DIR / "projects"
@@ -67,6 +68,17 @@ def human_age(days: int | None) -> str:
     if days == 1:
         return "1 day ago"
     return f"{days} days ago"
+
+
+def ensure_memory_file() -> None:
+    """MEMORY.md is gitignored (personal data stays private even if the repo is
+    pushed), so a fresh clone has none — create it from the committed template."""
+    if MEMORY_FILE.exists() or not MEMORY_TEMPLATE.exists():
+        return
+    try:
+        MEMORY_FILE.write_text(MEMORY_TEMPLATE.read_text(encoding="utf-8"), encoding="utf-8")
+    except OSError:
+        pass
 
 
 def maybe_caps_prompt() -> str:
@@ -166,8 +178,13 @@ def build_stats(session_num: int) -> str:
     lines = [f"=== SESSION START — {today} (hook run #{session_num}) ===", ""]
 
     lines.append("## Memory")
+    content = None
     if MEMORY_FILE.exists():
-        content = MEMORY_FILE.read_text(encoding="utf-8")
+        try:
+            content = MEMORY_FILE.read_text(encoding="utf-8")
+        except OSError:
+            content = None
+    if content is not None:
         mem_lines_list = content.splitlines()
         mem_lines = len(mem_lines_list)
         mem_bytes = len(content.encode("utf-8"))
@@ -242,6 +259,7 @@ def read_file_safe(path: Path) -> str:
 
 
 def build_context() -> str:
+    ensure_memory_file()
     session_num = bump_session_counter()
     parts: list[str] = []
     remaining = BUDGET

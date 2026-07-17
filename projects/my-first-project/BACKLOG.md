@@ -1,6 +1,6 @@
 # My First Project — Backlog
 
-**Last updated:** [agent fills in on first session]
+**Last updated:** [YYYY-MM-DD — agent fills in on first session]
 **Source of truth:** This file for all tasks, decisions, and status of this project
 
 > **Welcome.** This is your first project. The 5 tasks below are a guided onboarding for your first day. Do them in order. After T-005 you'll feel comfortable and can replace this whole file with your real project.
@@ -116,7 +116,7 @@ Ask the agent: "help me create a second project for client X".
 
 ## Completed
 
-> Completed tasks move here with date. Agent does this automatically.
+> Completed tasks move here, `[YYYY-MM-DD]`-prefixed. Agent does this automatically.
 
 ---
 

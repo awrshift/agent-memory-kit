@@ -11,12 +11,17 @@
 
 INPUT=$(cat)
 
-TOOL_NAME=$(echo "$INPUT" | grep -oE '"tool_name"\s*:\s*"[^"]*"' | head -1 | sed 's/.*: *"//;s/"//')
-FILE_PATH=$(echo "$INPUT" | grep -oE '"file_path"\s*:\s*"[^"]*"' | head -1 | sed 's/.*: *"//;s/"//')
+TOOL_NAME=$(echo "$INPUT" | python3 -c "import sys,json; print(json.load(sys.stdin).get('tool_name',''))" 2>/dev/null)
+FILE_PATH=$(echo "$INPUT" | python3 -c "import sys,json; print(json.load(sys.stdin).get('tool_input',{}).get('file_path',''))" 2>/dev/null)
 
 if [ -z "$FILE_PATH" ]; then
   exit 0
 fi
+
+# Notes and docs are not code tests — never block them, even under a tests/ dir
+case "$FILE_PATH" in
+  *.md|*.txt) exit 0 ;;
+esac
 
 # Allow creating new test files (Write tool only)
 if [ "$TOOL_NAME" = "Write" ] && [ ! -f "$FILE_PATH" ]; then

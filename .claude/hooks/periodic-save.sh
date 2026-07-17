@@ -39,11 +39,23 @@ with open(sys.argv[1]) as f:
         try:
             entry = json.loads(line)
             msg = entry.get('message', {})
-            if isinstance(msg, dict) and msg.get('role') == 'user':
-                content = msg.get('content', '')
-                if isinstance(content, str) and '<command-message>' in content:
+            if not (isinstance(msg, dict) and msg.get('role') == 'user'):
+                continue
+            content = msg.get('content', '')
+            # Real human turns carry string content (or text blocks). Tool
+            # results also arrive as role=user but as tool_result blocks —
+            # counting those would inflate the exchange count several-fold.
+            if isinstance(content, str):
+                if '<command-message>' in content:
                     continue
-                count += 1
+            elif isinstance(content, list):
+                if not any(isinstance(b, dict) and b.get('type') == 'text' for b in content):
+                    continue
+                if any(isinstance(b, dict) and b.get('type') == 'tool_result' for b in content):
+                    continue
+            else:
+                continue
+            count += 1
         except:
             pass
 print(count)
@@ -54,7 +66,10 @@ fi
 # Track last save point
 LAST_SAVE_FILE="$STATE_DIR/${SESSION_ID}_last_save"
 LAST_SAVE=0
-[ -f "$LAST_SAVE_FILE" ] && LAST_SAVE=$(cat "$LAST_SAVE_FILE")
+if [ -f "$LAST_SAVE_FILE" ]; then
+    LAST_SAVE=$(tr -cd '0-9' < "$LAST_SAVE_FILE")
+    [ -z "$LAST_SAVE" ] && LAST_SAVE=0
+fi
 
 SINCE_LAST=$((EXCHANGE_COUNT - LAST_SAVE))
 

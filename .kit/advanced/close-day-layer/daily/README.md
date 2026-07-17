@@ -10,7 +10,7 @@ During `/close-day` the agent distils these into topical articles in `knowledge/
 
 ## Privacy
 
-`daily/*.md` is gitignored by default — these are private working logs. Only `daily/.gitkeep`, `daily/README.md`, and `daily/TEMPLATE.md` are tracked. If you want to commit specific daily logs (e.g., for team handoff), opt in by adjusting `.gitignore` or `git add -f daily/<filename>.md`.
+`daily/*.md` is gitignored by default — these are private working logs. Only `daily/README.md` and `daily/TEMPLATE.md` are tracked. If you want to commit specific daily logs (e.g., for team handoff), opt in by adjusting `.gitignore` or `git add -f daily/<filename>.md`.
 
 ## Format
 

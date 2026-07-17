@@ -1,33 +1,19 @@
-"""Path constants for the knowledge base scripts."""
+"""Path constants for the knowledge base scripts (lint.py).
+
+Works from both locations: .kit/advanced/scripts/ (as shipped) and
+.claude/memory/scripts/ (after the documented enable copy) — both sit
+exactly four levels below the project root.
+"""
 
 from pathlib import Path
 from datetime import datetime, timezone
 
-# Root = project root (config.py lives at .claude/memory/scripts/)
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent.parent
 
-# Knowledge base — single subdir.
-# concepts/ = topical articles compiled from daily/*.md by /memory-compile.
-MEMORY_DIR = ROOT_DIR / ".claude" / "memory"
+# Knowledge base — single subdir of topical articles, written by the agent
+# during /close-session on the user's verbal "yes".
 KNOWLEDGE_DIR = ROOT_DIR / "knowledge"
 CONCEPTS_DIR = KNOWLEDGE_DIR / "concepts"
-INDEX_FILE = KNOWLEDGE_DIR / "index.md"
-LOG_FILE = KNOWLEDGE_DIR / "log.md"
-
-# Raw sources
-DAILY_DIR = ROOT_DIR / "daily"
-
-# Per-project scope
-PROJECTS_DIR = ROOT_DIR / "projects"
-
-# State tracking (runtime state in .claude/state/, gitignored)
-SCRIPTS_DIR = Path(__file__).resolve().parent
-STATE_DIR = ROOT_DIR / ".claude" / "state"
-STATE_FILE = STATE_DIR / "compile-state.json"
-
-
-def now_iso() -> str:
-    return datetime.now(timezone.utc).astimezone().isoformat(timespec="seconds")
 
 
 def today_iso() -> str:

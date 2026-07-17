@@ -66,7 +66,10 @@ Create `daily/YYYY-MM-DD.md` (today's date in ISO format). Include:
 
 Format: concise, structured markdown (follow `daily/TEMPLATE.md`). This file is the chronological record. Target 200-500 words.
 
-**For today**, use the live conversation as your source, and also update `context/next-session-prompt.md` (NSP) with the immediate-action handoff: "Tomorrow: continue X. Open questions: Y, Z."
+**For today**, use the live conversation as your source. The "where we left off" note itself is
+NOT this skill's job — `/close-session` owns the audit and writes the session handoff
+(`context/handoffs/<topic>-YYYY-MM-DD.md`). If the user closes the day without closing the
+session, suggest running `/close-session` right after.
 
 **For a backfilled (missed) day**, you don't have the conversation — reconstruct from what git remembers:
 
@@ -81,7 +84,7 @@ Then:
 - **Use commit messages verbatim as the narrative.** They were written that day; trust them.
 - **Don't invent.** If it's not in a commit message, a touched file, or a `[$DATE]` MEMORY entry — don't write it. A terse commit stays terse.
 - **Mark it as reconstructed.** Put one line at the top of the body: `> Backfilled on YYYY-MM-DD from git history — lower detail than a same-day log; the commits are the source of truth.`
-- **Don't touch NSP for past days** — only today's close-day updates the handoff.
+- **Don't write handoffs for past days** — backfill produces daily logs only; handoffs stay per-session.
 - **Never overwrite an existing daily.** If `daily/$DATE.md` already exists, skip it.
 
 ### Phase 2: AUDIT
@@ -148,7 +151,7 @@ If experiment patterns repeated across days but the experiment is still open —
 
 For each signal user approved verbally:
 
-1. **Write the patch.** Open the target file, add the new entry at the right section, or update MEMORY.md, or modify NSP — whatever was proposed.
+1. **Write the patch.** Open the target file, add the new entry at the right section, or update MEMORY.md — whatever was proposed.
 2. **Confirm briefly to user.** "Saved."
 3. **Commit mentally to what you DIDN'T approve.** If user said "not now", DON'T write it. Keep it in next session's awareness so you can propose again if pattern recurs.
 
@@ -164,7 +167,7 @@ For each signal user approved verbally:
 
 A "session" is **one Claude context window**. As you accumulate context (~300-500k tokens of 1M), you ask user to save state and start fresh. A day can have 3-10 sessions.
 
-When synthesizing today's daily log, include ALL sessions of the day, not just the current one. You may need to read prior NSP states or session-start hook snapshots to know what earlier sessions contained. If uncertain, ask user: "how many times did we restart today? What was in the morning session?".
+When synthesizing today's daily log, include ALL sessions of the day, not just the current one. You may need to read today's handoffs in `context/handoffs/` to know what earlier sessions contained. If uncertain, ask user: "how many times did we restart today? What was in the morning session?".
 
 ## Output format
 
@@ -179,7 +182,6 @@ Synthesizing today...
 [brief note: X sessions, projects Y, Z, key decisions]
 
 daily/2026-04-24.md written.
-NSP updated.
 
 Audit:
 
@@ -197,7 +199,7 @@ After user confirms each, execute patches and confirm briefly.
 
 ## Edge cases
 
-- **User says "cancel" or "not now" mid-ritual** — acknowledge, stop the ritual, nothing is lost. Today's daily + NSP is already saved. Audit candidates can be revisited next time.
+- **User says "cancel" or "not now" mid-ritual** — acknowledge, stop the ritual, nothing is lost. Today's daily is already saved. Audit candidates can be revisited next time.
 - **Nothing notable happened today** — the audit may surface zero candidates. That's fine. Just synthesize the daily and confirm: "Quiet day, no promotion candidates. Done."
 - **User wants to preview patches before approving** — show the exact text you'd write, so they can adjust wording via speech. "Was going to write: 'X'. Wording OK?".
 - **Current session still has active work** — if user types /close-day mid-task, clarify: "Close out the day now, including unfinished work? Or finish first?".

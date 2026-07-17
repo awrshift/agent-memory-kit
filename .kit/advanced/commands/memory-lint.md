@@ -22,5 +22,4 @@ Run 5 structural health checks (all free, no LLM calls):
 
 ## Related
 
-- `/memory-query` — natural-language search across the knowledge base
 - `/memory-usage` — hot/cold file report (what's safe to archive)
