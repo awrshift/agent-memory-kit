@@ -142,6 +142,26 @@ Everything in plain text files. No databases. No external services. `git checkou
 
 ---
 
+## Agent-orchestrated work (opt-in)
+
+![](.github/assets/07-agent-orchestration.png)
+
+When you use the kit to BUILD things — software, agent systems, research pipelines — there's a
+next level: your agent stops doing everything in one thread and starts **orchestrating agents**.
+The main session designs and decides; `executor` subagents build to a decided spec in isolated
+git worktrees; `recon` gathers facts read-only; `idea-validator` attacks the design from a fresh
+context. The integrator merges, re-runs the gates on the merged tree, and treats every subagent
+report as INPUT — never as a fact.
+
+Two skills close the loop: `/session-review` (an adversarial review of the session's work by
+independent reviewers before it sets) and `/second-opinion` (cross-check a high-stakes answer
+before committing to it).
+
+All of it is one `cp` set away: [`.kit/advanced/orchestration-layer/`](.kit/advanced/orchestration-layer/README.md).
+Distilled from hundreds of real multi-agent sessions in the maintainers' production repos.
+
+---
+
 ## FAQ
 
 <details>
