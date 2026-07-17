@@ -30,7 +30,7 @@ See [.kit/CHANGELOG.md](.kit/CHANGELOG.md) for full migration notes.
 ## Quick start
 
 ```bash
-git clone https://github.com/awrshift/claude-memory-kit.git my-project
+git clone --depth 1 https://github.com/awrshift/claude-memory-kit.git my-project
 cd my-project
 claude
 ```

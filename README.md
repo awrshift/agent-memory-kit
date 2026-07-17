@@ -29,10 +29,13 @@ or vertical — each with its own accumulated memory, all with the same working 
 ## Quick start
 
 ```bash
-git clone https://github.com/awrshift/claude-memory-kit.git my-projects
+git clone --depth 1 https://github.com/awrshift/claude-memory-kit.git my-projects
 cd my-projects
 claude
 ```
+
+> `--depth 1` skips the kit's own development history (~170 MB of old graphic revisions) —
+> your clone starts its own history from here anyway.
 
 That's it. Claude sets itself up and asks a couple of questions (your name, what you're working on).
 
