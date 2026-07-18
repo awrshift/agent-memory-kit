@@ -59,6 +59,16 @@ Then append this block to your `CLAUDE.md` (the agent reads it every session):
 - `rules/parallel-development.md` — fan-out defaults, worktree isolation, stop-conditions
 - `rules/doc-governance.md` — anti-drift: one SSOT per fact, grep-sweep on change, label-don't-bury
 - `rules/decisions-log.md` — a lean append-only ledger of numbered decisions (`D-001`, `D-002`…)
+- `rules/review-loop.md` — the diff review gate (automated review before every nontrivial
+  merge, escalated on risky paths) + the findings-class registry: confirmed finding classes
+  logged by class, promoted on the 3rd recurrence into the cheapest preventing layer
+- `patterns/capability-map-sweep.md` — a recon playbook for hand-rolled code that duplicates
+  installed dependencies (maps from installed typings as ground truth, finder pass, integrator
+  adjudication). Patterns are read-on-demand docs — no copy step needed.
 
 Each rule is generic — no project-specific gates baked in. Where a rule says "your gates",
 substitute your project's own (typecheck, lint, tests, build).
+
+Building a user-facing product on top of this layer? The **QA layer**
+([`../qa-layer/README.md`](../qa-layer/README.md)) adds multi-lens agent QA of the running app;
+it plugs its confirmed findings into the same `review-loop.md` registry.

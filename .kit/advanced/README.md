@@ -8,7 +8,8 @@ The default kit is deliberately tiny: `/close-session` (the end-of-session audit
 
 | Add-on | Where | What it does | Cost |
 |---|---|---|---|
-| **Orchestration layer** | `orchestration-layer/` → see its [README](orchestration-layer/README.md) | Multi-agent working mode for building things: executor + recon + idea-validator agents, `/session-review` + `/second-opinion` skills, and the fact-check / parallel-development / doc-governance / decisions-log rules. | Free (subagent tokens) |
+| **Orchestration layer** | `orchestration-layer/` → see its [README](orchestration-layer/README.md) | Multi-agent working mode for building things: executor + recon + idea-validator agents, `/session-review` + `/second-opinion` skills, and the fact-check / parallel-development / doc-governance / decisions-log / review-loop rules (+ the capability-map-sweep pattern). | Free (subagent tokens) |
+| **QA layer** | `qa-layer/` → see its [README](qa-layer/README.md) | Multi-lens agent QA of your RUNNING product: the `qa` lens agent + `/qa-sweep` skill + a protocol template (five lens briefs, findings contract, calibration ladder) + an isolated parallel Playwright MCP config. Requires the orchestration layer. | Free (subagent tokens; needs a runnable product) |
 | Daily-chronicle layer (`/close-day`) | `close-day-layer/` → see its [README](close-day-layer/README.md) | The v4 per-day journal (`daily/YYYY-MM-DD.md`) + the `/close-day` ritual (synthesis, git-history backfill of missed days) + the retired NSP template. Composes with the v5 core: `/close-day` writes the diary, `/close-session` still owns the audit + handoff. | Free, no LLM |
 | `/memory-usage` | `aggregate_usage.py` + `usage_config.py` | Reads your session transcripts and reports **hot files** (used a lot) vs **cold candidates** (0 reads in 30 days → safe to archive). Turns "what can I prune?" into data. | Free, read-only |
 | `/memory-lint` | `lint.py` | 5 structural health checks on `knowledge/` (broken `[[wikilinks]]`, orphan pages, missing backlinks, sparse articles, missing frontmatter). | Free, no LLM |
@@ -19,12 +20,13 @@ The default kit is deliberately tiny: `/close-session` (the end-of-session audit
 - **`/memory-usage`** is the most valuable of the three commands, but its signal is thin until you have weeks of sessions and a real knowledge base — so it's an add-on, not a day-1 default.
 - **`/memory-lint`** is wiki-gardening (broken links, backlinks). Useful for a large hand-linked base; noise for a casual user.
 - **The orchestration layer** is for people who BUILD with subagents (software, agent systems). Its invariants add process weight a memory-only user doesn't need.
+- **The QA layer** additionally assumes a RUNNING product with a web UI and an API, plus Playwright MCP servers in your `.mcp.json` — pure setup noise for anyone who isn't shipping an app.
 
 Removed entirely over the versions: `/memory-compile` (auto-folding daily logs was unreliable — the audit ritual writes `knowledge/concepts/` directly, on your verbal "yes") and `/memory-query` (v5.1 — it never earned its subprocess: just ask the agent "what do we know about X?" in conversation and it reads the index + concepts directly).
 
 ## How to enable
 
-**The orchestration layer** and **the daily-chronicle layer** each have their own one-`cp` enable step — see [`orchestration-layer/README.md`](orchestration-layer/README.md) and [`close-day-layer/README.md`](close-day-layer/README.md).
+**The orchestration layer**, **the QA layer**, and **the daily-chronicle layer** each have their own one-`cp` enable step — see [`orchestration-layer/README.md`](orchestration-layer/README.md), [`qa-layer/README.md`](qa-layer/README.md), and [`close-day-layer/README.md`](close-day-layer/README.md).
 
 For the two power-user commands, copy them and their scripts into the live `.claude/` tree, then restart Claude Code:
 

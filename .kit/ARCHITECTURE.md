@@ -60,6 +60,7 @@ Every layer still maps to a native Claude Code concept documented at `code.claud
 ║  /close-day       day-by-day journal layer (close-day-layer) ║
 ║  /session-review  adversarial close loop (orchestration)     ║
 ║  /second-opinion  cross-check before commit (orchestration)  ║
+║  /qa-sweep        multi-lens QA of the running app (qa)      ║
 ╚══════════════════════════════════════════════════════════════╝
 ```
 
@@ -325,8 +326,9 @@ Per-project folders can use any naming: `projects/client-nestle/`, `projects/nac
   tooling you copy in when your knowledge base has grown. (`/memory-query` was removed entirely
   in v5.1 — asking the agent in conversation covers it.)
 - **Subagent orchestration in the default surface** — the executor/recon/idea-validator agents,
-  `/session-review`, `/second-opinion`, and the fact-check/parallel/doc-governance rules live in
-  opt-in `.kit/advanced/orchestration-layer/`. Memory-only users never need them.
+  `/session-review`, `/second-opinion`, and the fact-check/parallel/doc-governance/review-loop
+  rules live in opt-in `.kit/advanced/orchestration-layer/`; the `qa` agent + `/qa-sweep` live
+  in opt-in `.kit/advanced/qa-layer/`. Memory-only users never need them.
 - **`knowledge/connections/` + `knowledge/meetings/`** — extra subdirs that nobody filled; collapsed into single `knowledge/concepts/`.
 - **Custom trigger keyword tables in CLAUDE.md** — Claude auto-invokes skills from their `description`; no hand-maintained routing.
 - **`wisdom/`**, **`lessons/`** — synonyms of existing layers, kept out.
@@ -341,6 +343,6 @@ If you want the role-guidance pattern back for your project, create skills under
 - `README.md` — human-facing value prop (project root)
 - `CLAUDE.md` — agent-facing session workflow (project root)
 - `.claude/skills/close-session/SKILL.md` — the full end-of-session ritual
-- `.kit/advanced/README.md` — opt-in layers (power commands + the daily-chronicle layer + the orchestration layer)
+- `.kit/advanced/README.md` — opt-in layers (power commands + the daily-chronicle layer + the orchestration layer + the QA layer)
 - `.kit/CHANGELOG.md` — version history including the v5.0 lean-core pivot
 - Anthropic docs: `code.claude.com/docs/en/skills`, `code.claude.com/docs/en/memory`, `code.claude.com/docs/en/best-practices`

@@ -2,6 +2,54 @@
 
 All notable changes to Memory Kit are documented here. Breaking changes marked **BREAKING**.
 
+## [5.2.0] — 2026-07-18 — The QA layer + the self-improving review loop
+
+The maintainers' agent-QA practice, generalized: agents now probe the RUNNING product from the
+user's side, and the review process learns from its own confirmed findings. Everything here was
+battle-tested first (four calibrated QA sweeps including a seeded-defect recall run, a dozen
+registry rows, and one rule promotion in the first two days of production use).
+
+### Added
+
+- **QA layer** (`.kit/advanced/qa-layer/`, opt-in; requires the orchestration layer):
+  - `agents/qa.md` — a lens agent that probes the live app through ONE assigned adversarial
+    lens (user-flow · edge-state · honesty · contract · ux-critique) and returns a structured
+    findings table with repro steps + evidence. Observation-only by default; mutations happen
+    only on a sacrificial seeded account the run brief explicitly grants.
+  - `skills/qa-sweep/` — `/qa-sweep`: preflight → pick lenses → spawn qa agents →
+    integrator-reproduces every P1/P2 before it becomes a ticket → run record.
+  - `PROTOCOL-TEMPLATE.md` — the protocol SSOT to copy into `docs/qa/README.md`: environment +
+    two-account policy, the five lens briefs, the findings-format contract, triage, and a
+    three-step calibration ladder (per-run precision metrics → a held-out seeded-defect suite
+    kept OUTSIDE the repo → brief edits kept only on a measured recall delta). Includes the
+    optional Playwright regression-spec loop (`init-agents`), with the healer subordinated to
+    "a failing test means the CODE is wrong".
+  - `mcp.json.example` — two isolated Playwright MCP servers (`--isolated` +
+    `--caps=testing,devtools` + `--test-id-attribute`): concurrent browser lenses with zero
+    shared-profile collision, and `browser_verify_*` machine oracles as finding evidence.
+- **`rules/review-loop.md`** (orchestration layer) — the two-part feedback loop: (1) every
+  nontrivial diff passes an automated code review before the integrator merges (medium effort;
+  high on write-path / auth / paid-spend / determinism diffs); (2) every CONFIRMED finding
+  appends a class row to `context/review-findings.md`, a class's 3rd recurrence promotes it
+  into the cheapest preventing layer (deterministic check → agent-definition line → review-brief
+  line → knowledge entry), and promoted rules that stop firing are dropped.
+- **`patterns/capability-map-sweep.md`** (orchestration layer) — a recon playbook for the
+  "the library already does this" defect class: capability maps built from INSTALLED typings
+  (never model memory), a finder pass, integrator adjudication that expects refutations in
+  both directions.
+
+### Upgrading an existing orchestration-layer install (works agent-driven)
+
+Point your project's agent at this changelog and say "adopt the v5.2 additions". Mechanically:
+
+1. `cp .kit/advanced/orchestration-layer/rules/review-loop.md .claude/rules/` and create an
+   empty `context/review-findings.md` from the table template inside it.
+2. Building a user-facing product? Enable the QA layer per
+   [`qa-layer/README.md`](advanced/qa-layer/README.md) — copy the agent + skill, instantiate
+   `PROTOCOL-TEMPLATE.md` as `docs/qa/README.md` with your URLs/accounts/journeys, merge
+   `mcp.json.example` into `.mcp.json`, gitignore `.claude/qa/`, restart Claude Code.
+3. Nothing else changes; existing agents, skills, and rules are untouched.
+
 ## [5.1.0] — 2026-07-17 — Full-tree audit: real memory privacy, the orchestration layer, v4-rudiment sweep
 
 A file-by-file audit (four independent review passes: doc/reality cross-check, code review,

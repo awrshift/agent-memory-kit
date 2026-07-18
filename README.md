@@ -141,9 +141,10 @@ Say "we're working on Nestlé" — Claude unloads other clients and loads that s
 Five hooks run silently — they make state survive compaction and crashes, and they watch the
 memory caps. Two slash operators give you direct control: `/close-session` (the end-of-session
 ritual) and `/tour`. Power-user extras sit in `.kit/advanced/` for when you want them: hygiene
-and usage-stats commands, an optional day-by-day journal layer (`/close-day`), and an
+and usage-stats commands, an optional day-by-day journal layer (`/close-day`), an
 **orchestration layer** for building with subagents (executor/recon/idea-validator agents,
-`/session-review`, `/second-opinion`).
+`/session-review`, `/second-opinion`), and a **QA layer** that turns agents on your running
+product (`/qa-sweep`, five adversarial lenses over parallel isolated browsers).
 
 Everything in plain text files. No databases. No external services. `git checkout` restores anything.
 
@@ -164,7 +165,23 @@ Two skills close the loop: `/session-review` (an adversarial review of the sessi
 independent reviewers before it sets) and `/second-opinion` (cross-check a high-stakes answer
 before committing to it).
 
-All of it is one `cp` set away: [`.kit/advanced/orchestration-layer/`](.kit/advanced/orchestration-layer/README.md).
+**v5.2 makes the loop self-improving.** Every nontrivial diff passes an automated code review
+before merge; every *confirmed* finding is logged by class, and a class that recurs three times
+is promoted into the cheapest layer that prevents it forever — a lint rule, a line in an agent
+definition, a review-brief line. Rules that stop firing get dropped. Your review process
+compounds instead of repeating itself.
+
+![](.github/assets/09-agent-qa-loop.png)
+
+And when what you're building is a user-facing product, the **QA layer** puts agents on the
+other side of the screen: `/qa-sweep` fans out `qa` subagents over the *running* app — five
+adversarial lenses (user-flow · edge-state · honesty · contract · ux-critique), parallel
+isolated browsers, findings that must carry machine-checkable evidence — and nothing becomes a
+ticket until the integrator reproduces it. A calibration ladder (seeded-defect recall runs,
+brief edits kept only on a measured delta) keeps the lenses sharp.
+
+All of it is one `cp` set away: [`.kit/advanced/orchestration-layer/`](.kit/advanced/orchestration-layer/README.md)
+and [`.kit/advanced/qa-layer/`](.kit/advanced/qa-layer/README.md).
 Distilled from hundreds of real multi-agent sessions in the maintainers' production repos.
 
 ---

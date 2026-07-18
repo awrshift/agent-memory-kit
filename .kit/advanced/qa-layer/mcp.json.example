@@ -1,0 +1,23 @@
+{
+  "//": "Merge into your project's .mcp.json. Two isolated Playwright MCP servers = two browser lenses running concurrently with zero shared-profile collision. --caps=testing adds the browser_verify_* machine oracles (evidence for findings); --caps=devtools adds tracing/video. Set --test-id-attribute to your app's testid attribute. Need a third concurrent browser lens? Add playwright-qa-c the same way. Pin the @playwright/mcp version you verified.",
+  "mcpServers": {
+    "playwright-qa": {
+      "command": "npx",
+      "args": [
+        "@playwright/mcp@0.0.75",
+        "--caps=testing,devtools",
+        "--test-id-attribute=data-testid",
+        "--isolated"
+      ]
+    },
+    "playwright-qa-b": {
+      "command": "npx",
+      "args": [
+        "@playwright/mcp@0.0.75",
+        "--caps=testing,devtools",
+        "--test-id-attribute=data-testid",
+        "--isolated"
+      ]
+    }
+  }
+}
