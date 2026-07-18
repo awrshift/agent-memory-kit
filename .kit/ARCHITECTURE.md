@@ -21,7 +21,7 @@ Every layer still maps to a native Claude Code concept documented at `code.claud
 ║  1. Memory-discipline nudges — ONLY when they fire           ║
 ║       (the three MEMORY.md caps + stale file references)     ║
 ║  2. Session stats — MEMORY.md size vs caps,                  ║
-║       projects/experiments overview, git state              ║
+║       projects/experiments overview, git state               ║
 ║  3. context/handoffs/<newest>.md — "where we left off"       ║
 ║  4. knowledge/index.md — the catalog of deep memory          ║
 ╠══════════════════════════════════════════════════════════════╣

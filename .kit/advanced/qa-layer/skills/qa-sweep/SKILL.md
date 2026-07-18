@@ -18,7 +18,9 @@ description: >
 Read `docs/qa/README.md` FIRST (the protocol SSOT: environment rules · the five lens briefs ·
 findings format · triage) — the lens briefs in agent prompts come verbatim from there, and the
 account/mutation policy it sets is a hard rail, not advice. If that file doesn't exist yet,
-create it from the layer's `PROTOCOL-TEMPLATE.md` and fill the placeholders before sweeping.
+create it from the layer's protocol template (`.kit/advanced/qa-layer/PROTOCOL-TEMPLATE.md` in
+the kit repo — copy it from there if this project only adopted the layer's `.claude/` files)
+and fill the placeholders before sweeping.
 
 ## Steps
 1. **Preflight (integrator, by hand):** bring up the stack the protocol names (app · API ·
