@@ -29,9 +29,8 @@ nothing.
 |---|---|
 | `close-session` | the end-of-session ritual: capture → audit for 3+-date repetition → promote on a yes → handoff |
 | `memory-audit` | cap-trip surgery on the hot cache, by an approved move plan |
-| `system-audit` | the periodic seven-lens sweep of the whole system, every finding evidence-backed |
+| `system-audit` | the periodic seven-lens sweep of the whole system, every finding evidence-backed — including the transcript profiler that answers "did this layer ever fire" |
 | `setup` · `tour` | adopt the kit here · walk through it on your own files |
-| `memory-lint` · `memory-usage` | knowledge-base hygiene · hot-vs-cold telemetry |
 | `session-review` · `second-opinion` | adversarial review of a session · of one high-stakes decision |
 | `qa-sweep` | multi-lens agent QA of a running product (needs `docs/qa/README.md`, template in `reference/`) |
 

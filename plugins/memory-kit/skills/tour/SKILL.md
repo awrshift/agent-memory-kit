@@ -36,7 +36,7 @@ List `projects/*/`. Say: "Each client or initiative gets a folder. BACKLOG.md fo
 Don't deep-dive — the hooks ship inside the plugin, there is nothing in this repo to maintain. Say: "Four hooks run silently: one injects your memory and the working rules at every session start, one blocks compaction until state is saved, one asks before an existing test gets edited, one logs the close."
 
 ### Stop 9 — Operators
-List what this plugin adds: `/memory-kit:close-session`, `/memory-kit:tour`, `/memory-kit:setup`, plus `/memory-kit:memory-lint` and `/memory-kit:memory-usage` for later. Say: "`/memory-kit:close-session` is the one that matters — the end-of-session ritual where I audit what happened, propose what's worth remembering forever, and leave the handoff note for next time. Two sibling plugins exist when you need them: `memory-kit-orchestration` for building with subagents, `memory-kit-qa` for probing a running product. You don't need either to start."
+List what this plugin adds: `/memory-kit:close-session`, `/memory-kit:tour`, `/memory-kit:setup`, `/memory-kit:memory-audit`, `/memory-kit:system-audit`. Say: "`/memory-kit:close-session` is the one that matters — the end-of-session ritual where I audit what happened, propose what's worth remembering forever, and leave the handoff note for next time. `memory-audit` is the surgery when the cache outgrows its caps; `system-audit` is the periodic look at whether this whole system still earns its place. There are three more for when you build with subagents — `session-review`, `second-opinion`, `qa-sweep` — and you don't need them to start."
 
 ## Closing
 

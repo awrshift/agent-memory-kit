@@ -168,7 +168,7 @@ Say "we're working on Nestlé" — Claude unloads the other clients and loads th
 
 ## Hooks and skills
 
-![](.github/assets/06-hooks-and-skills.png)
+![](.github/assets/06-hooks-skills.png)
 
 Four hooks run silently, all inside the plugin — nothing to maintain in your repo. One injects
 your memory and the working agreement at every session start (and after each compaction), one
@@ -183,7 +183,6 @@ Everything else is a skill, and skills cost nothing until you invoke them:
 | `/memory-kit:memory-audit` | the cap-trip surgery: what leaves the hot cache, by approved plan |
 | `/memory-kit:system-audit` | the periodic seven-lens sweep of the whole system, evidence-backed |
 | `/memory-kit:setup` · `:tour` | adopt the kit here · walk through it on your own files |
-| `/memory-kit:memory-lint` · `:memory-usage` | knowledge-base hygiene · hot-vs-cold telemetry |
 | `/memory-kit:session-review` · `:second-opinion` | adversarial review of a session · of one decision |
 | `/memory-kit:qa-sweep` | multi-lens agent QA of a running product |
 
@@ -338,13 +337,11 @@ plugins/memory-kit/
   context/identity.md             ← the working agreement, injected every session
   hooks/                          ← session-start · pre-compact · protect-tests · session-end
   skills/                         ← close-session, memory-audit, system-audit, setup, tour,
-                                    memory-lint, memory-usage, session-review, second-opinion,
-                                    qa-sweep
+                                    session-review, second-opinion, qa-sweep
   agents/                         ← executor · recon · idea-validator · qa
   templates/                      ← what /memory-kit:setup scaffolds into YOUR repo
   reference/                      ← depth, read on demand (fact-check, parallel dev,
                                     doc governance, decisions log, review loop, QA protocol)
-  scripts/                        ← the lint / usage collectors
 docs/                             ← architecture · changelog · contributing
 ```
 

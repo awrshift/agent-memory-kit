@@ -37,7 +37,18 @@ bash "${CLAUDE_PLUGIN_ROOT}/skills/system-audit/scripts/collect.sh" > /tmp/syste
 (If this skill lives somewhere else on your machine, run `scripts/collect.sh` from this skill's
 own directory — it's read-only and never writes into the audited repo.)
 
-It gathers, cheaply and repeatably: layer inventory · doc frontmatter coverage · memory caps ·
+For lens 4 (layer telemetry) also run the transcript profiler — it is the only source of
+"did this ever actually fire", and it is read-only:
+
+```bash
+python3 "${CLAUDE_PLUGIN_ROOT}/skills/system-audit/scripts/usage.py"
+```
+
+It parses this project's session transcripts and writes `knowledge/usage-frequency.md`: which
+files, skills and tools were deliberately used (mechanical auto-loads and multi-edit bursts are
+filtered out), and which have zero reads in 30 days. No transcripts yet → it says so and exits.
+
+The main collector gathers, cheaply and repeatably: layer inventory · doc frontmatter coverage · memory caps ·
 broken path references · git activity and cold files · secret exposure (gitleaks if present, an
 `.env`-tracked check always) · **layer telemetry** (per rule/skill/agent: last mention in
 session transcripts and in git history) · TODO/FIXME density.

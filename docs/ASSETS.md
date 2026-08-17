@@ -16,7 +16,7 @@ other** — same discipline as the docs, and a stale panel is a lie in the most-
 | `03-where-memory-lives.png` | regenerated for v6 (hot cache marked *injected every session*; namespaced skill) |
 | `04-promotion.png` | regenerated for v6 (the namespaced skill in the YOUR YES step) |
 | `05-multi-client.png` | regenerated for v6 (plugin identity replaces `CLAUDE.md` in the always-loaded column) |
-| `06-hooks-and-skills.png` | regenerated for v6 — four hooks, ten namespaced skills, no `.kit/advanced` panel |
+| `06-hooks-skills.png` | regenerated for v6.1 — four hooks, the eight remaining skills |
 | `07-orchestrated-work.png` | regenerated for v6 (footer: ships inside the plugin) |
 | `08-one-operator-many-projects.png` | regenerated for v6 — the old one sold `git clone` per client, which is the model v6 replaced |
 | `09-agent-qa.png` | regenerated for v6 (footer: only the protocol file is copied) |
@@ -41,7 +41,7 @@ matches the set, and give the prompt the **complete text spec**, every string ve
 
 ```bash
 # GOOGLE_API_KEY from your environment; model default is gemini-3-pro-image
-python3 tools/genimg.py .github/assets/06-hooks-and-skills.png prompt.txt out.png
+python3 tools/genimg.py .github/assets/06-hooks-skills.png prompt.txt out.png
 sips -Z 2000 out.png          # keep the set under control
 ```
 
@@ -53,6 +53,11 @@ Two lessons from doing this, both cheap to repeat and expensive to skip:
    spelling-check list of the words that had drifted — came back clean on the first try.
 2. **Read the generated image before committing it.** Every one of those typos was invisible in
    the file size and the API response, and obvious in two seconds of looking.
+3. **When the content SHRINKS, drop `--ref`.** Removing two skills from `06` failed twice with a
+   style reference attached: the model kept re-drawing the deleted `memory-lint` entry it could
+   see in the reference, and an explicit "never render this string" instruction did not stop it.
+   Describing the style in prose, with no reference image, produced the right eight on the first
+   try. A reference image is authoritative for what to KEEP, not for what to remove.
 
 The prompt files used for the v6 batch are not kept — the spec they encode is this file's state
 table plus the copy already visible in each asset.

@@ -57,7 +57,7 @@ inline (1, 4, 7). Every lens obeys three shared rules:
 
 This is the lens that prevents an agent system from becoming an unread constitution.
 
-- Read the collector's telemetry table: per rule / skill / agent / hook / script — last mention in session transcripts, last git touch, number of distinct dates it appears.
+- Read the telemetry: `scripts/usage.py` for what was deliberately read or invoked across the session transcripts (hot vs zero-in-30-days), and the collector's git-date table for what was last touched. Per rule / skill / agent / hook / script.
 - Classify each: **hot** (fired in the last few sessions) · **warm** (fired, but a while ago — is its trigger seasonal?) · **cold** (defined, never observed firing).
 - For anything cold, distinguish honestly:
   - *never triggered because the situation never arose* → keep, note the trigger to watch for;

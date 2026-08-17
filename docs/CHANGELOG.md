@@ -2,6 +2,30 @@
 
 All notable changes to Memory Kit are documented here. Breaking changes marked **BREAKING**.
 
+<a id="v610"></a>
+
+## [6.1.0] — 2026-08-17 — Two skills nobody ran
+
+### Removed
+
+- **`/memory-kit:memory-lint`.** It linted `[[wikilink]]` hygiene — broken links, orphan pages,
+  missing backlinks — for a convention the kit does not actually ship: nothing in the templates
+  emits wikilinks. It sat behind a `cp` step from v4.2.0 to v6.0.0 and never produced a report in
+  this repository's history. What was load-bearing in it (frontmatter coverage, references that
+  no longer resolve) the system-audit collector already gathers generically.
+
+### Changed
+
+- **`/memory-kit:memory-usage` folded into `/memory-kit:system-audit`.** The transcript profiler
+  is real signal — it is the only thing that can answer *"did this rule / skill / agent ever
+  actually fire?"* — but that question belongs to the audit's layer-telemetry lens, which until
+  now described a telemetry table nobody generated. The script moved to
+  `skills/system-audit/scripts/usage.py` and the lens invokes it. One fewer skill, one lens that
+  can finally be executed instead of aspired to.
+
+The subtraction rule this follows: a layer that has never fired is not "available", it is
+decoration. It was written into the audit's own lens 7 before it was applied here.
+
 <a id="v600"></a>
 
 ## [6.0.0] — 2026-08-17 — The plugin pivot (and the bug that made it urgent)
