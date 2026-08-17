@@ -1,3 +1,7 @@
+# This repository is the marketplace + the plugin source. It carries no user memory:
+# a user's MEMORY.md, handoffs and knowledge live in THEIR repo, scaffolded by
+# /memory-kit:setup (which also writes the matching .gitignore lines there).
+
 # Environment
 .env
 .env.local
@@ -22,19 +26,5 @@ venv/
 # Node
 node_modules/
 
-# Runtime state (never committed)
-.claude/state/*
-!.claude/state/.gitkeep
-
-# Hot memory is personal — private by default (the session-start hook creates it
-# from MEMORY-TEMPLATE.md on first run; commit deliberately if you want it shared)
-.claude/memory/MEMORY.md
-
-# Daily session logs (private by default — user can opt in to commit)
-# handoffs are personal session notes — private by default
-context/handoffs/*.md
-!context/handoffs/HANDOFF-TEMPLATE.md
-# (advanced daily-chronicle layer, if enabled — see .kit/advanced/close-day-layer/)
-daily/*.md
-!daily/README.md
-!daily/TEMPLATE.md
+# Local scratch: this repo is not a memory workspace, but a maintainer may run the kit on it
+.claude/
