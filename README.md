@@ -5,7 +5,7 @@
 **The starter kit for Claude Code — persistent memory edition.**
 **Your Claude remembers everything. Every client, every brief, every decision. Across sessions. Zero setup.**
 
-[![Version](https://img.shields.io/github/v/release/awrshift/claude-memory-kit?label=version&color=CFEF4A)](https://github.com/awrshift/claude-memory-kit/releases)
+[![Version](https://img.shields.io/github/v/release/awrshift/claude-memory-kit?label=version&color=CFEF4A&cacheSeconds=1800)](https://github.com/awrshift/claude-memory-kit/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-55503E?labelColor=55503E&color=55503E)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-plugin-CFEF4A)](https://code.claude.com/docs/en/plugins)
 
