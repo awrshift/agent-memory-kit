@@ -28,19 +28,26 @@ or vertical — each with its own accumulated memory, all with the same working 
 
 ## Quick start
 
-```bash
-git clone --depth 1 https://github.com/awrshift/claude-memory-kit.git my-projects
-cd my-projects
-claude
+The kit is a **Claude Code plugin** — it installs into a repository you already have. Nothing to
+clone, nothing to paste into `CLAUDE.md`.
+
+```shell
+/plugin marketplace add awrshift/claude-memory-kit
+/plugin install memory-kit@memory-kit
+/memory-kit:setup
 ```
 
-> `--depth 1` skips the kit's own development history (~170 MB of old graphic revisions) —
-> your clone starts its own history from here anyway.
+`setup` looks at what your repo already has, proposes the memory layers, asks who owns memory
+(the kit or Claude Code's built-in auto memory — running both means two writers and two truths),
+and installs permission rails. It writes nothing before you say yes.
 
-That's it. Claude sets itself up and asks a couple of questions (your name, what you're working on).
+Starting from zero rather than an existing project? Make an empty folder, run `claude` in it and
+do the same three lines.
 
 > [!TIP]
-> Say `/tour` after install — Claude walks you through the system using your own files.
+> Say `/memory-kit:tour` after setup — Claude walks you through the system using your own files.
+>
+> Upgrading from v5 (the clone-the-repo layout)? See [docs/CHANGELOG.md](docs/CHANGELOG.md#600).
 
 ---
 
@@ -103,11 +110,11 @@ a rule, and the raw lines are pruned. Observation → candidate → law. You app
 
 ---
 
-## Why it doesn't rot (v5)
+## Why it doesn't rot
 
 Memory systems don't usually die loudly — they rot quietly: a "current state" file that froze
 three weeks ago but still looks authoritative; a memory file that grew so dense it's unreadable.
-v5 is built around the failure modes we hit in real long-running use:
+It is built around the failure modes we hit in real long-running use:
 
 - **Three size caps on MEMORY.md** (180 lines / 32 KB / 3000 chars per line), checked by a hook
   at every session start. Three, because line count alone lies — content can densify into
@@ -120,6 +127,9 @@ v5 is built around the failure modes we hit in real long-running use:
   is the #1 way agents confidently act on outdated beliefs.
 - **The header rule.** The top of MEMORY.md is "current state in 2-3 sentences", *replaced* at
   every close — never a stack of "previous session" paragraphs.
+- **The memory is actually in context.** v6 injects the hot cache itself at session start, and
+  re-injects it after compaction. (v5 only *measured* it while claiming it was always loaded —
+  a year-long silent failure, found by asking "prove it's in context", not by reading the code.)
 
 ---
 
@@ -138,13 +148,22 @@ Say "we're working on Nestlé" — Claude unloads other clients and loads that s
 
 ![](.github/assets/06-hooks-and-operators.png)
 
-Five hooks run silently — they make state survive compaction and crashes, and they watch the
-memory caps. Two slash operators give you direct control: `/close-session` (the end-of-session
-ritual) and `/tour`. Power-user extras sit in `.kit/advanced/` for when you want them: hygiene
-and usage-stats commands, an optional day-by-day journal layer (`/close-day`), an
-**orchestration layer** for building with subagents (executor/recon/idea-validator agents,
-`/session-review`, `/second-opinion`), and a **QA layer** that turns agents on your running
-product (`/qa-sweep`, five adversarial lenses over parallel isolated browsers).
+Four hooks run silently, all inside the plugin — nothing to maintain in your repo. One injects
+your memory and the working agreement at every session start (and after each compaction), one
+blocks compaction until state is saved, one asks before an existing test gets edited, one logs
+the close.
+
+Everything else is a skill, and skills cost nothing until you invoke them:
+
+| Skill | For |
+|---|---|
+| `/memory-kit:close-session` | the end-of-session ritual — capture, promote, hand off |
+| `/memory-kit:memory-audit` | the cap-trip surgery: what leaves the hot cache, by approved plan |
+| `/memory-kit:system-audit` | the periodic seven-lens sweep of the whole system, evidence-backed |
+| `/memory-kit:setup` · `:tour` | adopt the kit here · walk through it on your own files |
+| `/memory-kit:memory-lint` · `:memory-usage` | knowledge-base hygiene · hot-vs-cold telemetry |
+| `/memory-kit:session-review` · `:second-opinion` | adversarial review of a session · of one decision |
+| `/memory-kit:qa-sweep` | multi-lens agent QA of a running product |
 
 Everything in plain text files. No databases. No external services. `git checkout` restores anything.
 
@@ -180,8 +199,10 @@ isolated browsers, findings that must carry machine-checkable evidence — and n
 ticket until the integrator reproduces it. A calibration ladder (seeded-defect recall runs,
 brief edits kept only on a measured delta) keeps the lenses sharp.
 
-All of it is one `cp` set away: [`.kit/advanced/orchestration-layer/`](.kit/advanced/orchestration-layer/README.md)
-and [`.kit/advanced/qa-layer/`](.kit/advanced/qa-layer/README.md).
+All of it ships in the same plugin — the agents and skills are simply there when you invoke
+them. The one always-on piece is optional and deliberately tiny: `/memory-kit:setup` offers to
+drop a ~20-line `orchestration.md` into `.claude/rules/`, which is what makes the invariants
+binding rather than advisory. Depth stays in the plugin's `reference/`, read on demand.
 Distilled from hundreds of real multi-agent sessions in the maintainers' production repos.
 
 ---
@@ -244,21 +265,21 @@ template. If you want your private memory versioned too, remove those two lines 
 </details>
 
 <details>
-<summary><b>I liked the daily journal (/close-day) from v4. Where did it go?</b></summary>
+<summary><b>I liked the daily journal (/close-day). Where did it go?</b></summary>
 
-It's an opt-in layer now: `.kit/advanced/close-day-layer/` — one `cp` command enables it, and it
-composes with the v5 core (journal + handoffs together). It left the default because in
-long-running use the chronicle was the layer that silently rotted when you skipped days. Full
-story: that folder's README.
+Retired in v6. It was demoted to opt-in in v5 for a reason — in long-running use the chronicle
+was the layer that silently rotted whenever a day got skipped — and in practice nobody enabled
+it: `/close-session` covers the same ground per session and cannot go stale unnoticed. The code
+is still in git history if you want it back.
 
 </details>
 
 <details>
-<summary><b>What if I'm migrating from v4?</b></summary>
+<summary><b>What if I'm on v5 (the cloned-repo layout)?</b></summary>
 
-Clone v5 into a new folder and tell Claude: "I have a v4 kit at &lt;path&gt;, help me migrate".
-Your memory entries, knowledge articles, rules and projects carry over as-is; the mechanical
-steps are in [.kit/CHANGELOG.md](.kit/CHANGELOG.md) § Migration.
+Keep your repo, install the plugin into it, and delete the copies it replaces. Your memory
+entries, handoffs, knowledge articles and rules stay exactly where they are — v6 reads the same
+paths. Mechanical steps: [docs/CHANGELOG.md](docs/CHANGELOG.md#600).
 
 </details>
 
@@ -266,30 +287,32 @@ steps are in [.kit/CHANGELOG.md](.kit/CHANGELOG.md) § Migration.
 
 ## What's inside
 
+This repository is the **marketplace**; the plugin is what you install.
+
 ```
-README.md               ← You are here
-LICENSE                 ← MIT
-CLAUDE.md               ← Agent's brain — who it is, how it works
-SKILL.md                ← Metadata for skill aggregators
-projects/               ← Real client / product folders (tasks + materials)
-experiments/            ← Sandbox for hypotheses + prototypes (date-named)
-knowledge/              ← Knowledge base (grows over time)
-context/handoffs/       ← One note per closed session (private by default)
-.claude/                ← Kit core: memory, hooks, skills, rules
-.kit/                   ← Docs about the kit ITSELF (architecture, changelog,
-                          contributor guide) + advanced/ (opt-in layers: power
-                          commands, the daily-journal layer, the orchestration
-                          layer for multi-agent development)
+.claude-plugin/marketplace.json   ← the catalog (one plugin)
+plugins/memory-kit/
+  .claude-plugin/plugin.json      ← the manifest
+  context/identity.md             ← the working agreement, injected every session
+  hooks/                          ← session-start · pre-compact · protect-tests · session-end
+  skills/                         ← close-session, memory-audit, system-audit, setup, tour,
+                                    memory-lint, memory-usage, session-review, second-opinion,
+                                    qa-sweep
+  agents/                         ← executor · recon · idea-validator · qa
+  templates/                      ← what /memory-kit:setup scaffolds into YOUR repo
+  reference/                      ← depth, read on demand (fact-check, parallel dev,
+                                    doc governance, decisions log, review loop, QA protocol)
+  scripts/                        ← the lint / usage collectors
+docs/                             ← architecture · changelog · contributing
 ```
 
-**`projects/` vs `experiments/`** — `projects/<name>/` for real client work (polished,
-indefinite lifetime, patterns promote to rules); `experiments/<name>-YYYYMMDD/` for hypotheses
-and prototypes (rough OK, days-to-weeks lifetime, distill on close, then delete). Full spec:
-[`experiments/README.md`](experiments/README.md).
+In **your** repository the kit owns only state: `.claude/memory/MEMORY.md`,
+`context/handoffs/`, `knowledge/`, and — if you want them — `projects/<name>/` for real client
+work and `experiments/<name>-YYYYMMDD/` for hypotheses (rough OK, distil on close, then delete).
 
-**Full architecture:** [.kit/ARCHITECTURE.md](.kit/ARCHITECTURE.md)
-**Version history:** [.kit/CHANGELOG.md](.kit/CHANGELOG.md)
-**Contributing:** [.kit/CONTRIBUTING.md](.kit/CONTRIBUTING.md)
+**Full architecture:** [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+**Version history:** [docs/CHANGELOG.md](docs/CHANGELOG.md)
+**Contributing:** [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)
 
 ---
 
@@ -314,7 +337,7 @@ is what kept earning its place.
 
 ## Help
 
-Issues and PRs welcome. See [.kit/CONTRIBUTING.md](.kit/CONTRIBUTING.md).
+Issues and PRs welcome. See [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md).
 
 ## License
 
