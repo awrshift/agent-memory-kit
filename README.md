@@ -2,8 +2,8 @@
 
 # Claude Memory Kit
 
-**The starter kit for Claude Code — persistent memory edition.**
-**Your Claude remembers everything. Every client, every brief, every decision. Across sessions. Zero setup.**
+**The memory plugin for Claude Code.**
+**Your agent remembers every client, every brief, every decision — across sessions. Three lines to install, nothing to maintain.**
 
 [![Version](https://img.shields.io/github/v/release/awrshift/claude-memory-kit?label=version&color=CFEF4A&cacheSeconds=1800)](https://github.com/awrshift/claude-memory-kit/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-55503E?labelColor=55503E&color=55503E)](LICENSE)
@@ -51,7 +51,7 @@ use the same three lines.
 > Say `/memory-kit:tour` after setup — Claude walks you through the system using your own files.
 >
 > On v5 (the clone-the-repo layout)? Your memory files stay where they are:
-> [migration in 4 steps](docs/CHANGELOG.md#600).
+> [migration in 4 steps](docs/CHANGELOG.md#v600).
 
 ## Who it's for
 
@@ -76,7 +76,7 @@ use the same three lines.
 
 ## How a session works
 
-![](.github/assets/02-daily-workflow.png)
+![](.github/assets/02-session-loop.png)
 
 Three steps. That's the entire workflow:
 
@@ -111,7 +111,7 @@ flowchart LR
     H -->|"injected in full"| S
 ```
 
-![](.github/assets/03-memory-layers.png)
+![](.github/assets/03-where-memory-lives.png)
 
 Four places, each answering a different question. Claude writes all of them — you only talk.
 
@@ -126,7 +126,7 @@ Four places, each answering a different question. Claude writes all of them — 
 repeats on 3+ dates → Claude proposes promotion → your "yes" → becomes a knowledge article or
 a rule, and the raw lines are pruned. Observation → candidate → law. You approve every step.
 
-![](.github/assets/04-promotion-pipeline.png)
+![](.github/assets/04-promotion.png)
 
 ---
 
@@ -155,7 +155,7 @@ It is built around the failure modes we hit in real long-running use:
 
 ## Multiple clients
 
-![](.github/assets/05-multi-project.png)
+![](.github/assets/05-multi-client.png)
 
 Two shapes, both supported. **One repo per client** — install the plugin in each, and every
 client gets its own memory with the same discipline. Or **one workspace, many client folders**:
@@ -168,7 +168,7 @@ Say "we're working on Nestlé" — Claude unloads the other clients and loads th
 
 ## Hooks and skills
 
-![](.github/assets/06-hooks-and-operators.png)
+![](.github/assets/06-hooks-and-skills.png)
 
 Four hooks run silently, all inside the plugin — nothing to maintain in your repo. One injects
 your memory and the working agreement at every session start (and after each compaction), one
@@ -193,7 +193,7 @@ Everything in plain text files. No databases. No external services. `git checkou
 
 ## Agent-orchestrated work (opt-in)
 
-![](.github/assets/07-agent-orchestration.png)
+![](.github/assets/07-orchestrated-work.png)
 
 When you use the kit to BUILD things — software, agent systems, research pipelines — there's a
 next level: your agent stops doing everything in one thread and starts **orchestrating agents**.
@@ -212,7 +212,7 @@ is promoted into the cheapest layer that prevents it forever — a lint rule, a 
 definition, a review-brief line. Rules that stop firing get dropped. Your review process
 compounds instead of repeating itself.
 
-![](.github/assets/09-agent-qa-loop.png)
+![](.github/assets/09-agent-qa.png)
 
 And when what you're building is a user-facing product, the **QA layer** puts agents on the
 other side of the screen: `/qa-sweep` fans out `qa` subagents over the *running* app — five
@@ -321,7 +321,7 @@ is still in git history if you want it back.
 
 Keep your repo, install the plugin into it, and delete the copies it replaces. Your memory
 entries, handoffs, knowledge articles and rules stay exactly where they are — v6 reads the same
-paths. Mechanical steps: [docs/CHANGELOG.md](docs/CHANGELOG.md#600).
+paths. Mechanical steps: [docs/CHANGELOG.md](docs/CHANGELOG.md#v600).
 
 </details>
 
@@ -361,7 +361,7 @@ work and `experiments/<name>-YYYYMMDD/` for hypotheses (rough OK, distil on clos
 
 ## Origin
 
-![](.github/assets/08-one-operator-many-clones.png)
+![](.github/assets/08-one-operator-many-projects.png)
 
 This is not a template written in an afternoon — it's an architecture distilled from
 **1000+ real sessions over 12 months of continuous daily Claude Code work**, by one operator,
@@ -369,14 +369,15 @@ across very different verticals: marketing, sales, lead generation, business ana
 research & development, and shipping production code side-by-side with backend and frontend
 engineers.
 
-One person. One agent architecture. Cloned per vertical — each clone accumulating its own
-memory, rules, and knowledge base while the working discipline stays the same. That's exactly
-who it fits best: **automators and consultants running many clients** — spin up a clone per
+One person. One agent architecture. Installed per project — each repository accumulating its
+own memory, rules, and knowledge base while the working discipline stays identical. That's
+exactly who it fits best: **automators and consultants running many clients** — three lines per
 client, and memory keeps every engagement scoped, accumulated, and instantly resumable.
 
 Everything here survived that year of production use — including the scars: the parts that
 quietly rotted (the daily chronicle, the rolling status file) were retired, and what remains
-is what kept earning its place.
+is what kept earning its place. The operator's own write-up lives at
+[awrshift.com](https://awrshift.com).
 
 ## Help
 

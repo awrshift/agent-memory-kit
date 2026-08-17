@@ -1,0 +1,62 @@
+name: checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  repo-integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # Manifests agree, hooks exist and are executable, skills carry frontmatter,
+      # every link and image resolves, no orphan assets. Stdlib only, no auth.
+      - name: Repo integrity
+        run: python3 tools/check-repo.py
+
+      # The hooks must survive being run — a broken profile fails silently otherwise,
+      # which is exactly how the "hot cache is loaded" claim stayed false for a year.
+      - name: SessionStart profiles
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/probe/.claude/memory /tmp/probe/context/handoffs
+          printf '# Hot cache\n\n- [2026-01-01] CANARY-CI\n' > /tmp/probe/.claude/memory/MEMORY.md
+          export CLAUDE_PROJECT_DIR=/tmp/probe
+          export CLAUDE_PLUGIN_ROOT="$PWD/plugins/memory-kit"
+          for src in startup clear fork resume compact; do
+            printf '{"session_id":"ci","source":"%s"}' "$src" \
+              | python3 "$CLAUDE_PLUGIN_ROOT/hooks/session-start.py" > /tmp/out.json
+            # printf, not echo: some shells expand the \n escapes inside the JSON strings
+            python3 -c "import json,sys; json.load(open('/tmp/out.json'))['hookSpecificOutput']['additionalContext']" \
+              || { echo "invalid hook output for source=$src"; exit 1; }
+            case "$src" in
+              startup|clear|fork|compact)
+                grep -q "CANARY-CI" /tmp/out.json || { echo "source=$src did not inject the hot cache"; exit 1; } ;;
+            esac
+            echo "  ok: $src"
+          done
+
+      - name: Never scaffold into a repo that did not ask
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/virgin && cd /tmp/virgin
+          CLAUDE_PROJECT_DIR=/tmp/virgin CLAUDE_PLUGIN_ROOT="$GITHUB_WORKSPACE/plugins/memory-kit" \
+            python3 "$GITHUB_WORKSPACE/plugins/memory-kit/hooks/session-start.py" <<< '{"source":"startup"}' >/dev/null
+          test -z "$(ls -A /tmp/virgin)" || { echo "the hook created files in an unadopted repo:"; ls -Ra /tmp/virgin; exit 1; }
+
+      - name: Test guard still asks, and never blocks the TDD loop
+        run: |
+          set -euo pipefail
+          probe() { printf '%s' "$1" | python3 plugins/memory-kit/hooks/protect-tests.py \
+                    | python3 -c "import json,sys; print(json.load(sys.stdin)['hookSpecificOutput']['permissionDecision'])"; }
+          mkdir -p /tmp/guard/tests && echo "x" > /tmp/guard/tests/test_existing.py
+          export CLAUDE_PROJECT_DIR=/tmp/guard
+          [ "$(probe '{"session_id":"ci","tool_name":"Edit","tool_input":{"file_path":"/tmp/guard/tests/test_existing.py"}}')" = ask ]
+          [ "$(probe '{"session_id":"ci","tool_name":"Write","tool_input":{"file_path":"/tmp/guard/tests/test_new.py"}}')" = allow ]
+          [ "$(probe '{"session_id":"ci","tool_name":"Edit","tool_input":{"file_path":"/tmp/guard/src/app.py"}}')" = allow ]
+          echo "  ok"

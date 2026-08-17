@@ -2,6 +2,8 @@
 
 All notable changes to Memory Kit are documented here. Breaking changes marked **BREAKING**.
 
+<a id="v600"></a>
+
 ## [6.0.0] — 2026-08-17 — The plugin pivot (and the bug that made it urgent)
 
 **BREAKING (distribution only, not your data).** The kit is no longer a repository you clone and

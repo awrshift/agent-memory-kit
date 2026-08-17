@@ -35,3 +35,5 @@ leave this board.
 - `periodic-save.sh`: removed rather than optimised — PreCompact already covers the moment that matters.
 - Diagrams: regenerated in-house rather than captioned-as-stale (D9). `tools/genimg.py` + the
   lessons in [ASSETS.md](ASSETS.md) make the next sweep cheap.
+- CI: `tools/check-repo.py` + `.github/workflows/checks.yml` — manifests, hook profiles, the
+  no-scaffolding guarantee and every link now fail the build instead of a reader's trust.
