@@ -2,7 +2,7 @@
 
 > Copy this file to `docs/qa/README.md` in your project and fill every `<placeholder>`.
 > This file is the protocol SSOT: the `/qa-sweep` skill executes it; the `qa` agent type
-> (`.claude/agents/qa.md`) is the worker. Run records live beside it in `docs/qa/`.
+> (the plugin's `agents/qa.md`) is the worker. Run records live beside it in `docs/qa/`.
 
 Standing multi-lens QA of the RUNNING product by `qa` agents (Playwright + curl + read-only
 store queries), findings verified by the integrator before they become tickets. Complements —

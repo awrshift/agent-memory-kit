@@ -25,4 +25,4 @@
 A short research doc (maps' durable summary + the honest split + tickets minted), not a
 refactor spree. "Paid off as a MAP, mostly polish as DEBT" is a legitimate verdict — the map's
 value is knowing where the line is. Prevention of NEW instances belongs to the standing diff
-review gate (`rules/review-loop.md`), not to repeated sweeps.
+review gate (`reference/review-loop.md`), not to repeated sweeps.

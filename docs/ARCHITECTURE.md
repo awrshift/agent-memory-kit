@@ -114,7 +114,7 @@ anything.
 **Is:** R&D folder for hypotheses, prototypes, throwaway research. `EXPERIMENT.md` (hypothesis + result), optional code, notes, screenshots. Date in folder name.
 **Is not:** real client work (that's `projects/`). Not a long-term home — closed experiments are distilled into `knowledge/concepts/` (lessons) and `projects/` (code), then deleted (git history remembers).
 
-Why a separate layer? Different lifecycle (days, not indefinite), different quality bar (rough OK), different relationship to the `/close-session` audit (no direct promotion to rules — distill first, then close). Full spec: `experiments/README.md`.
+Why a separate layer? Different lifecycle (days, not indefinite), different quality bar (rough OK), different relationship to the `/close-session` audit (no direct promotion to rules — distill first, then close). Full spec: the plugin's `templates/workspace/experiments-README.md`, which `/memory-kit:setup` copies in if you want the sandbox layer.
 
 ## Date-tagging convention (load-bearing)
 

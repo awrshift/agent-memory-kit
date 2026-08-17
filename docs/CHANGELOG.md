@@ -142,7 +142,7 @@ Point your project's agent at this changelog and say "adopt the v5.2 additions".
 1. `cp .kit/advanced/orchestration-layer/rules/review-loop.md .claude/rules/` and create an
    empty `context/review-findings.md` from the table template inside it.
 2. Building a user-facing product? Enable the QA layer per
-   [`qa-layer/README.md`](advanced/qa-layer/README.md) — copy the agent + skill, instantiate
+   [`qa-layer/README.md`` (v5.2 path, retired in v6)` — copy the agent + skill, instantiate
    `PROTOCOL-TEMPLATE.md` as `docs/qa/README.md` with your URLs/accounts/journeys, merge
    `mcp.json.example` into `.mcp.json`, gitignore `.claude/qa/`, restart Claude Code.
 3. Nothing else changes; existing agents, skills, and rules are untouched.
