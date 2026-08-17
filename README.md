@@ -80,9 +80,6 @@ use the same three lines.
 
 ![](.github/assets/02-daily-workflow.png)
 
-<sub>Diagram from v5. Two details changed in v6: the session-start injection now carries the hot
-cache itself, and the "auto-save every ~50 messages" prompt was retired.</sub>
-
 Three steps. That's the entire workflow:
 
 ### 1. Open a session — Claude wakes up already knowing where you left off
@@ -173,6 +170,8 @@ Say "we're working on Nestlé" — Claude unloads the other clients and loads th
 
 ## Hooks and skills
 
+![](.github/assets/06-hooks-and-operators.png)
+
 Four hooks run silently, all inside the plugin — nothing to maintain in your repo. One injects
 your memory and the working agreement at every session start (and after each compaction), one
 blocks compaction until state is saved, one asks before an existing test gets edited, one logs
@@ -198,8 +197,6 @@ Everything in plain text files. No databases. No external services. `git checkou
 
 ![](.github/assets/07-agent-orchestration.png)
 
-<sub>Diagram from v5.1: since v6 there is no `cp` step — the agents and skills ship in the plugin.</sub>
-
 When you use the kit to BUILD things — software, agent systems, research pipelines — there's a
 next level: your agent stops doing everything in one thread and starts **orchestrating agents**.
 The main session designs and decides; `executor` subagents build to a decided spec in isolated
@@ -218,9 +215,6 @@ definition, a review-brief line. Rules that stop firing get dropped. Your review
 compounds instead of repeating itself.
 
 ![](.github/assets/09-agent-qa-loop.png)
-
-<sub>Diagram from v5.2: since v6 the QA layer ships in the plugin — only the protocol file
-(`docs/qa/README.md`) is copied into your repo.</sub>
 
 And when what you're building is a user-facing product, the **QA layer** puts agents on the
 other side of the screen: `/qa-sweep` fans out `qa` subagents over the *running* app — five

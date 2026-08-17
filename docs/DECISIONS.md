@@ -26,10 +26,12 @@ leave this board.
 |---|---|---|---|
 | D7 | README is ~2.7k words against a ~800–1500 median for developer tools. Trim, or keep the story? | **Keep the narrative but move the proof up:** install is now above the fold, and the FAQ answers the "vs built-in memory" question early. If a trim happens, cut the "Before / after" table (the graphic already says it) before cutting the origin story — the story is the differentiator. | Low, reversible. |
 | D8 | The strongest claim available is unused: *"the kit's own memory was never actually loaded for a year, and the fix is measurable."* Lead with it? | **Use it in the release notes and a launch post, not in the README hero.** It is credibility for practitioners and confusion for newcomers who never ran v5. | Low. |
-| D9 | Regenerate the four stale diagrams now, or drop to Mermaid-first? | **Regenerate 06 first** (it is the only one pulled from the README), then 02/07/09 footers. Keep PNGs for the pitch, Mermaid for structure — copy is in [ASSETS.md](ASSETS.md). | Low, but a wrong diagram is a load-bearing lie in the most-read file. |
+| D9 | ~~Regenerate the stale diagrams~~ | **Done** — six regenerated with `gemini-3-pro-image`, set re-compressed from ~8.7 MB to ~3.0 MB. Only `01`'s emoji-face style is still out of system. | — |
 
 ## Recently settled
 
 - One plugin instead of three (v6.0.0) — skill bodies load on invoke, so the split bought nothing.
 - `/close-day` and the daily chronicle: retired, not re-parked in an opt-in folder.
 - `periodic-save.sh`: removed rather than optimised — PreCompact already covers the moment that matters.
+- Diagrams: regenerated in-house rather than captioned-as-stale (D9). `tools/genimg.py` + the
+  lessons in [ASSETS.md](ASSETS.md) make the next sweep cheap.

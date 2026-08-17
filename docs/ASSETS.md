@@ -1,56 +1,55 @@
-# README assets — state and regeneration brief
+# README assets — state and how they are made
 
-Nine diagrams in `.github/assets/` carry the visual story. They are PNGs, so their text ages
-with the product — this file records which ones are true right now and what a regeneration must
-say. The rule: **a diagram that states a fact is a fact that has to be swept like any other**
-(same discipline as the docs).
+Nine diagrams in `.github/assets/` carry the visual story. They are PNGs, so their text ages with
+the product. The rule: **a diagram that states a fact is a fact that has to be swept like any
+other** — same discipline as the docs, and a stale panel is a lie in the most-read file.
 
-| Asset | State | Action |
-|---|---|---|
-| `01-before-after.png` | true — no version-specific claims | keep; style refresh optional (see below) |
-| `02-daily-workflow.png` | **2 stale lines** | regenerate |
-| `03-memory-layers.png` | true (paths unchanged); `/close-session` now namespaced | regenerate at next batch |
-| `04-promotion-pipeline.png` | true | keep |
-| `05-multi-project.png` | mostly true; "CLAUDE.md — agent identity" is now the plugin's `identity.md` | regenerate at next batch |
-| `06-hooks-and-operators.png` | **stale in every panel** | **removed from README**; regenerate before re-embedding |
-| `07-agent-orchestration.png` | true except the footer line | regenerate footer |
-| `08-one-operator-many-clones.png` | true | keep |
-| `09-agent-qa-loop.png` | true except the footer line | regenerate footer |
-| `og-banner.png` | true | keep |
+## State (last swept 2026-08-17, v6.0.0)
 
-## Exact copy for the regenerations
+| Asset | State |
+|---|---|
+| `01-before-after.png` | true — no version-specific claims |
+| `02-daily-workflow.png` | regenerated for v6 (injection carries the hot cache; the ~50-message auto-save prompt is gone) |
+| `03-memory-layers.png` | regenerated for v6 (hot cache marked *injected every session*; namespaced skill) |
+| `04-promotion-pipeline.png` | true |
+| `05-multi-project.png` | regenerated for v6 (plugin identity replaces `CLAUDE.md` in the always-loaded column) |
+| `06-hooks-and-operators.png` | regenerated for v6 — four hooks, ten namespaced skills, no `.kit/advanced` panel |
+| `07-agent-orchestration.png` | regenerated for v6 (footer: ships inside the plugin) |
+| `08-one-operator-many-clones.png` | true |
+| `09-agent-qa-loop.png` | regenerated for v6 (footer: only the protocol file is copied) |
+| `og-banner.png` | true |
 
-**02 — How a session works.** Step 1 caption becomes: *"hook injects: your hot cache +
-`context/handoffs/<newest>.md` — Claude already knows where you left off"*. Delete
-"auto-save every ~50 messages" from step 2; replace with "compaction blocked until state is
-written". Step 3 label: `/memory-kit:close-session`.
+All ten are capped at 2000 px wide: the set went from ~8.7 MB to ~3.0 MB, which matters because
+five of them sit above the fold.
 
-**06 — Hooks & skills.** Subtitle: *"Four silent guards. Ten skills you can type."* Hooks panel:
-`session-start.py` — injects the working agreement, your hot cache, the newest handoff, the
-knowledge index · `pre-compact.sh` — blocks compaction until memory is saved and inside all
-3 caps · `protect-tests.py` — asks before an existing test is edited · `session-end.sh` —
-timestamps the close. Skills panel (all `/memory-kit:`): `close-session` · `memory-audit` ·
-`system-audit` · `setup` · `tour` · `memory-lint` · `memory-usage` · `session-review` ·
-`second-opinion` · `qa-sweep`. Footer: *"One plugin. Skills cost nothing until you invoke them."*
-Delete the `.kit/advanced/` panel entirely.
+## How to regenerate one
 
-**07 — Agent-orchestrated work.** Replace the last line with: *"Ships inside the plugin —
-`/memory-kit:session-review` · `/memory-kit:second-opinion` · executor / recon / idea-validator."*
+Generated with Google's image models via the REST API — `gemini-3-pro-image` (Nano Banana Pro)
+is the one to use for these: the panels are text-dense and the Pro model is the one that renders
+long strings without drifting. Pass the CURRENT asset as a style reference so the new panel
+matches the set, and give the prompt the **complete text spec**, every string verbatim.
 
-**09 — Agent QA.** Replace the last line with: *"`/memory-kit:qa-sweep` ships in the plugin;
-only the protocol file `docs/qa/README.md` is copied into your repo."*
+```bash
+# GOOGLE_API_KEY from your environment; model default is gemini-3-pro-image
+python3 tools/genimg.py .github/assets/06-hooks-and-operators.png prompt.txt out.png
+sips -Z 2000 out.png          # keep the set under control
+```
 
-**03 / 05, when convenient.** In 03, `/close-session` → `/memory-kit:close-session`. In 05,
-the "ALWAYS LOADED (shared)" column: replace `CLAUDE.md — agent identity` with
-`plugin identity — injected every session`, and mark `MEMORY.md` as *injected by the hook*
-rather than auto-loaded (that wording was the bug v6 fixed).
+Two lessons from doing this, both cheap to repeat and expensive to skip:
 
-## Style notes (optional, not blocking)
+1. **"Reproduce this exactly, change only the footer" produces typos.** That prompt shape drifted
+   `merges`→`marges`, `silent`→`siient`, `401/403/404`→`401/409/404`, `pollable`→`poliable`.
+   Rewriting the same request as a full content spec — every string listed, plus an explicit
+   spelling-check list of the words that had drifted — came back clean on the first try.
+2. **Read the generated image before committing it.** Every one of those typos was invisible in
+   the file size and the API response, and obvious in two seconds of looking.
 
-- `01` and `05` are ~2 MB each — the two heaviest files in the repo, both above the fold on slow
-  connections. Re-export at the same width with tighter compression.
-- `01` uses emoji faces; every other asset uses the clean neon-card system. It reads as a
-  different product. Aligning it would make the page feel designed rather than assembled.
-- The Mermaid diagram in the README ("Where memory lives") is the one that can never go stale —
-  it renders from text. Prefer Mermaid for anything structural, and keep PNGs for the pieces
-  where the visual pitch matters.
+The prompt files used for the v6 batch are not kept — the spec they encode is this file's state
+table plus the copy already visible in each asset.
+
+## Style notes
+
+- `01` is the only asset in emoji-face style; everything else uses the neon-card system. Aligning
+  it would make the page feel designed rather than assembled. Not urgent.
+- The Mermaid diagram in the README ("Where memory lives") can never go stale — it renders from
+  text. Prefer Mermaid for structure, PNGs for the pitch.
