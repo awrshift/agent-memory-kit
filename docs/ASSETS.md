@@ -8,7 +8,6 @@ other** — same discipline as the docs, and a stale panel is a lie in the most-
 
 | Asset | State |
 |---|---|
-| `01-before-after.png` | true — no version-specific claims |
 | `02-daily-workflow.png` | regenerated for v6 (injection carries the hot cache; the ~50-message auto-save prompt is gone) |
 | `03-memory-layers.png` | regenerated for v6 (hot cache marked *injected every session*; namespaced skill) |
 | `04-promotion-pipeline.png` | true |
@@ -19,8 +18,11 @@ other** — same discipline as the docs, and a stale panel is a lie in the most-
 | `09-agent-qa-loop.png` | regenerated for v6 (footer: only the protocol file is copied) |
 | `og-banner.png` | true |
 
-All ten are capped at 2000 px wide: the set went from ~8.7 MB to ~3.0 MB, which matters because
-five of them sit above the fold.
+All nine are capped at 2000 px wide: the set went from ~8.7 MB to ~2.7 MB, which matters because
+several of them sit above the fold.
+
+Removed in v6: `01-before-after.png` — the before/after table in the README says the same thing,
+and it was the one asset drawn in a different (emoji-face) style. Still in git history.
 
 ## How to regenerate one
 
@@ -49,7 +51,5 @@ table plus the copy already visible in each asset.
 
 ## Style notes
 
-- `01` is the only asset in emoji-face style; everything else uses the neon-card system. Aligning
-  it would make the page feel designed rather than assembled. Not urgent.
 - The Mermaid diagram in the README ("Where memory lives") can never go stale — it renders from
   text. Prefer Mermaid for structure, PNGs for the pitch.

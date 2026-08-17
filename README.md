@@ -64,8 +64,6 @@ use the same three lines.
 
 ## Before / after
 
-![](.github/assets/01-before-after.png)
-
 | | Without Memory Kit | With Memory Kit |
 |---|---|---|
 | **New session** | "What were we working on?" | Opens with last session's handoff already loaded |

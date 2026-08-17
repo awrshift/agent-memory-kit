@@ -26,7 +26,7 @@ leave this board.
 |---|---|---|---|
 | D7 | README is ~2.7k words against a ~800–1500 median for developer tools. Trim, or keep the story? | **Keep the narrative but move the proof up:** install is now above the fold, and the FAQ answers the "vs built-in memory" question early. If a trim happens, cut the "Before / after" table (the graphic already says it) before cutting the origin story — the story is the differentiator. | Low, reversible. |
 | D8 | The strongest claim available is unused: *"the kit's own memory was never actually loaded for a year, and the fix is measurable."* Lead with it? | **Use it in the release notes and a launch post, not in the README hero.** It is credibility for practitioners and confusion for newcomers who never ran v5. | Low. |
-| D9 | ~~Regenerate the stale diagrams~~ | **Done** — six regenerated with `gemini-3-pro-image`, set re-compressed from ~8.7 MB to ~3.0 MB. Only `01`'s emoji-face style is still out of system. | — |
+| D9 | ~~Regenerate the stale diagrams~~ | **Done** — six regenerated with `gemini-3-pro-image`, set re-compressed from ~8.7 MB to ~3.0 MB. `01` was dropped rather than redrawn — the table under it already carried the point. | — |
 
 ## Recently settled
 
