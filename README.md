@@ -22,6 +22,17 @@
 Then work as usual, and type `/memory-kit:close-session` when you're done. That's the whole
 loop. Free — it runs on your existing Claude Pro or Max subscription and calls nothing else.
 
+**Upgrading later** takes two steps, and the second one needs the FULL `plugin@marketplace`
+identifier — the bare name resolves to nothing and the CLI answers `Plugin "memory-kit" not found`:
+
+```shell
+claude plugin marketplace update memory-kit     # refresh the catalog
+claude plugin update memory-kit@memory-kit      # then the plugin itself
+```
+
+Restart the session to apply. Your repository is untouched by an upgrade — memory, handoffs and
+knowledge live in your repo, never in the plugin — so `/memory-kit:setup` does not need re-running.
+
 ## The problem
 
 Every session starts from zero. Yesterday you locked the brand voice; today you explain it

@@ -8,6 +8,14 @@ Persistent memory for Claude Code agents, installed into a repository you alread
 /memory-kit:setup
 ```
 
+Upgrading later — both steps, and the full `plugin@marketplace` id on the second one (the bare
+name returns `Plugin "memory-kit" not found`):
+
+```shell
+claude plugin marketplace update memory-kit
+claude plugin update memory-kit@memory-kit
+```
+
 ## What it does at runtime
 
 - **SessionStart** — injects the working agreement (`context/identity.md`), the discipline nudges
