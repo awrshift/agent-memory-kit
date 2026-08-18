@@ -51,7 +51,9 @@ spots live.
 ### 3. Synthesize — agree vs diverge
 Where reviewers independently land on the same finding — high-confidence signal, promote it.
 Where they diverge — the highest-value rows: adjudicate on merits. On facts about the code the
-code-reader wins; **never count votes**.
+code-reader wins; **never count votes**. The full adjudication procedure — acceptance layers, the
+claim→check table, how a disputed finding is allowed to close — is
+`reference/orchestrator-fact-check.md`.
 
 ### 4. Act (the loop must end in action)
 - **Accept now:** cheap, safe, low-blast-radius fixes — apply this session, verify by artifact
@@ -72,6 +74,10 @@ what actually happened this session:
   name the concrete moment. Keep those.
 - Where did the foundation give friction or a gap — stale, duplicated, missing? Fix/merge/prune.
 - How did the orchestration go — right agents, good-enough briefs, honest adjudication?
+  (`reference/parallel-development.md` for the fan-out defaults and stop-conditions.)
+
+A CONFIRMED finding is worth a row in the findings-class registry, and a class recurring three
+times earns promotion into the cheapest layer that prevents it — `reference/review-loop.md`.
 
 Output: at most 1-3 minimal, evidence-backed adjustments, biased to **subtract before add**.
 "Keep doing" is a valid output — most sessions should change the foundation little.

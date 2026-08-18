@@ -2,6 +2,41 @@
 
 All notable changes to Memory Kit are documented here. Breaking changes marked **BREAKING**.
 
+<a id="v611"></a>
+
+## [6.1.1] — 2026-08-18 — The depth nobody could find
+
+### Fixed
+
+- **`reference/` was unreachable.** Six documents — `orchestrator-fact-check`, `review-loop`,
+  `parallel-development`, `doc-governance`, `decisions-log`, `capability-map-sweep` — were named
+  only in the README (not loaded), in `/memory-kit:setup` (only if invoked) and in
+  `templates/rules/orchestration.md` (only if the user copied it into `.claude/rules/`). Grepped
+  across the skills: every one of them except `qa-PROTOCOL-TEMPLATE` was referenced **zero** times.
+  A user who installed the plugin and skipped setup never learned they exist.
+
+  Now `context/identity.md` — the one file injected into every session — names the operators and
+  the `reference/` directory, and each document is cited from the skill that needs it:
+  `close-session` → `doc-governance` + `decisions-log`; `session-review` → `orchestrator-fact-check`,
+  `parallel-development`, `review-loop`; `second-opinion` → `orchestrator-fact-check`;
+  `system-audit` lenses 2 and 3 → `doc-governance`, `review-loop`, `parallel-development`;
+  the `recon` agent → `capability-map-sweep`.
+
+  The subtraction rule cuts both ways: a layer nobody can reach is decoration, whether it was
+  never written or merely never linked.
+
+- **A broken path in `agents/qa.md`** — it pointed at `rules/orchestrator-fact-check.md`, a v5
+  location. The file has lived in `reference/` since 6.0.0.
+
+- **`close-session` had no `allowed-tools`.** Now `Read, Write, Edit, Grep, Glob, Bash`. The
+  orchestrating skills (`session-review`, `second-opinion`, `qa-sweep`, `system-audit`)
+  deliberately keep inheriting the full set: they spawn subagents, and the spawn tool has been
+  renamed across Claude Code versions — pinning a list there would break the skill on the version
+  that calls it something else. An `allowed-tools` that can silently disable a skill is worse than
+  none.
+
+Nothing in a user's repository changes; `/memory-kit:setup` is not required after this upgrade.
+
 <a id="v610"></a>
 
 ## [6.1.0] — 2026-08-17 — Two skills nobody ran

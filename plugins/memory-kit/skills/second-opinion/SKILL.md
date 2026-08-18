@@ -48,7 +48,8 @@ if the claim is about tech or the outside world.
 3. Build an acceptance ledger: | Concern | Reviewer A | Reviewer B | My evaluation | Action |
 4. **Adjudicate, never count votes.** All agreeing can share a blind spot; one dissenter with a
    file:line beats abstract agreement. A code-reading reviewer outranks a brief-only one on
-   facts about the code.
+   facts about the code. The procedure in full — the three acceptance layers and the
+   claim→cheapest-decisive-check table — is `reference/orchestrator-fact-check.md`.
 5. Present the ledger critically: where you accept, where you push back, and why. You make the
    final call — reviewer output is INPUT, not the decision.
 

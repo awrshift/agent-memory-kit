@@ -39,6 +39,20 @@ flat. A tripped cap means run `/memory-kit:memory-audit` BEFORE other work.
 - **One home per fact.** When a fact changes, grep its restatements and fix them in the same pass.
   A stale copy that still looks current is the #1 failure mode of agent memory.
 
+## What else ships with the plugin (you have to know it exists to reach it)
+
+**Operators**, all namespaced `/memory-kit:` — bodies load only on invoke: `close-session` ·
+`memory-audit` (when a cap trips) · `system-audit` (the periodic seven-lens sweep) ·
+`session-review` · `second-opinion` · `qa-sweep` · `setup` · `tour`.
+
+**Depth, read on demand** from the plugin's `reference/` directory — free until you open it:
+`orchestrator-fact-check` (a report is INPUT, never a fact) · `review-loop` (the diff gate + the
+findings-class registry) · `parallel-development` (fan-out, worktree isolation, one integrator) ·
+`doc-governance` (one SSOT per fact, the anti-drift rules) · `decisions-log` (the lean ledger) ·
+`capability-map-sweep` (the "the library already does this" defect class). Delegating to
+subagents? `templates/rules/orchestration.md` is the five always-loaded invariants — copy it into
+`.claude/rules/` (a plugin cannot ship rules; `/memory-kit:setup` offers this).
+
 ## What you write freely vs what needs a "yes"
 
 - **Freely (and you say so briefly):** `MEMORY.md` entries, the session handoff.

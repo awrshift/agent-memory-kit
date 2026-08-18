@@ -65,8 +65,8 @@ Full briefs (what each lens checks, its evidence rules, its "н/п" condition):
 | # | Lens | The question it answers |
 |---|---|---|
 | 1 | **Delivery reality** | Does the claimed state (backlog, handoff, README) match disk / git / prod? |
-| 2 | **Knowledge layer** | SSOT hygiene: frontmatter, drift, the same fact restated stale in N places, contradictions between SSOTs. |
-| 3 | **Operational layer** | Rules, agents, memory, the self-improvement loops (findings registry → promotion → drop): coherent and non-contradictory? |
+| 2 | **Knowledge layer** | SSOT hygiene: frontmatter, drift, the same fact restated stale in N places, contradictions between SSOTs. Standard: `reference/doc-governance.md`. |
+| 3 | **Operational layer** | Rules, agents, memory, the self-improvement loops (findings registry → promotion → drop): coherent and non-contradictory? Standards: `reference/review-loop.md`, `reference/parallel-development.md`. |
 | 4 | **Layer telemetry** | Which of those layers ever actually **fired**? Dead rules, never-invoked skills, agents defined once and never spawned. |
 | 5 | **Tools & infra** | Reproducibility (pinned deps, a documented run path), secrets, backup **and restore**, ownership of external state. |
 | 6 | **Domain gaps** | What a professional system *of this class* has and this one doesn't. The domain is named by the user or inferred; the lens brief lists gap-maps per common domain. |

@@ -1,6 +1,7 @@
 ---
 name: close-session
 description: End-of-session ritual — audit today's patterns against accumulated memory, propose promotions, refresh MEMORY.md, and write the session handoff. Use when the user says "/memory-kit:close-session", "закрой сессию", "закрываем", "we're done for today", "wrap up".
+allowed-tools: Read, Write, Edit, Grep, Glob, Bash
 ---
 
 # /close-session — the end-of-session ritual
@@ -22,6 +23,9 @@ said X — codify as a rule or a concept article?"
   only for patterns stable 6+ months). Update `knowledge/index.md` (one line per concept).
 - Promoted or long-absorbed entries get PRUNED from MEMORY.md — that's how it stays under its
   caps (180 lines / 32 KB / 3000 chars per line).
+- Writing a fact into a second place? `reference/doc-governance.md` — one SSOT per fact, and when
+  a fact changes you grep its restatements in the same pass. A product or architecture decision
+  goes to the ledger instead: `reference/decisions-log.md`.
 
 ## Step 3 — Refresh the MEMORY.md header
 The header (everything above the first `---`) is «current state of work», 2-3 sentences,

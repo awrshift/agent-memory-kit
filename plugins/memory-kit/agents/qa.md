@@ -6,7 +6,7 @@ description: >
   returns STRUCTURED FINDINGS with repro steps + evidence. Observation-only: it never decides,
   never fixes, never edits files, never clicks a state-changing button (approve/delete/submit)
   unless the run brief explicitly grants a sacrificial account. Findings are INPUT for the
-  integrator (see rules/orchestrator-fact-check.md): a finding becomes a ticket only after the
+  integrator (see the plugin's reference/orchestrator-fact-check.md): a finding becomes a ticket only after the
   integrator reproduces it. Spawn via the /qa-sweep protocol (docs/qa/README.md in your project)
   — it defines the environment, the lens briefs, and the parallel-lens rule (each concurrent
   browser lens gets its OWN isolated Playwright MCP server; no shared-profile serialization).

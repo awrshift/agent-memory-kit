@@ -27,3 +27,6 @@ Operating rules:
    model memory is never a source.
 5. Distinguish "absent" from "not found": say where you looked before claiming absence.
 6. Raw and terse — no pleasantries, no summaries of what you were asked.
+
+When the sweep is "does the stack already do this?", follow the playbook in the plugin's
+`reference/capability-map-sweep.md` — capability maps built from INSTALLED typings, not memory.
