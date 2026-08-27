@@ -16,15 +16,21 @@ the rest carry their v6 / v6.1 state)
 | `02-session-loop.png` | regenerated for v6 (injection carries the hot cache; the ~50-message auto-save prompt is gone) |
 | `03-where-memory-lives.png` | regenerated for v6 (hot cache marked *injected every session*; namespaced skill) |
 | `04-promotion.png` | regenerated for v6 (the namespaced skill in the YOUR YES step) |
-| `05-multi-client.png` | opened 2026-08-27: the panel draws `projects/nestle/` as `BACKLOG.md` + `brand-guide.pdf` + `tone-of-voice.md`, and its footer «Per-project = projects/<name>/. Shared = everything else» is exactly 6.2.0's line. **Incomplete, not wrong:** the folder now also holds `README.md` (the map), `plans/`, `research/`, `decisions-log.md`, `review-findings.md`, `qa/`. Regenerate when the next batch runs. |
+| `05-multi-project-layer.png` | **regenerated 2026-08-27 for v6.2.0** (was `05-multi-client.png`): the project tree now shows what a project folder actually holds — `README.md ← the map`, `BACKLOG.md`, `plans/`, `research/`, `decisions-log.md`, `qa/`, `materials/` — and the footer states the 6.2.0 line, «Per-project = the work's own documents. Shared = the memory.» |
 | `06-hooks-skills.png` | regenerated for v6.1 — four hooks, the eight remaining skills |
-| `07-orchestrated-work.png` | opened 2026-08-27: still true — «builds to an already-decided spec in an isolated git worktree» says nothing about where the spec lives, so 6.2.0 contradicts nothing. **Incomplete, not wrong:** the panel never shows that the spec is a FILE at `projects/<name>/plans/` written before fan-out, which is now the load-bearing part. Worth a line on the next regeneration. |
+| `07-orchestrated-work-spec.png` | **regenerated 2026-08-27 for v6.2.0** (was `07-orchestrated-work.png`): a new second row — «THE SPEC — a file, written before anyone fans out», `projects/<name>/plans/YYYY-MM-DD-<slug>.md`, goal · non-goals · acceptance pre-registered · the gate commands — and the three agents now fan out FROM the spec, not from the integrator. |
 | `08-one-operator-many-projects.png` | regenerated for v6 — the old one sold `git clone` per client, which is the model v6 replaced |
 | `09-agent-qa.png` | regenerated for v6 (footer: only the protocol file is copied) |
 | `og-banner.png` | true |
 
 All nine are capped at 2000 px wide: the set went from ~8.7 MB to ~2.7 MB, which matters because
 several of them sit above the fold.
+
+**The `.png` files hold JPEG data.** `sips -Z 2000 in.png --out out.png` re-encodes as JPEG while
+keeping the name (it warns «Output file suffix should be jpg» and is ignored); every asset in the
+set has been this way since the v6 batch, and browsers render them by content sniffing. Keep it —
+a true PNG of these glow-heavy panels is ~2.5 MB each, which would put the set back near 7 MB and
+undo the cap. If you ever switch to real PNGs, rename the files to match, and expect the weight.
 
 Removed in v6: `01-before-after.png` — the before/after table in the README says the same thing,
 and it was the one asset drawn in a different (emoji-face) style. Still in git history.

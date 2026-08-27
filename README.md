@@ -166,7 +166,7 @@ It is built around the failure modes we hit in real long-running use:
 
 ## Multiple clients
 
-![](.github/assets/05-multi-client.png)
+![](.github/assets/05-multi-project-layer.png)
 
 Two shapes, both supported. **One repo per client** — install the plugin in each, and every
 client gets its own memory with the same discipline. Or **one workspace, many client folders**:
@@ -210,7 +210,7 @@ Everything in plain text files. No databases. No external services. `git checkou
 
 ## Agent-orchestrated work (opt-in)
 
-![](.github/assets/07-orchestrated-work.png)
+![](.github/assets/07-orchestrated-work-spec.png)
 
 When you use the kit to BUILD things — software, agent systems, research pipelines — there's a
 next level: your agent stops doing everything in one thread and starts **orchestrating agents**.
