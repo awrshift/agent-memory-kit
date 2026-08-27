@@ -46,7 +46,8 @@ pruned from here. -->
 - Session narratives (those live in `context/handoffs/<topic>-<date>.md`)
 - Rationale essays longer than one line (those belong in `knowledge/concepts/*.md`)
 - Mechanical always/never constraints (those promote to `.claude/rules/*.md`)
-- Project-specific tasks (those live in `projects/<name>/BACKLOG.md`)
+- Project-specific tasks, specs, research or QA records (those live in `projects/<name>/` —
+  its `README.md` maps where each class goes)
 - Experiment progress notes (those live in `experiments/<name>-YYYYMMDD/EXPERIMENT.md`)
 
 ## The three caps (hook-enforced)

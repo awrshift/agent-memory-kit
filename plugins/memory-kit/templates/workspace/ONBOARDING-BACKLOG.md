@@ -41,7 +41,7 @@ The agent will capture this into `MEMORY.md`. You won't open that file — just 
 
 Say to the agent:
 
-> "/tour"
+> "/memory-kit:tour"
 
 The agent will walk you through the stops of the Memory Kit on YOUR actual files. Takes 10-15 minutes.
 

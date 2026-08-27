@@ -16,7 +16,12 @@
   each on merits before applying; never auto-apply, never count votes.
 - Skip the gate for doc-only / trivial diffs — it's a gate, not a tax.
 
-## 2. The findings-class registry (`context/review-findings.md`)
+## 2. The findings-class registry (`projects/<name>/review-findings.md`)
+
+One registry per project — the promotion rule counts occurrences of a CLASS, and a shared file
+across several projects makes that count meaningless. Already keeping one elsewhere? Leave it and
+repoint the row in `projects/<name>/README.md`.
+
 
 Every integrator-CONFIRMED finding from a code review, QA sweep, or design review appends ONE
 row. Refuted findings are NOT logged — the ledger tracks real defect classes only. Counts are
@@ -34,8 +39,10 @@ Row: `date · class-slug · found-by · where (file) · outcome`
 prevents it, and mark the promotion in its row:**
 
 1. a **deterministic check** — lint rule / hook / grep gate (zero LLM context, fires forever);
-2. a line in the relevant **agent definition** or executor spec template (`.claude/agents/*`);
-3. a line in a **review/QA lens brief**;
+2. a line in the relevant **agent definition** (`.claude/agents/*`), or a standing gate recorded
+   in `projects/<name>/README.md` so every future spec inherits it — never an edit to the kit's
+   own `SPEC-TEMPLATE.md`, which ships inside the plugin and is replaced on upgrade;
+3. a line in a **review/QA lens brief** (`projects/<name>/qa/README.md`);
 4. a `knowledge/concepts/` entry (last resort — knowledge nobody is forced to read is the
    weakest layer).
 

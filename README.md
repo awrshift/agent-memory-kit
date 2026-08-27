@@ -170,8 +170,15 @@ It is built around the failure modes we hit in real long-running use:
 
 Two shapes, both supported. **One repo per client** — install the plugin in each, and every
 client gets its own memory with the same discipline. Or **one workspace, many client folders**:
-`/memory-kit:setup` offers `projects/<name>/` and `experiments/<name>-YYYYMMDD/`, shared layers
-(memory, wiki, rules) load for all of them, and per-client materials load when you name one.
+`/memory-kit:setup` creates `projects/<name>/` per client (plus `experiments/<name>-YYYYMMDD/`
+for throwaway R&D), shared layers (memory, wiki, rules) load for all of them, and one project's
+own documents load when you name it.
+
+The line between the two is **memory vs paperwork**: what Claude *learned* is shared — patterns,
+knowledge articles, rules. What the work *produced* belongs to one project: its backlog, its
+specs, its research, its decisions ledger, its QA protocol. Each project folder opens with a
+`README.md` that maps where those live, so "where does this plan go" has exactly one answer. A
+single-product repository gets one project folder — same shape, count of one.
 
 Say "we're working on Nestlé" — Claude unloads the other clients and loads that scope only.
 
@@ -207,9 +214,10 @@ Everything in plain text files. No databases. No external services. `git checkou
 
 When you use the kit to BUILD things — software, agent systems, research pipelines — there's a
 next level: your agent stops doing everything in one thread and starts **orchestrating agents**.
-The main session designs and decides; `executor` subagents build to a decided spec in isolated
-git worktrees; `recon` gathers facts read-only; `idea-validator` attacks the design from a fresh
-context. The integrator merges, re-runs the gates on the merged tree, and treats every subagent
+The main session designs and decides — writing the spec as a FILE
+(`projects/<name>/plans/YYYY-MM-DD-<slug>.md`, acceptance pre-registered before anything is
+built); `executor` subagents build to that spec in isolated git worktrees; `recon` gathers facts
+read-only; `idea-validator` attacks the design from a fresh context. The integrator merges, re-runs the gates on the merged tree, and treats every subagent
 report as INPUT — never as a fact.
 
 Two skills close the loop: `/session-review` (an adversarial review of the session's work by
@@ -352,13 +360,15 @@ plugins/memory-kit/
   agents/                         ← executor · recon · idea-validator · qa
   templates/                      ← what /memory-kit:setup scaffolds into YOUR repo
   reference/                      ← depth, read on demand (fact-check, parallel dev,
-                                    doc governance, decisions log, review loop, QA protocol)
+                                    doc governance, decisions log, review loop, QA protocol,
+                                    project extensions)
 docs/                             ← architecture · changelog · contributing
 ```
 
-In **your** repository the kit owns only state: `.claude/memory/MEMORY.md`,
-`context/handoffs/`, `knowledge/`, and — if you want them — `projects/<name>/` for real client
-work and `experiments/<name>-YYYYMMDD/` for hypotheses (rough OK, distil on close, then delete).
+In **your** repository the kit owns only state: the shared memory layers
+(`.claude/memory/MEMORY.md`, `context/handoffs/`, `knowledge/`, `.claude/rules/`), one
+`projects/<name>/` folder per client or product for the work's own documents, and — if you want
+it — `experiments/<name>-YYYYMMDD/` for hypotheses (rough OK, distil on close, then delete).
 
 **Full architecture:** [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 **Version history:** [docs/CHANGELOG.md](docs/CHANGELOG.md)

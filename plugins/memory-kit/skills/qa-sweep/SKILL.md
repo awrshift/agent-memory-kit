@@ -4,7 +4,7 @@ description: >
   Run a multi-lens agent QA sweep of the RUNNING product: spawn `qa` agents (one per lens —
   user-flow · edge-state · honesty · contract · ux-critique), collect their structured
   findings, integrator-verify the load-bearing ones, and land verified findings as backlog
-  tickets + a run record in docs/qa/. Use whenever the user asks to QA, test, or probe the
+  tickets + a run record in the project's qa/ folder. Use whenever the user asks to QA, test, or probe the
   product from the user's side — "qa sweep", "test the UI", "walk the flows", "find
   inconsistencies", "check how this looks to a client" — and proactively after integrating any
   large UI slice, before a milestone, or when a manual walk found one bug and siblings are
@@ -15,7 +15,7 @@ description: >
 
 # QA Sweep — multi-lens agent QA of the live product
 
-Read `docs/qa/README.md` FIRST (the protocol SSOT: environment rules · the five lens briefs ·
+Read `projects/<name>/qa/README.md` FIRST (the protocol SSOT: environment rules · the five lens briefs ·
 findings format · triage) — the lens briefs in agent prompts come verbatim from there, and the
 account/mutation policy it sets is a hard rail, not advice. If that file doesn't exist yet,
 create it from the layer's protocol template (`${CLAUDE_PLUGIN_ROOT}/reference/qa-PROTOCOL-TEMPLATE.md` in
@@ -39,7 +39,7 @@ and fill the placeholders before sweeping.
    (the named repro steps) before it becomes a ticket. Unreproducible → back to the agent or
    drop with a note. «Impressions» never become tickets directly.
 5. **Land the results:** verified findings → backlog tickets (P1/P2) or a minors batch (P3) ·
-   one run record `docs/qa/qa-run-YYYYMMDD.md` (lenses run · coverage · findings table with
+   one run record `projects/<name>/qa/qa-run-YYYYMMDD.md` (lenses run · coverage · findings table with
    verified/dropped status · pointers to tickets) · a row in the protocol's § Runs index.
 6. **Cleanup:** stop dev servers, remove stray screenshots from the repo root, re-seed the
    sacrificial account if a mutation run dirtied it.

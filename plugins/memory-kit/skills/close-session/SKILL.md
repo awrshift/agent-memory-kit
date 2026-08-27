@@ -25,7 +25,9 @@ said X — codify as a rule or a concept article?"
   caps (180 lines / 32 KB / 3000 chars per line).
 - Writing a fact into a second place? `reference/doc-governance.md` — one SSOT per fact, and when
   a fact changes you grep its restatements in the same pass. A product or architecture decision
-  goes to the ledger instead: `reference/decisions-log.md`.
+  goes to the ledger instead — `projects/<name>/decisions-log.md`, format in
+  `reference/decisions-log.md`. A plan, a spec, a research finding or a QA record is NOT memory:
+  it belongs in that project's folder, per the map in its `README.md`.
 
 ## Step 3 — Refresh the MEMORY.md header
 The header (everything above the first `---`) is «current state of work», 2-3 sentences,
@@ -41,7 +43,10 @@ opening note). The SessionStart hook injects the newest handoff next time — th
 ## Also check (30 seconds)
 - **Experiment hygiene:** any `experiments/*-YYYYMMDD/` older than 30 days → ask: still active
   or close (distill → delete)?
-- **Backlogs:** `projects/*/BACKLOG.md` task statuses reflect today's reality.
+- **Backlogs:** `projects/*/BACKLOG.md` task statuses reflect today's reality — a `DONE`
+  nobody verified is still `IN PROGRESS`.
+- **Project map:** anything you wrote today into a project folder is a row in that project's
+  `README.md` map, and the map's `Last verified` is today's date.
 - **Caps:** if MEMORY.md is near any cap, do a deeper prune now, not "next time".
 
 ## What NOT to do

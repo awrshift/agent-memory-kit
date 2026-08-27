@@ -30,7 +30,7 @@ List `knowledge/concepts/*.md`. Say: "Deep memory with facts. 'What's our typogr
 Show `context/handoffs/`. Say: "One note per closed session — my session diary. You never open them; just ask 'what did we do last Tuesday?' and I read them back."
 
 ### Stop 7 — Projects
-List `projects/*/`. Say: "Each client or initiative gets a folder. BACKLOG.md for tasks, drop in any PDF or md as reference. Say 'we're working on <name>' and I switch context to that one."
+List `projects/*/` and open one `README.md`. Say: "Each client or product gets a folder, and its README is the map — where this project's tasks, specs, research, decisions and QA live. Memory is shared across all of them; paperwork is per project. Say 'we're working on <name>' and I switch to that one."
 
 ### Stop 8 — Hooks
 Don't deep-dive — the hooks ship inside the plugin, there is nothing in this repo to maintain. Say: "Four hooks run silently: one injects your memory and the working rules at every session start, one blocks compaction until state is saved, one asks before an existing test gets edited, one logs the close."

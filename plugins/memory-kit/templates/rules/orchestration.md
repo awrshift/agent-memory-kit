@@ -6,10 +6,12 @@
 
 1. **A subagent or reviewer report is INPUT, never a fact.** Re-run the gate, read the
    file:line, query the store yourself before saying "done".
-2. **Subagents execute a decided spec.** They never redesign; a forced deviation is REGISTERED
+2. **Subagents execute a decided spec** — a FILE at `projects/<name>/plans/`, named in the
+   prompt, carrying Goal · Non-goals · pre-registered Acceptance · Gate commands · slices
+   (`SPEC-TEMPLATE.md` in the plugin). They never redesign; a forced deviation is REGISTERED
    in the report and adjudicated at merge.
-3. **The main session is the single integrator** — it alone writes shared state (memory,
-   backlogs, docs), merges worktrees, and re-runs the full gate set on the merged tree.
+3. **The main session is the single integrator** — it alone writes memory and everything under
+   `projects/<name>/`, merges worktrees, and re-runs the full gate set on the merged tree.
    Subagent-green is not integrated-green.
 4. **A failing test means the CODE is wrong**, not the test.
 5. **Never count reviewer votes — adjudicate on merits.** One dissenter with a file:line beats

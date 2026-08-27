@@ -34,8 +34,10 @@ silently.
 ## Docs that must stay true in the same commit
 
 A behaviour change touches `docs/CHANGELOG.md`; a layer change also touches `docs/ARCHITECTURE.md`
-and the README's skill table. `VERSION`, `plugin.json` and `marketplace.json` carry the same
-version — they have drifted before.
+and BOTH readmes — the root `README.md` (the pitch) and `plugins/memory-kit/README.md` (the skill
+table). A change to what a diagram asserts touches `docs/ASSETS.md`, even when the PNG is not
+regenerated in the same commit — a stale panel is a lie in the most-read file. `VERSION`,
+`plugin.json` and `marketplace.json` carry the same version — they have drifted before.
 
 ## Language
 

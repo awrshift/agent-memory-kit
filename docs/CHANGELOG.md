@@ -2,6 +2,70 @@
 
 All notable changes to Memory Kit are documented here. Breaking changes marked **BREAKING**.
 
+<a id="v620"></a>
+
+## [6.2.0] — 2026-08-27 — The project layer: where the work's own documents live
+
+The kit was multi-project in its MEMORY and single-project in its PAPERWORK. Every artifact the
+builder's layers produce had a root-level address — `docs/qa/README.md`, `context/review-findings.md`,
+`docs/decisions-log.md` — so a workspace with five clients got one QA protocol, one findings
+registry and one decision ledger for all of them. And the most load-bearing artifact of the whole
+orchestration model, the spec an `executor` builds to, had no address at all: it lived in a prompt,
+which meant it could not be re-read at merge, diffed against what was built, or found the next day.
+
+### Added
+
+- **`projects/<name>/` is now the documented home of the work's own documents**, and the first
+  thing in it is `README.md` — a map table of where this project's tasks, specs, research,
+  decisions, findings and QA records live. That table is the SSOT answering "where does a plan
+  go"; the default paths are a default, not a law.
+- **`templates/workspace/project/`** — three new templates: `README-TEMPLATE.md` (the map),
+  `SPEC-TEMPLATE.md` (goal · non-goals · **pre-registered** acceptance · gates · slices ·
+  registered deviations — the contract an executor builds to), and a working `BACKLOG-TEMPLATE.md`.
+- **`reference/project-extensions.md`** — the decision table for when a repeated workflow earns a
+  project skill, hook, agent or rule, what each costs when idle, and the three questions to ask
+  before adding any of them. Previously the kit audited these layers (`system-audit` lens 4) while
+  never saying how to build one.
+
+### Changed
+
+- **The spec is a file, not a prompt.** `parallel-development.md` gains Level 0: the contract is
+  written at `projects/<name>/plans/YYYY-MM-DD-<slug>.md` before any fan-out, and executor prompts
+  POINT at that path. `agents/executor.md` now says to read the spec file in full, treats its
+  Non-goals as binding, and forbids editing it — the integrator owns it and adjudicates deviations.
+- **The agentic artifacts got project addressing:** the QA protocol and run records
+  (`docs/qa/` → `projects/<name>/qa/`), the findings registry (`context/review-findings.md` →
+  `projects/<name>/review-findings.md`), the decision ledger (`docs/decisions-log.md` →
+  `projects/<name>/decisions-log.md`). `context/audits/` stays at the root — a system audit is
+  about the agent system, not about one client.
+- **`recon` names what is worth filing**, and the integrator files it under
+  `projects/<name>/research/<topic>-YYYY-MM-DD/` — dated, because an outside fact older than a week
+  is a hypothesis again.
+- **`/memory-kit:setup` gains Step 1b** and drops the rule that said not to create `projects/` in a
+  code repository. That rule is why specs, backlogs and research had nowhere to go in exactly the
+  repos that run executors. A single-product repo now gets one project folder, named after the
+  product. Only `README.md` and `BACKLOG.md` are scaffolded; every other path appears on first use.
+- **A repository that already has a `docs/` keeps it.** Setup maps it in the project README and
+  migrates nothing.
+- **`context/identity.md`** (injected every session) now draws the line explicitly: four memory
+  layers, and `projects/<name>/` which is not a fifth — memory is what the agent learned, a project
+  folder is what the work produced.
+- `templates/workspace/BACKLOG-TEMPLATE.md` → `ONBOARDING-BACKLOG.md`. It was a five-task day-one
+  tutorial being handed out as the template for real project backlogs.
+
+### Fixed
+
+- **`docs/ARCHITECTURE.md` still listed `memory-usage` and `memory-lint`** as operators, ten
+  days after 6.1.0 removed them (2026-08-17) — the exact drift its own `doc-governance.md` R2
+  forbids, and it survived the 6.1.1 release in between.
+
+### Migration
+
+Nothing breaks and nothing moves on its own. Existing repos keep their current paths; when you
+next touch one of the relocated files, either move it into the project folder or leave it and
+repoint the row in `projects/<name>/README.md`. `/memory-kit:setup` can be re-run safely — it
+creates only what is missing — and is the easiest way to get the project README written for you.
+
 <a id="v611"></a>
 
 ## [6.1.1] — 2026-08-18 — The depth nobody could find

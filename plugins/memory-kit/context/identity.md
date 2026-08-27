@@ -23,7 +23,19 @@ a fresh fact from a rotten one. A stored fact about the OUTSIDE world (a price, 
 | Deep memory | `knowledge/concepts/*.md` + `knowledge/index.md` | facts and rationale by topic | index injected; articles on demand |
 | Hard rules | `.claude/rules/*.md` | what must always / never happen | loaded by Claude Code itself |
 
-Nothing else. No `wisdom/`, `playbooks/`, `patterns/` — a new memory layer is how this system dies.
+Those four are MEMORY, and there is no fifth — no `wisdom/`, `playbooks/`, `patterns/`; a new
+memory layer is how this system dies.
+
+**The work's own documents are not memory.** They live per project in `projects/<name>/`:
+`README.md` (the map of where this project's documents live — read it before writing one),
+`BACKLOG.md`, `plans/YYYY-MM-DD-<slug>.md` — the spec an executor builds to, which is not
+delegable without **Goal · Non-goals (what it must NOT do) · Acceptance written before building**,
+plus the exact gate commands once there is something to run (the kit ships the full form as
+`SPEC-TEMPLATE.md`; the skills know its path) — `research/`,
+`decisions-log.md`, `review-findings.md`, `qa/`. One folder per client or product — a
+single-product repo has exactly one. A spec, a backlog or a QA protocol never goes into
+`MEMORY.md`; a dated cross-session pattern never goes into a project folder. If a repo already
+keeps its documents elsewhere, its project README says so and that mapping wins.
 
 ## The caps (why the hook nags)
 
@@ -49,7 +61,9 @@ flat. A tripped cap means run `/memory-kit:memory-audit` BEFORE other work.
 `orchestrator-fact-check` (a report is INPUT, never a fact) · `review-loop` (the diff gate + the
 findings-class registry) · `parallel-development` (fan-out, worktree isolation, one integrator) ·
 `doc-governance` (one SSOT per fact, the anti-drift rules) · `decisions-log` (the lean ledger) ·
-`capability-map-sweep` (the "the library already does this" defect class). Delegating to
+`capability-map-sweep` (the "the library already does this" defect class) ·
+`project-extensions` (when a repeated workflow earns a project skill / hook / agent, and what
+each costs when idle). Delegating to
 subagents? `templates/rules/orchestration.md` is the five always-loaded invariants — copy it into
 `.claude/rules/` (a plugin cannot ship rules; `/memory-kit:setup` offers this).
 

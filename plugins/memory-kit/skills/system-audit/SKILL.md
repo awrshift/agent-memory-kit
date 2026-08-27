@@ -125,8 +125,8 @@ Then:
    template in `references/report-template.md`. It is the delta baseline for the next audit.
 3. **Land the rest as tickets** in the project's backlog with its own id scheme — not as prose
    in the report where it dies.
-4. **Feed the loops**: confirmed finding classes → the findings registry (`context/review-findings.md`
-   or the project's equivalent); a class on its 3rd occurrence → promote to the CHEAPEST layer
+4. **Feed the loops**: confirmed finding classes → the findings registry
+   (`projects/<name>/review-findings.md`, or wherever that project's README maps it); a class on its 3rd occurrence → promote to the CHEAPEST layer
    that prevents it (deterministic check > agent/spec line > lens brief > knowledge article).
    Dead layers found by lens 4 → propose the drop.
 5. **One line into MEMORY.md**, date-tagged: the audit's headline finding.

@@ -10,7 +10,7 @@
       "name": "memory-kit",
       "source": "./plugins/memory-kit",
       "description": "Persistent memory for Claude Code: a hot cache under three size caps, per-session handoffs, agent-audited promotion into knowledge and rules — plus the optional orchestration and QA layers as skills you only ever see when you invoke them. Installs into any existing repository.",
-      "version": "6.1.1",
+      "version": "6.2.0",
       "author": {
         "name": "awrshift"
       },

@@ -1,7 +1,7 @@
 {
   "name": "memory-kit",
   "displayName": "Claude Memory Kit",
-  "version": "6.1.1",
+  "version": "6.2.0",
   "description": "Persistent memory for Claude Code agents: a hot cache injected every session and held under three size caps, per-session handoffs, and agent-audited promotion into knowledge articles and rules. Carries the builder's layers too — executor/recon/idea-validator agents, session review, second opinion, agent QA and a system audit — all lazy-loaded skills you only pay for on use.",
   "author": {
     "name": "awrshift",

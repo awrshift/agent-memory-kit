@@ -4,7 +4,8 @@ Nine diagrams in `.github/assets/` carry the visual story. They are PNGs, so the
 the product. The rule: **a diagram that states a fact is a fact that has to be swept like any
 other** — same discipline as the docs, and a stale panel is a lie in the most-read file.
 
-## State (last swept 2026-08-17, v6.0.0)
+## State (03, 05 and 07 swept 2026-08-27 for v6.2.0 — the three the project layer touches;
+the rest carry their v6 / v6.1 state)
 
 > Every asset below was opened and read, not inferred. The first pass of this table marked `04`
 > and `08` "true" without looking; `08` turned out to be selling `git clone` per client on the
@@ -15,9 +16,9 @@ other** — same discipline as the docs, and a stale panel is a lie in the most-
 | `02-session-loop.png` | regenerated for v6 (injection carries the hot cache; the ~50-message auto-save prompt is gone) |
 | `03-where-memory-lives.png` | regenerated for v6 (hot cache marked *injected every session*; namespaced skill) |
 | `04-promotion.png` | regenerated for v6 (the namespaced skill in the YOUR YES step) |
-| `05-multi-client.png` | regenerated for v6 (plugin identity replaces `CLAUDE.md` in the always-loaded column) |
+| `05-multi-client.png` | opened 2026-08-27: the panel draws `projects/nestle/` as `BACKLOG.md` + `brand-guide.pdf` + `tone-of-voice.md`, and its footer «Per-project = projects/<name>/. Shared = everything else» is exactly 6.2.0's line. **Incomplete, not wrong:** the folder now also holds `README.md` (the map), `plans/`, `research/`, `decisions-log.md`, `review-findings.md`, `qa/`. Regenerate when the next batch runs. |
 | `06-hooks-skills.png` | regenerated for v6.1 — four hooks, the eight remaining skills |
-| `07-orchestrated-work.png` | regenerated for v6 (footer: ships inside the plugin) |
+| `07-orchestrated-work.png` | opened 2026-08-27: still true — «builds to an already-decided spec in an isolated git worktree» says nothing about where the spec lives, so 6.2.0 contradicts nothing. **Incomplete, not wrong:** the panel never shows that the spec is a FILE at `projects/<name>/plans/` written before fan-out, which is now the load-bearing part. Worth a line on the next regeneration. |
 | `08-one-operator-many-projects.png` | regenerated for v6 — the old one sold `git clone` per client, which is the model v6 replaced |
 | `09-agent-qa.png` | regenerated for v6 (footer: only the protocol file is copied) |
 | `og-banner.png` | true |

@@ -31,6 +31,7 @@ documented at `code.claude.com/docs`.
 ║  6. knowledge/index.md — the catalog of deep memory          ║
 ║                                                              ║
 ║  Profiles: startup/clear/fork → all six · compact → 1 + 4    ║
+║  plus a one-line pointer to the newest handoff               ║
 ║  (what compaction drops) · resume → 2 + 3 only               ║
 ╠══════════════════════════════════════════════════════════════╣
 ║  ALSO IN CONTEXT (loaded by Claude Code itself)              ║
@@ -46,8 +47,10 @@ documented at `code.claude.com/docs`.
 ║                                   only when invoked          ║
 ║  reference/*.md                 — depth, read on demand      ║
 ║  knowledge/concepts/*.md        — deep reference articles    ║
-║  projects/<active>/*.md         — client materials (PDFs,    ║
-║                                   briefs, references)        ║
+║  projects/<active>/              — that project's OWN docs:  ║
+║      README.md (the map) · BACKLOG.md · plans/ (specs) ·     ║
+║      research/ · decisions-log.md · review-findings.md ·     ║
+║      qa/ · materials/ — loaded when the project is named     ║
 ╠══════════════════════════════════════════════════════════════╣
 ║  HANDOFF HISTORY (grep-on-demand, not auto-loaded wholesale) ║
 ║  ──────────────────────────────────────────────────────────  ║
@@ -62,8 +65,6 @@ documented at `code.claude.com/docs`.
 ║  memory-audit     cap-trip surgery on the hot cache          ║
 ║  system-audit     periodic 7-lens sweep of the whole system  ║
 ║  setup · tour     adopt the kit here · walkthrough           ║
-║  memory-usage     hot/cold telemetry (archival candidates)   ║
-║  memory-lint      structural health checks                   ║
 ║  session-review   adversarial close loop                     ║
 ║  second-opinion   cross-check before commit                  ║
 ║  qa-sweep         multi-lens QA of the running app           ║
@@ -108,9 +109,29 @@ anything.
 **Is:** facts + rationale, topic-oriented. "Our typography scale: 43 paired sub-tokens. Sizes, line heights, weights. Reasoning per level."
 **Is not:** workflow methodology (that's a task skill or rule). Not date-tagged short notes (that's MEMORY.md).
 
-### projects/<name>/ — per-project scope
-**Is:** everything specific to one client or project. `BACKLOG.md` (tasks), any `*.md` or `*.pdf` user has uploaded as reference.
-**Is not:** shared knowledge. Don't put brand-system stuff here if it applies across projects. Not a sandbox for prototypes (that's `experiments/`).
+### projects/<name>/ — the work's own documents
+**Is:** everything the work itself produces for ONE client or product, and the only layer that is
+not memory. `README.md` — what the project is plus **the map of where its documents live**, which
+is the SSOT that answers "where does a plan go". `BACKLOG.md` — tasks and their honest status.
+`plans/YYYY-MM-DD-<slug>.md` — the specs an `executor` builds to (`SPEC-TEMPLATE.md`), written
+BEFORE any fan-out and integrator-owned. `research/<topic>-YYYY-MM-DD/` — what a `recon` sweep or
+an acceptance run produced, dated because outside facts rot. `decisions-log.md` — the numbered
+ledger. `review-findings.md` — the finding-class registry the promotion rule counts. `qa/` — the
+QA protocol and its run records. `materials/` — briefs, PDFs, brand books the user drops in.
+
+A single-product code repository has exactly ONE of these folders, named after the product. The
+per-project scoping is not decoration: a ledger's `D-00N` ids, a findings class count and a QA
+protocol's environment each describe one product, and merging two products into one file makes
+all three lie.
+
+**Is not:** memory (that's the four shared layers — a dated pattern never lands here, and a spec
+never lands in `MEMORY.md`). Not shared knowledge: something true across every client is a
+`knowledge/concepts/` article. Not a sandbox for prototypes (that's `experiments/`). Not
+scaffolded upfront — every path except `README.md` and `BACKLOG.md` appears when something is
+actually written into it.
+
+**When the repository already has a `docs/`:** it stays exactly where it is. The README's map
+table repoints to it, and the kit migrates nothing — a working layout outranks a default.
 
 ### experiments/<name>-YYYYMMDD/ — sandbox
 **Is:** R&D folder for hypotheses, prototypes, throwaway research. `EXPERIMENT.md` (hypothesis + result), optional code, notes, screenshots. Date in folder name.
@@ -278,19 +299,39 @@ Key property: **user never opens a file during the entire ritual.** They talk, a
 
 ## Multi-project architecture
 
-One agent, many projects. Shared layers (rules, concepts, hot path) apply across all projects. Per-project layers (BACKLOG.md, client materials) are scoped.
+One agent, many projects. The split is not "big things vs small things" — it is **memory vs
+paperwork**. What the agent LEARNED is shared across every project; what the work PRODUCED
+belongs to one of them.
 
 ```
-Shared (loaded always):
-  CLAUDE.md, MEMORY.md, knowledge/, .claude/rules/, .claude/skills/<task>/
+Shared (memory — loaded every session):
+  CLAUDE.md, .claude/memory/MEMORY.md, context/handoffs/, knowledge/, .claude/rules/
+  context/audits/            (audits of the agent SYSTEM — not of any one project)
 
-Project-scoped (loaded when user names the project):
-  projects/<active>/BACKLOG.md
-  projects/<active>/*.md    (client brief, brand guide, notes)
-  projects/<active>/*.pdf   (user-uploaded references)
+Project-scoped (the work's own documents — loaded when the project is named):
+  projects/<active>/README.md          the map: where this project's documents live
+  projects/<active>/BACKLOG.md         tasks + honest status
+  projects/<active>/plans/             specs an executor builds to (pre-registered acceptance)
+  projects/<active>/research/          dated recon output + acceptance evidence
+  projects/<active>/decisions-log.md   the numbered ledger
+  projects/<active>/review-findings.md the finding-class registry
+  projects/<active>/qa/                QA protocol + run records
+  projects/<active>/materials/         briefs, PDFs, brand books
 ```
 
-Switch command (in conversation): "we're working on client-a" → agent unloads client-b materials, loads client-a. For project-scoped rules, use `paths: [projects/client-a/**]` frontmatter on the rule file.
+Why per-project and not one shared set: a decision ledger numbers `D-001…` for one product, the
+findings registry promotes a class on its **third** occurrence, and a QA protocol names one app's
+URLs and accounts. Interleave two clients into any of those three and the ids collide, the count
+becomes meaningless, and a lens gets pointed at the wrong app. A single-product repository still
+gets one project folder — the shape does not change, only the count.
+
+Switch command (in conversation): "we're working on client-a" → agent unloads client-b materials,
+loads client-a. For project-scoped rules, use `paths: [projects/client-a/**]` frontmatter on the
+rule file.
+
+**Adopting a repository that already has a `docs/`:** nothing moves. `projects/<name>/README.md`
+maps each document class to the path the repo already uses, and that map is what the agent reads
+before writing a plan. Defaults are a default; a working layout outranks them.
 
 ## Hooks (automatic, no user action)
 

@@ -7,14 +7,26 @@ last-reviewed: 2026-07-17
 
 Parallelism is the wanted mode wherever feasible without architecture cost.
 
+## Level 0 — the spec exists as a FILE before anyone fans out
+
+Fan-out multiplies whatever the spec says, including what it forgot to say. So the contract is
+written first, by the main session, at `projects/<name>/plans/YYYY-MM-DD-<slug>.md`
+(`templates/workspace/project/SPEC-TEMPLATE.md`), and each executor prompt POINTS at that path
+instead of restating it. A spec pasted into N prompts is N specs that drift the moment one is
+amended; a spec that lives only in a prompt cannot be re-read at merge, cannot be diffed against
+what was built, and is gone by the next session. Its Acceptance section is pre-registered — written
+BEFORE building, or it is not acceptance. The spec is integrator-owned: executors read it, never
+edit it.
+
 ## Level 1 — intra-session fan-out (the default; use aggressively)
 
 - Fan out independent work: recon sweeps ‖ external fresh-checks ‖ build chunks ‖ adversarial
   review — launched in the SAME message so they run concurrently.
 - **Worktree isolation** whenever parallel chunks MUTATE files; the main agent merges.
-- **The main agent is the single integrator:** alone writes shared docs (MEMORY.md, backlogs,
-  handoffs, the decision ledger), merges worktrees, and re-runs the FULL gate set on the
-  INTEGRATED tree — subagent-green ≠ integrated-green.
+- **The main agent is the single integrator:** alone writes shared and project docs (MEMORY.md,
+  handoffs, everything under `projects/<name>/` — backlog, plans, ledger, findings registry),
+  merges worktrees, and re-runs the FULL gate set on the INTEGRATED tree — subagent-green ≠
+  integrated-green.
 - **Subagents are executors only:** they build to a decided spec or gather facts; design
   belongs to the integrator. A forced deviation is REGISTERED in the report and adjudicated
   at merge — never silently applied.

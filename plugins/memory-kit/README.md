@@ -40,10 +40,17 @@ nothing.
 | `system-audit` | the periodic seven-lens sweep of the whole system, every finding evidence-backed — including the transcript profiler that answers "did this layer ever fire" |
 | `setup` · `tour` | adopt the kit here · walk through it on your own files |
 | `session-review` · `second-opinion` | adversarial review of a session · of one high-stakes decision |
-| `qa-sweep` | multi-lens agent QA of a running product (needs `docs/qa/README.md`, template in `reference/`) |
+| `qa-sweep` | multi-lens agent QA of a running product (needs `projects/<name>/qa/README.md`, template in `reference/`) |
 
-Agents: `executor` (builds a decided spec in a worktree) · `recon` (read-only facts) ·
+Agents: `executor` (builds to a spec file in a worktree) · `recon` (read-only facts) ·
 `idea-validator` (isolated critic) · `qa` (one adversarial lens on the running app).
+
+## State it owns in your repository
+
+Shared memory: `.claude/memory/MEMORY.md` · `context/handoffs/` · `knowledge/` · `.claude/rules/`.
+Per project: `projects/<name>/` — `README.md` (the map of where that project's documents live),
+`BACKLOG.md`, `plans/` (specs executors build to), `research/`, `decisions-log.md`,
+`review-findings.md`, `qa/`, `materials/`. Everything past the first two appears on first use.
 
 ## Environment knobs
 

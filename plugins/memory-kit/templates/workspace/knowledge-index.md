@@ -15,7 +15,7 @@
 **Not** for:
 - Short cross-session patterns → `.claude/memory/MEMORY.md`
 - Mechanical constraints → `.claude/rules/*.md`
-- Per-project tasks/materials → `projects/<name>/`
+- Per-project tasks, specs, research, decisions, QA → `projects/<name>/` (its `README.md` is the map)
 
 ---
 

@@ -5,9 +5,11 @@ last-reviewed: 2026-07-17
 
 # Decisions log — a lean grep-by-id ledger
 
-Keep ONE append-only file (e.g. `docs/decisions-log.md`) recording WHAT was decided, one
-numbered entry per decision (`D-001`, `D-002`, …). Depth lives in its deep home; the ledger
-stays lean enough to grep.
+Keep ONE append-only file **per project** — `projects/<name>/decisions-log.md` — recording WHAT
+was decided, one numbered entry per decision (`D-001`, `D-002`, …). Depth lives in its deep home;
+the ledger stays lean enough to grep. One ledger per project, never one shared ledger with five
+clients interleaved: the ids would collide and the grep would lie. If this repository already
+keeps its ledger elsewhere, leave it there and repoint the row in `projects/<name>/README.md`.
 
 ## Shape
 
@@ -21,7 +23,7 @@ stays lean enough to grep.
 
 | Content | Home |
 |---|---|
-| why + alternatives of an architectural decision | a design doc / ADR |
+| why + alternatives of an architectural decision | the spec that carries it, `projects/<name>/plans/` |
 | a settled multi-session lesson | `knowledge/concepts/` |
 | raw session detail | `context/handoffs/` |
 

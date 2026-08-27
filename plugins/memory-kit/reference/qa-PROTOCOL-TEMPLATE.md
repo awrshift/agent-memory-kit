@@ -1,8 +1,10 @@
 # Agent QA Harness — protocol (TEMPLATE)
 
-> Copy this file to `docs/qa/README.md` in your project and fill every `<placeholder>`.
+> Copy this file to `projects/<name>/qa/README.md` and fill every `<placeholder>`. One
+> protocol per project — the environment, accounts and journeys it names are that product's,
+> and a shared protocol across projects sends a lens at the wrong app.
 > This file is the protocol SSOT: the `/qa-sweep` skill executes it; the `qa` agent type
-> (the plugin's `agents/qa.md`) is the worker. Run records live beside it in `docs/qa/`.
+> (the plugin's `agents/qa.md`) is the worker. Run records live beside it in the same folder.
 
 Standing multi-lens QA of the RUNNING product by `qa` agents (Playwright + curl + read-only
 store queries), findings verified by the integrator before they become tickets. Complements —
@@ -61,7 +63,7 @@ contract inconsistency · P3 = polish.
 2. Verified → a backlog ticket (or fold P3s into a standing minors batch); dropped → noted in
    the run record with the reason. Impressions may seed a design question, never a ticket
    directly.
-3. Run record: `docs/qa/qa-run-YYYYMMDD.md` (lenses · scope · coverage · findings + verdicts ·
+3. Run record: `projects/<name>/qa/qa-run-YYYYMMDD.md` (lenses · scope · coverage · findings + verdicts ·
    tickets minted) + a row in § Runs. Screenshots stay OUT of git (reference by description).
 
 ## Calibration — how the lenses get BETTER

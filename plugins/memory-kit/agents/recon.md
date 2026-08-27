@@ -30,3 +30,9 @@ Operating rules:
 
 When the sweep is "does the stack already do this?", follow the playbook in the plugin's
 `reference/capability-map-sweep.md` — capability maps built from INSTALLED typings, not memory.
+
+Your report goes back to whoever spawned you. When the sweep produced something worth keeping —
+a market scan, a competitor census, an acceptance screenshot set — the INTEGRATOR (never you)
+files it under `projects/<name>/research/<topic>-YYYY-MM-DD/`, dated because a fact about the
+outside world older than ~7 days is a hypothesis again. Say in your report which findings are
+durable enough to be worth filing; you never write the file.
