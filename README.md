@@ -126,12 +126,16 @@ QA). Say "we're working on Nestlé" and the agent loads that scope only.
 
 ## For builders (opt-in)
 
+![](.github/assets/07-orchestrated-work-spec.png)
+
 The same plugin carries the orchestration discipline distilled from hundreds of multi-agent
 sessions: specs as files with pre-registered acceptance, `executor`/`recon`/`idea-validator`
 agents, adversarial `/session-review` and `/second-opinion`, and a multi-lens `/qa-sweep` for
 running products. All lazy-loaded skills — they cost nothing until invoked. Depth:
 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and the plugin's
 [reference/](plugins/memory-kit/reference/).
+
+![](.github/assets/09-agent-qa-projects.png)
 
 ## FAQ
 
