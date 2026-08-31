@@ -66,7 +66,9 @@ loads all 8 skills, and the CLI executes the SessionStart hook — injection wor
 Hosts that don't run the hooks lose the automatic injection and the PreCompact block;
 `/memory-kit:setup` offers the replacement — an `AGENTS.md` protocol block
 (`templates/workspace/AGENTS-MEMORY-PROTOCOL.md`) that hands them the same discipline as an
-always-loaded instruction. What each host honours, probe by probe:
+always-loaded instruction. **OpenCode** goes further: the repo ships a real plugin for it
+(`.opencode/plugins/memory-kit.js`, one `opencode.json` line) that injects memory into every
+model call, compaction-proof. What each host honours, probe by probe:
 [`docs/specs/`](../../docs/specs/README.md).
 
 ## State it owns in your repository

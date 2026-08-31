@@ -2,6 +2,25 @@
 
 All notable changes to Memory Kit are documented here. Breaking changes marked **BREAKING**.
 
+<a id="v650"></a>
+
+## [6.5.0] — 2026-08-31 — OpenCode: the first real Tier 1 outside Claude Code
+
+New artifact: **`.opencode/plugins/memory-kit.js`** — a ~130-line shim for OpenCode's JS
+plugin API, plus a root `package.json` so `opencode.json` can install it with one line
+(`"plugin": ["memory-kit@git+https://github.com/awrshift/agent-memory-kit.git"]`). OpenCode
+has no session-start hook, so injection rides `experimental.chat.system.transform` — the
+memory is re-read and pushed into the system prompt of EVERY model call, which makes it
+**compaction-proof**: the one guarantee Claude Code needs a PreCompact block for, OpenCode
+gets by construction. `experimental.session.compacting` adds the capture-unsaved-observations
+instruction to the summary prompt.
+
+Probes (opencode-ai 1.18.25, `docs/specs/opencode.md`): injection canary passes without any
+file read · all 8 skills available via `config.skills.paths` · a virgin repo gets the setup
+pointer and zero scaffolded files. Honest gaps recorded: no compaction BLOCK (moot by
+design), no test-edit guard yet (`permission.ask` could carry one), `experimental.*` APIs pin
+to 1.18.25. `package.json` joined the CI version-agreement check.
+
 <a id="v641"></a>
 
 ## [6.4.1] — 2026-08-31 — GitHub Copilot CLI verified, zero adapters

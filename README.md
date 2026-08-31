@@ -3,12 +3,12 @@
 # Memory Kit
 
 **One memory for every coding agent.**
-**Plain markdown in your repository — injected on Claude Code and Cursor, followed by Codex
-and Copilot, readable by anything. Dated, capped, audited: it doesn't rot.**
+**Plain markdown in your repository — injected on Claude Code, Cursor and OpenCode, followed
+by Codex and Copilot, readable by anything. Dated, capped, audited: it doesn't rot.**
 
 [![Version](https://img.shields.io/github/v/release/awrshift/agent-memory-kit?label=version&color=CFEF4A&cacheSeconds=1800)](https://github.com/awrshift/agent-memory-kit/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-55503E?labelColor=55503E&color=55503E)](LICENSE)
-[![Works with](https://img.shields.io/badge/works_with-Claude_Code_·_Cursor_·_Codex_·_Copilot-CFEF4A)](docs/specs/README.md)
+[![Works with](https://img.shields.io/badge/works_with-Claude_Code_·_Cursor_·_Codex_·_Copilot_·_OpenCode-CFEF4A)](docs/specs/README.md)
 
 > *"I wake up already knowing where we left off."* — the agent this kit builds.
 
@@ -73,6 +73,7 @@ the same memory, one discipline keeps it honest, git owns the history.
 | **Cursor** | memory injected at session start + all 8 skills ([verified](docs/specs/cursor.md)) |
 | **Codex** | all 8 skills + the memory discipline via an `AGENTS.md` protocol block ([verified](docs/specs/codex.md)) |
 | **GitHub Copilot CLI** | all 8 skills + the `AGENTS.md` protocol block ([verified](docs/specs/copilot.md)) |
+| **OpenCode** | memory injected into EVERY model call via the shipped plugin — compaction can't drop it ([verified](docs/specs/opencode.md)) |
 | **Anything else, incl. CI** | the memory is plain markdown in your repo — readable, greppable, git-versioned |
 
 ```shell
@@ -80,6 +81,9 @@ codex plugin marketplace add awrshift/agent-memory-kit && codex plugin add memor
 cursor-agent plugin marketplace add https://github.com/awrshift/agent-memory-kit
 copilot plugin marketplace add awrshift/agent-memory-kit && copilot plugin install memory-kit@memory-kit
 ```
+
+OpenCode instead takes one line in `opencode.json`:
+`"plugin": ["memory-kit@git+https://github.com/awrshift/agent-memory-kit.git"]`
 
 Hosts that can't run hooks get the same discipline as an always-loaded instruction:
 `/memory-kit:setup` offers a small protocol block for your `AGENTS.md`. Every claim above is

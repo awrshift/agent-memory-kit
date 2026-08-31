@@ -26,4 +26,5 @@ which maintains an empirically-verified spec per foreign platform.
 | [codex.md](codex.md) | T2 — skills + protocol | verified 2026-08-31 |
 | [cursor.md](cursor.md) | T2 + verified SessionStart injection (T1-grade wake-up; other hooks unprobed) | verified 2026-08-31 (CLI) |
 | [copilot.md](copilot.md) | T2 — skills + protocol | verified 2026-08-31 (CLI) |
+| [opencode.md](opencode.md) | **T1 — real injection via the shipped plugin** (per-call system prompt; compaction-proof) | verified 2026-08-31 |
 | [agents-md.md](agents-md.md) | the T2 delivery convention itself | mixed |

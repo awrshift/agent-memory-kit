@@ -28,3 +28,7 @@ node_modules/
 
 # Local scratch: this repo is not a memory workspace, but a maintainer may run the kit on it
 .claude/
+
+# OpenCode runtime bookkeeping generated next to the shim when a local checkout is used as a path plugin
+.opencode/package.json
+.opencode/package-lock.json

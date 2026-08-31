@@ -67,6 +67,15 @@ if cursor_market_path.exists():
             check(entry.get("version") == version,
                   f"cursor marketplace entry {entry['name']}: version {entry.get('version')} != VERSION {version}")
 
+# 1 for the OpenCode entry package — same version, one more manifest family
+pkg_path = ROOT / "package.json"
+if pkg_path.exists():
+    pkg = load(pkg_path) or {}
+    check(pkg.get("version") == version,
+          f"{pkg_path}: version {pkg.get('version')} != VERSION {version}")
+    entry = pkg.get("main", "")
+    check((ROOT / entry).exists(), f"package.json main -> missing file {entry}")
+
 # 3 — hooks -------------------------------------------------------------------------
 for hooks_json in ROOT.glob("plugins/*/hooks/hooks.json"):
     plugin_root = hooks_json.parent.parent
@@ -94,7 +103,7 @@ for agent in ROOT.glob("plugins/*/agents/*.md"):
 link_re = re.compile(r"!?\[[^\]]*\]\(([^)]+)\)")
 embedded: set[Path] = set()
 for md in ROOT.rglob("*.md"):
-    if ".git/" in str(md):
+    if ".git/" in str(md) or "node_modules" in str(md):
         continue
     for target in link_re.findall(md.read_text(encoding="utf-8", errors="ignore")):
         target = target.split("#")[0].strip()
