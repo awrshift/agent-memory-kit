@@ -29,8 +29,10 @@ into MEMORY.md right after compaction").
 ```
 
 The root `package.json` (name `memory-kit`, `main` → the shim) exists exactly for this
-resolution and is covered by the CI version-agreement check. The git+ form is
-`documented-only` until probed post-push; the local-path form is what the probes below ran on.
+resolution and is covered by the CI version-agreement check. **Both forms `verified`
+2026-08-31**: the probes below ran on the local-path form, and the git+ form was then probed
+against live GitHub post-push — a fresh scratch repo with only `opencode.json` + a canary
+`MEMORY.md` answered YES without reading a file.
 
 ## What works (`verified`, canary probes on 2026-08-31)
 
