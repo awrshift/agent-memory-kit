@@ -65,8 +65,10 @@ in-app, one-click `/add-plugin memory-kit`). Facts from Cursor's official docs:
   README) · all manifest paths relative · plugin tested locally (the probes above).
 - Every update after listing is re-reviewed; unresponsive authors risk delisting.
 
-Status: manifests shipped, application not yet submitted (needs the maintainer's cursor.com
-sign-in). Update this section with the outcome and date when it happens.
+Status: **application submitted 2026-08-31** via the publish form under publisher handle
+`awrshift` (repo link + description; confirmation "Thanks for applying" received). Awaiting
+their manual review — no SLA published; questions go to `marketplace-publishing@cursor.com`.
+Record the outcome here when it arrives.
 
 ## Notes
 
