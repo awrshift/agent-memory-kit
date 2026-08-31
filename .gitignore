@@ -32,3 +32,6 @@ node_modules/
 # OpenCode runtime bookkeeping generated next to the shim when a local checkout is used as a path plugin
 .opencode/package.json
 .opencode/package-lock.json
+
+# Session notes are personal to the maintainer, same stance as .claude/
+context/handoffs/
