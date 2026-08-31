@@ -14,6 +14,11 @@ report**: take the documented default where one exists, install nothing that the
 opt-in, and finish with a list of what was deliberately not installed and what question is still
 open. Never invent a preference on the user's behalf and never present a skipped step as done.
 
+Running under a host other than Claude Code (Codex and others load this skill too)?
+`${CLAUDE_PLUGIN_ROOT}` will not expand there — resolve every plugin path in this skill
+relative to this SKILL.md file's own location (`../../` is the plugin root), and skip the
+Claude-Code-only steps (`settings.json` keys, `/context`) with a one-line note.
+
 ## Step 0 — look before you write
 
 Report in two lines what already exists: `.claude/memory/MEMORY.md`, `context/handoffs/`,
@@ -144,6 +149,15 @@ already available — the only thing that needs a decision is the always-loaded 
   into `.claude/rules/`. Five invariants, always loaded, ~20 lines — that is the entire cost.
   The agents (`executor`, `recon`, `idea-validator`) and `/memory-kit:session-review` +
   `/memory-kit:second-opinion` work without it; the rule is what makes the discipline binding.
+- **Other agents also work in this repo (Codex, Cursor, Copilot — anything that auto-loads
+  `AGENTS.md`)?** Offer to append the block from
+  `${CLAUDE_PLUGIN_ROOT}/templates/workspace/AGENTS-MEMORY-PROTOCOL.md` to the repo's
+  `AGENTS.md` — create the file if missing; if it exists, append and show the diff first,
+  never overwrite what is already there. The block is fenced by
+  `<!-- memory-kit protocol … -->` markers: on a later kit upgrade REPLACE the marked block,
+  don't stack a second copy. This hands non-hook hosts the same discipline as an always-loaded
+  instruction; Claude Code itself doesn't need it (the hooks enforce it). Details on what each
+  host can and cannot honour: `docs/specs/` in the kit repository.
 - **Shipping a product with a UI?** `/memory-kit:qa-sweep` needs a protocol first: copy
   `${CLAUDE_PLUGIN_ROOT}/reference/qa-PROTOCOL-TEMPLATE.md` → `projects/<name>/qa/README.md`,
   fill every `<placeholder>`, and merge `reference/qa-mcp.json.example` into the project

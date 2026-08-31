@@ -2,6 +2,54 @@
 
 All notable changes to Memory Kit are documented here. Breaking changes marked **BREAKING**.
 
+<a id="v630"></a>
+
+## [6.3.0] — 2026-08-31 — Platform tiers: the kit beyond Claude Code
+
+Studied [everyinc/compound-engineering-plugin](https://github.com/everyinc/compound-engineering-plugin)
+— 33 skills on 14 agent hosts from one Claude-format source — and adopted the parts of its
+pattern that survive contact with a hooks-first kit. The honest difference: their product is
+prompt-skills (trivially portable); ours is hook enforcement, which most hosts cannot run. So
+instead of pretending parity, the kit now names its **three delivery tiers**: T1 enforcement
+(Claude Code hooks — injection, PreCompact block, test guard), T2 protocol (an auto-loaded
+`AGENTS.md` block instructs the agent to do by hand what the hooks do mechanically), T3 plain
+files (the memory state is markdown any agent can read). Hooks are byte-identical in this
+release.
+
+### Added
+
+- **`templates/workspace/AGENTS-MEMORY-PROTOCOL.md`** — the T2 core: a <2.1 KB, marker-fenced
+  protocol block (session-start reads, the two invariants, the three caps, pre-compact save,
+  test rule, close ritual) distilled from `context/identity.md`. Upgrades REPLACE the marked
+  block, never stack a second copy.
+- **`docs/specs/`** — per-host capability docs in the compound-engineering style: dated
+  "Last verified", every claim labeled `verified` / `documented-only` / `manual-check-needed`,
+  degradation stated instead of hidden. Ships with `claude-code.md` (T1 baseline),
+  `codex.md` (verified), `cursor.md` (manual checklist pending), `agents-md.md` (the T2
+  delivery convention itself).
+- **`/memory-kit:setup`** gains the "other agents also work in this repo?" offer (append the
+  protocol block to `AGENTS.md`, diff-first, marker-replace on upgrade) and a cross-host note:
+  under a non-Claude host `${CLAUDE_PLUGIN_ROOT}` doesn't expand — resolve plugin paths
+  relative to the SKILL.md file itself and skip the Claude-only steps out loud.
+
+### Verified (2026-08-31, codex-cli 0.151.0, live `codex exec` probes)
+
+- **Codex installs the kit from the NATIVE manifests.** `codex plugin marketplace add
+  awrshift/claude-memory-kit` reads `.claude-plugin/marketplace.json` and resolves the nested
+  `plugins/memory-kit` source — no adapter manifest, no root-native layout migration needed.
+- **All 8 skills are visible in a live Codex session**, namespaced `memory-kit:<name>`.
+- **The full T2 chain passed a canary probe**: `AGENTS.md` auto-loads, its instruction is
+  followed, `MEMORY.md` is read and its content surfaced.
+- **Codex parses `hooks.json` but does not run SessionStart** — no injection, no PreCompact
+  block there. Tier 2 for Codex is measured, not assumed.
+
+### Changed
+
+- `docs/ARCHITECTURE.md` — new "Platform tiers" section; root README and the plugin README now
+  state what each tier keeps and loses.
+- Deleted untracked `scripts/__pycache__/` litter from the plugin tree — a local Codex install
+  was faithfully copying it into its plugin cache.
+
 <a id="v620"></a>
 
 ## [6.2.0] — 2026-08-27 — The project layer: where the work's own documents live

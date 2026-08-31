@@ -45,6 +45,22 @@ nothing.
 Agents: `executor` (builds to a spec file in a worktree) · `recon` (read-only facts) ·
 `idea-validator` (isolated critic) · `qa` (one adversarial lens on the running app).
 
+## Beyond Claude Code
+
+The memory state is plain markdown, so any agent can follow it — with less enforcement.
+Verified on Codex CLI (0.151.0): the same manifests install directly —
+
+```shell
+codex plugin marketplace add awrshift/claude-memory-kit
+codex plugin add memory-kit@memory-kit
+```
+
+— and all 8 skills appear as `memory-kit:<name>`. The hooks do **not** run there: no automatic
+injection, no PreCompact block. `/memory-kit:setup` offers the replacement — an `AGENTS.md`
+protocol block (`templates/workspace/AGENTS-MEMORY-PROTOCOL.md`) that hands non-hook hosts the
+same discipline as an always-loaded instruction. What each host honours:
+[`docs/specs/`](../../docs/specs/README.md).
+
 ## State it owns in your repository
 
 Shared memory: `.claude/memory/MEMORY.md` · `context/handoffs/` · `knowledge/` · `.claude/rules/`.

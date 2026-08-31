@@ -206,6 +206,23 @@ Everything else is a skill, and skills cost nothing until you invoke them:
 
 Everything in plain text files. No databases. No external services. `git checkout` restores anything.
 
+## Beyond Claude Code
+
+Your memory never lives inside the plugin — it is plain markdown in your repository, and other
+agents can follow it too. On **Codex CLI** the very same manifests install directly:
+
+```shell
+codex plugin marketplace add awrshift/claude-memory-kit
+codex plugin add memory-kit@memory-kit
+```
+
+All the kit's skills appear in a Codex session (`memory-kit:<name>`). The hooks, however, run
+only on Claude Code — so for other hosts `/memory-kit:setup` offers a small protocol block for
+your `AGENTS.md`: read memory first, respect the caps, save before compaction, close with the
+ritual. Three honest tiers: **enforcement** on Claude Code · the same discipline **as
+instruction** on hosts that auto-load `AGENTS.md` (verified on Codex) · and **plain files**
+anywhere else, including CI. Per-host reality checks: [docs/specs/](docs/specs/README.md).
+
 ---
 
 ## Agent-orchestrated work (opt-in)

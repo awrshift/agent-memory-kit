@@ -357,6 +357,31 @@ every turn, to re-state what PreCompact already enforces at the moment it matter
 
 Hooks are invisible to the user. They just make sure state survives.
 
+## Platform tiers (beyond Claude Code)
+
+The kit is authored as a Claude Code plugin, but the STATE it manages is plain markdown in your
+repository — readable by any agent. v6.3.0 names the three delivery tiers instead of pretending
+every host is equal:
+
+| Tier | Hosts | What runs |
+|---|---|---|
+| **T1 — enforcement** | Claude Code | everything above: injection at session start, the PreCompact block, the test guard. Guarantees, not requests. |
+| **T2 — protocol** | Codex (verified 2026-08-31), Cursor / Copilot (documented-only) — anything that auto-loads `AGENTS.md` | `/memory-kit:setup` appends a marker-fenced block (`templates/workspace/AGENTS-MEMORY-PROTOCOL.md`, <2.1 KB) telling the agent to do by hand what the hooks do mechanically: read memory first, respect the caps, save before compaction, close with the ritual. Advisory — an agent can forget an instruction; it cannot ignore a hook. |
+| **T3 — plain files** | anything else, including CI | the memory files themselves need no runtime: markdown, git-versioned, one `grep` away. |
+
+Codex empirics (see `specs/codex.md` for the probes): it installs the kit from the NATIVE
+manifests — the nested `plugins/memory-kit` marketplace source resolves, all 8 skills appear in
+a live session namespaced `memory-kit:<name>` — and it parses `hooks.json` but does NOT execute
+SessionStart. "Wakes up already knowing" does not exist there; the protocol block is the honest
+replacement. Per-host truth, every claim labeled `verified` / `documented-only` /
+`manual-check-needed`, lives in `docs/specs/`.
+
+Deliberately NOT adopted from the compound-engineering-plugin pattern (the repo that runs 33
+skills on 14 hosts, studied 2026-08-31): a converter pipeline and a root-native layout
+migration — either waits until a real host demonstrably needs it. `context/identity.md` remains
+the SSOT the protocol block is distilled from; a change to one touches the other in the same
+commit.
+
 ## Naming discipline
 
 File names are in English for canonical compatibility. Agent references them in Russian conversation naturally. No need to teach the user English filenames.
@@ -398,5 +423,6 @@ If you want the role-guidance pattern back for your project, create skills under
 - `plugins/memory-kit/skills/close-session/SKILL.md` — the full end-of-session ritual
 - `plugins/memory-kit/reference/` — depth: fact-check, parallel development, doc governance,
   decisions log, review loop, the QA protocol template
+- `docs/specs/` — per-host capability specs (what each agent platform honours, empirically)
 - `docs/CHANGELOG.md` — version history including the v6.0 plugin pivot
 - Anthropic docs: `code.claude.com/docs/en/skills`, `code.claude.com/docs/en/memory`, `code.claude.com/docs/en/best-practices`
