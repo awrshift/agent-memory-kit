@@ -13,6 +13,7 @@ five regenerated, four kept)
 
 | Asset | State |
 |---|---|
+| `01-system-map.png` | **new 2026-08-31 for v6.4.0** — the master panel: YOU (talk bubbles) → THE AGENT (Claude Code · Cursor · Codex) → YOUR REPO (the four memory layers + the "repeats on 3+ dates → promoted" arrow + `projects/<client>/` chips) → the session loop ("tomorrow starts already knowing") → the HOOKS bar. It carries the SIMPLIFIED role of `03`, `04` (the arrow), `05` (the chips), `06` (the bar) and `08` on the front page, which is what lets those five stay as depth in the docs. Generated with NO style ref, two iterations — the first rendered the literal word "FOOTER:" from the prompt's own section label; the fix is naming layout slots in prose ("at the very bottom, one line…"), never with an uppercase label the model can transcribe |
 | `02-session-loop-agent.png` | **regenerated 2026-08-31 for v6.4.0** (was `02-session-loop.png`): the actor is now "The agent", not "Claude" — twice in the card copy; everything else unchanged |
 | `03-where-memory-lives.png` | verified 2026-08-31: already host-neutral ("Agent writes all of them") — kept |
 | `04-promotion-agent.png` | **regenerated 2026-08-31 for v6.4.0** (was `04-promotion.png`): "Claude proposes" → "the agent proposes" in the YOUR YES caption |
@@ -35,11 +36,13 @@ undo the cap. If you ever switch to real PNGs, rename the files to match, and ex
 Removed in v6: `01-before-after.png` — the before/after table in the README says the same thing,
 and it was the one asset drawn in a different (emoji-face) style. Still in git history.
 
-**Embed homes moved 2026-08-31 (the README redesign):** the root README carries `og-banner`,
-`02`, `05`, and — restored the same day by the maintainer's call — `07` and `09` in the
-builders section; `03`, `04`, `06`, `08` live in `docs/ARCHITECTURE.md`, and `07`, `09` also
-in `plugins/memory-kit/README.md`. The no-orphan CI check counts embeds across all markdown,
-so a future trim must re-home or delete the asset, never just drop the reference.
+**Embed homes (final for 2026-08-31):** the root README carries `og-banner`, `01-system-map`
+(after "The problem"), `02`, `07`, `09` — every CONCEPT is on the front page, with the map as
+the simplified umbrella. Depth panels live in `docs/ARCHITECTURE.md` (`03`, `04`, `05`, `06`,
+`08`) and `plugins/memory-kit/README.md` (`07`, `09` again). The no-orphan CI check counts
+embeds across all markdown, so a future trim must re-home or delete the asset, never just
+drop the reference. (The `01` slot previously belonged to `01-before-after.png`, removed in
+v6 — the new map is unrelated to it.)
 
 Asset filenames change when their content changes. GitHub's camo proxy caches images by URL, so
 an in-place overwrite keeps serving the old picture to everyone who already loaded the page —

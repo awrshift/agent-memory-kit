@@ -50,6 +50,8 @@ confidently acts on it.
 Memory Kit's answer: **one set of plain markdown files in your repository.** Every agent reads
 the same memory, one discipline keeps it honest, git owns the history.
 
+![](.github/assets/01-system-map.png)
+
 ## How a session works
 
 ![](.github/assets/02-session-loop-agent.png)
@@ -116,8 +118,6 @@ a year of production actually produced:
   your yes, and `git log` shows how the project's memory evolved.
 
 ## Many clients, one discipline
-
-![](.github/assets/05-multi-project-layer.png)
 
 One repo per client, or one workspace with `projects/<name>/` per client — both supported. The
 line is **memory vs paperwork**: what the agent *learned* is shared (patterns, knowledge,

@@ -27,6 +27,12 @@ layer for Claude Code" headline), `02`/`04` ("Claude" as the actor → "the agen
 QA protocol to `projects/<name>/qa/README.md`. `03`/`05`/`06`/`07` verified host-neutral and
 kept. Details per asset: `docs/ASSETS.md`.
 
+Same-day addendum: a new **`01-system-map.png`** master panel joins the README right after
+"The problem" — you talk → the agent (Claude Code · Cursor · Codex) writes → the four memory
+layers + promotion + project folders in your repo → the session loop → the hooks bar, all on
+one screen. It carries the simplified role of the five depth diagrams, which now live in
+`docs/ARCHITECTURE.md` without costing the front page its story.
+
 <a id="v631"></a>
 
 ## [6.3.1] — 2026-08-31 — Cursor marketplace manifests

@@ -303,6 +303,8 @@ Key property: **user never opens a file during the entire ritual.** They talk, a
 
 ## Multi-project architecture
 
+![](../.github/assets/05-multi-project-layer.png)
+
 ![](../.github/assets/08-one-operator-any-agent.png)
 
 One agent, many projects. The split is not "big things vs small things" — it is **memory vs
