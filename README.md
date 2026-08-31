@@ -139,6 +139,23 @@ running products. All lazy-loaded skills — they cost nothing until invoked. De
 
 ![](.github/assets/09-agent-qa-projects.png)
 
+## What's inside
+
+```
+.claude-plugin/marketplace.json   ← THE catalog. Despite the name, this is the manifest
+                                    format the ecosystem standardized on — Claude Code,
+                                    Codex and Copilot all install straight from it
+.cursor-plugin/                   ← metadata for Cursor's central-marketplace listing only
+                                    (Cursor installs from the same catalog above)
+plugins/memory-kit/               ← the plugin itself: hooks · skills · agents · templates
+docs/specs/                       ← what each host actually honours, probe by probe
+docs/ARCHITECTURE.md              ← the full design, with rationale
+```
+
+The `.claude-plugin/` name is the protocol, not the scope — the same way every editor reads
+`.gitignore`. In **your** repository the kit owns only state: `.claude/memory/MEMORY.md`,
+`context/handoffs/`, `knowledge/`, `.claude/rules/`, plus one `projects/<name>/` per client.
+
 ## FAQ
 
 <details open>
