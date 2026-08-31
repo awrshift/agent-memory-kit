@@ -4,6 +4,7 @@
 Deterministic, stdlib-only, no auth: runs in CI and on your machine identically.
 
   1. manifests parse, and VERSION / plugin.json / marketplace.json agree
+     (both catalog families: .claude-plugin/ and .cursor-plugin/)
   2. every marketplace `source` exists and holds a plugin manifest
   3. every hook command referenced in hooks.json exists and is executable
   4. every skill has frontmatter with a description; every agent has a name
@@ -50,6 +51,21 @@ for entry in market.get("plugins", []):
               f"{manifest}: version {plugin.get('version')} != VERSION {version}")
         check(entry.get("version") == version,
               f"marketplace entry {entry['name']}: version {entry.get('version')} != VERSION {version}")
+
+# 1 + 2 for the Cursor catalog — same shape, its own manifest filename
+cursor_market_path = ROOT / ".cursor-plugin" / "marketplace.json"
+if cursor_market_path.exists():
+    cursor_market = load(cursor_market_path) or {}
+    for entry in cursor_market.get("plugins", []):
+        src = ROOT / entry["source"]
+        manifest = src / ".cursor-plugin" / "plugin.json"
+        check(manifest.exists(), f"cursor marketplace entry {entry['name']}: no manifest at {manifest}")
+        if manifest.exists():
+            plugin = load(manifest) or {}
+            check(plugin.get("version") == version,
+                  f"{manifest}: version {plugin.get('version')} != VERSION {version}")
+            check(entry.get("version") == version,
+                  f"cursor marketplace entry {entry['name']}: version {entry.get('version')} != VERSION {version}")
 
 # 3 — hooks -------------------------------------------------------------------------
 for hooks_json in ROOT.glob("plugins/*/hooks/hooks.json"):

@@ -2,6 +2,20 @@
 
 All notable changes to Memory Kit are documented here. Breaking changes marked **BREAKING**.
 
+<a id="v631"></a>
+
+## [6.3.1] — 2026-08-31 — Cursor marketplace manifests
+
+Packaging for the central Cursor Marketplace submission. Cursor's own multi-plugin format maps
+1:1 onto our layout — root `.cursor-plugin/marketplace.json` with `source: plugins/memory-kit`,
+plus `plugins/memory-kit/.cursor-plugin/plugin.json` — so nothing moves. Both new manifests are
+covered by the CI version-agreement check (`tools/check-repo.py`). The marketplace itself is
+curated ("we work with a small group of trusted partners" — their security page), submission is
+a sign-in application at cursor.com/marketplace/publish with manual review and no published
+SLA; the mechanics and the submission checklist live in `docs/specs/cursor.md`. Note these
+manifests are NOT needed for the already-verified git-URL install path — they exist only for
+the central listing.
+
 <a id="v630"></a>
 
 ## [6.3.0] — 2026-08-31 — Platform tiers: the kit beyond Claude Code

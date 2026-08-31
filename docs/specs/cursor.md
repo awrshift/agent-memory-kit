@@ -48,6 +48,26 @@ Two paths, both probed:
 - The Cursor **GUI app** (`/add-plugin` flow, central-marketplace publication like
   compound-engineering did) — untested; the CLI git-URL path above makes publication optional.
 
+## Central marketplace publication (`documented-only`, 2026-08-31)
+
+Distinct from the verified git-URL path above: a **curated** public listing (searchable
+in-app, one-click `/add-plugin memory-kit`). Facts from Cursor's official docs:
+
+- Submission: sign in at `cursor.com/marketplace/publish` and submit the repository link — a
+  "plugin publisher application", manually reviewed. Their security page states the policy
+  plainly: "We work with a small group of trusted partners… every submission goes through our
+  internal review process." No review SLA is published anywhere. Cursor's own
+  `cursor/plugin-template` README names a second channel: Slack or `kniparko@anysphere.com`.
+- Requirements we satisfy as of v6.3.1: public open-source repo (MIT) · root
+  `.cursor-plugin/marketplace.json` (multi-plugin format, `source: plugins/memory-kit` —
+  nested paths are officially supported, no restructuring) ·
+  `plugins/memory-kit/.cursor-plugin/plugin.json` (kebab-case unique name, description,
+  README) · all manifest paths relative · plugin tested locally (the probes above).
+- Every update after listing is re-reviewed; unresponsive authors risk delisting.
+
+Status: manifests shipped, application not yet submitted (needs the maintainer's cursor.com
+sign-in). Update this section with the outcome and date when it happens.
+
 ## Notes
 
 - Cursor CLI also surfaces the user's global skills alongside plugin skills — our probe listed
