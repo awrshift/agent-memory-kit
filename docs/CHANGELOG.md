@@ -43,6 +43,19 @@ release.
 - **Codex parses `hooks.json` but does not run SessionStart** — no injection, no PreCompact
   block there. Tier 2 for Codex is measured, not assumed.
 
+### Verified (2026-08-31, cursor-agent 2026.08.25, headless probes)
+
+- **Cursor indexes the kit's marketplace from a plain git URL** (`cursor-agent plugin
+  marketplace add …`) — nested source resolves; no central-marketplace publication required.
+- **`--plugin-dir` loads the full plugin: all 8 skills visible.** `.cursor/skills/` also
+  accepts Claude-format SKILL.md dirs as-is.
+- **Cursor CLI executes the SessionStart hook and honours `additionalContext`** — the memory
+  canary and an identity.md-only phrase were in context with the plugin loaded and absent
+  without it. "Wakes up already knowing" works on Cursor; PreCompact/PreToolUse remain
+  unprobed there.
+- **The `AGENTS.md` canary chain passed on Cursor too** — auto-loaded, instruction followed,
+  `MEMORY.md` read.
+
 ### Changed
 
 - `docs/ARCHITECTURE.md` — new "Platform tiers" section; root README and the plugin README now

@@ -366,7 +366,7 @@ every host is equal:
 | Tier | Hosts | What runs |
 |---|---|---|
 | **T1 — enforcement** | Claude Code | everything above: injection at session start, the PreCompact block, the test guard. Guarantees, not requests. |
-| **T2 — protocol** | Codex (verified 2026-08-31), Cursor / Copilot (documented-only) — anything that auto-loads `AGENTS.md` | `/memory-kit:setup` appends a marker-fenced block (`templates/workspace/AGENTS-MEMORY-PROTOCOL.md`, <2.1 KB) telling the agent to do by hand what the hooks do mechanically: read memory first, respect the caps, save before compaction, close with the ritual. Advisory — an agent can forget an instruction; it cannot ignore a hook. |
+| **T2 — protocol** | Codex (verified 2026-08-31), Cursor (verified 2026-08-31 — its CLI even executes the SessionStart hook, giving T1-grade wake-up; the other three hooks unprobed), Copilot (documented-only) — anything that auto-loads `AGENTS.md` | `/memory-kit:setup` appends a marker-fenced block (`templates/workspace/AGENTS-MEMORY-PROTOCOL.md`, <2.1 KB) telling the agent to do by hand what the hooks do mechanically: read memory first, respect the caps, save before compaction, close with the ritual. Advisory — an agent can forget an instruction; it cannot ignore a hook. |
 | **T3 — plain files** | anything else, including CI | the memory files themselves need no runtime: markdown, git-versioned, one `grep` away. |
 
 Codex empirics (see `specs/codex.md` for the probes): it installs the kit from the NATIVE

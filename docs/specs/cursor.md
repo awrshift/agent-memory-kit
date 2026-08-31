@@ -1,33 +1,57 @@
-# Cursor — Tier 2 expected (manual checks pending)
+# Cursor — verified: skills + AGENTS.md protocol + SessionStart injection
 
-Last verified: 2026-08-31, against Cursor 2.1.36 (macOS app; no `cursor`/`cursor-agent` CLI in
-PATH on this machine). Cursor's plugin flow is in-app, so most of this spec is
-`manual-check-needed` — the checklist below turns it into `verified`.
+Last verified: 2026-08-31, against `cursor-agent 2026.08.25-3e8eec8` (Cursor CLI, headless
+`-p --mode ask` probes), Cursor app 2.1.36 installed but not driven. Auth: logged-in Cursor
+account (required for marketplace operations).
 
-## What we could probe from a script (`verified`)
+## Install (`verified`)
 
-- Cursor 2.1.36 is installed; `~/.cursor/` contains `argv.json`, `extensions/`, `mcp.json` —
-  no plugin/marketplace directories yet, so nothing about plugins could be probed headlessly.
+Two paths, both probed:
 
-## What the ecosystem documents (`documented-only`)
+- **Marketplace by git URL** — no central-marketplace publication needed:
+  ```bash
+  cursor-agent plugin marketplace add https://github.com/awrshift/claude-memory-kit
+  ```
+  Result: `✓ Added marketplace memory-kit (1 plugin)` — Cursor's server-side indexer read
+  `.claude-plugin/marketplace.json` and resolved the **nested** `plugins/memory-kit` source
+  (the plugin description it printed comes from our `plugin.json`). Installing from the
+  indexed marketplace into the account is interactive (`/plugins` in a session) —
+  `manual-check-needed` for that last click; the CLI prints the tip itself.
+- **Local plugin directory** — full load without any marketplace:
+  ```bash
+  cursor-agent -p --plugin-dir <repo>/plugins/memory-kit "..."
+  ```
+  Result: **all 8 skills** visible in the session, each reported as `(plugin)`.
 
-- Cursor installs Claude-format plugins natively via `/add-plugin` in the chat — the
-  compound-engineering-plugin README lists Cursor among hosts that read a Claude-shaped
-  plugin without conversion.
-- Cursor auto-loads `AGENTS.md` (and its own `.cursor/rules/*.mdc`) as always-on context —
-  which is the delivery path the kit's T2 protocol block relies on.
+## What works (`verified`, canary probes)
 
-## Manual checklist (do once in the Cursor GUI, then update this file)
+- **SessionStart hook injection — the surprise.** With the plugin loaded, a session in an
+  adopted repo contained the MEMORY.md canary AND an identity.md-only phrase **without the
+  agent opening any file**; without the plugin, the same question answered NO. Cursor CLI
+  executes Claude-format `hooks.json` SessionStart and honours `additionalContext` — "wakes up
+  already knowing" works on Cursor. (Our hook's env-var fallbacks — cwd for the project,
+  `__file__` for the plugin root — are what let it run outside Claude Code.)
+- **`AGENTS.md` is auto-loaded and followed** — same probe as Codex: an instruction line in
+  `AGENTS.md` was present in context and executed (the agent read `MEMORY.md` and returned its
+  canary).
+- **`.cursor/skills/` accepts Claude-format skills as-is** — two of our SKILL.md dirs copied
+  there unmodified were discovered and listed.
 
-1. In Cursor chat: `/add-plugin` → add marketplace `awrshift/claude-memory-kit` → install
-   `memory-kit`. Record whether the **nested** `plugins/memory-kit` source resolves.
-2. In a fresh session, ask: "List the plugin skills available to you." Expect the 8
-   `memory-kit` skills.
-3. In a repo with an adopted `.claude/memory/MEMORY.md` containing a canary line and an
-   `AGENTS.md` protocol block: ask the agent what it knows about the canary — this verifies
-   the T2 chain (auto-load → follow → read memory), same probe that passed on Codex.
-4. Note whether Cursor executes any of the kit's hooks (unexpected, but Codex surprised us by
-   parsing `hooks.json`).
+## Not yet probed
 
-Move each item to `verified` with the observed result, and correct the tier in
-`specs/README.md` if reality disagrees.
+- `PreCompact` / `PreToolUse` / `SessionEnd` — whether Cursor executes the other three hook
+  events is `manual-check-needed` (PreCompact needs a long session; PreToolUse needs write
+  mode). Until probed, treat only injection as guaranteed on Cursor: the compaction block and
+  the test guard remain `documented-only` at best.
+- Whether an **account-installed** plugin (via interactive `/plugins`) behaves identically to
+  `--plugin-dir` — expected, same loader, but `manual-check-needed`.
+- The Cursor **GUI app** (`/add-plugin` flow, central-marketplace publication like
+  compound-engineering did) — untested; the CLI git-URL path above makes publication optional.
+
+## Notes
+
+- Cursor CLI also surfaces the user's global skills alongside plugin skills — our probe listed
+  ~56 entries including personal ones; namespacing is flat (no `memory-kit:` prefix observed),
+  so name collisions with user skills are possible (`observed`, low impact).
+- Precedence (per Cursor docs, `documented-only`): Team Rules > Project Rules > User Rules >
+  legacy `.cursorrules` > `AGENTS.md`.

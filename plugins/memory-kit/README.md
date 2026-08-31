@@ -55,10 +55,13 @@ codex plugin marketplace add awrshift/claude-memory-kit
 codex plugin add memory-kit@memory-kit
 ```
 
-— and all 8 skills appear as `memory-kit:<name>`. The hooks do **not** run there: no automatic
-injection, no PreCompact block. `/memory-kit:setup` offers the replacement — an `AGENTS.md`
-protocol block (`templates/workspace/AGENTS-MEMORY-PROTOCOL.md`) that hands non-hook hosts the
-same discipline as an always-loaded instruction. What each host honours:
+— and all 8 skills appear as `memory-kit:<name>`. On Cursor,
+`cursor-agent plugin marketplace add <git-url>` indexes the same manifests, `--plugin-dir`
+loads all 8 skills, and the CLI executes the SessionStart hook — injection works there.
+Hosts that don't run the hooks lose the automatic injection and the PreCompact block;
+`/memory-kit:setup` offers the replacement — an `AGENTS.md` protocol block
+(`templates/workspace/AGENTS-MEMORY-PROTOCOL.md`) that hands them the same discipline as an
+always-loaded instruction. What each host honours, probe by probe:
 [`docs/specs/`](../../docs/specs/README.md).
 
 ## State it owns in your repository

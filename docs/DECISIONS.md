@@ -32,8 +32,9 @@ leave this board.
 
 - Multi-platform (v6.3.0, 2026-08-31): the **tier model** — T1 hook enforcement on Claude Code,
   T2 `AGENTS.md` protocol elsewhere, T3 plain files. Canonical source stays the Claude Code
-  plugin format in the **nested** layout: Codex verifiably reads it natively (skills visible,
-  nested marketplace source resolves). A converter pipeline and a root-native layout migration
+  plugin format in the **nested** layout: Codex and Cursor both verifiably read it natively
+  (skills visible, nested marketplace source resolves; Cursor CLI even runs the SessionStart
+  hook). A converter pipeline and a root-native layout migration
   were deliberately NOT adopted — either waits until a real host demands it. Per-host truth
   lives in `docs/specs/`.
 - One plugin instead of three (v6.0.0) — skill bodies load on invoke, so the split bought nothing.

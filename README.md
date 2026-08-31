@@ -216,12 +216,15 @@ codex plugin marketplace add awrshift/claude-memory-kit
 codex plugin add memory-kit@memory-kit
 ```
 
-All the kit's skills appear in a Codex session (`memory-kit:<name>`). The hooks, however, run
-only on Claude Code — so for other hosts `/memory-kit:setup` offers a small protocol block for
-your `AGENTS.md`: read memory first, respect the caps, save before compaction, close with the
-ritual. Three honest tiers: **enforcement** on Claude Code · the same discipline **as
-instruction** on hosts that auto-load `AGENTS.md` (verified on Codex) · and **plain files**
-anywhere else, including CI. Per-host reality checks: [docs/specs/](docs/specs/README.md).
+All the kit's skills appear in a Codex session (`memory-kit:<name>`). On **Cursor**, the same
+git URL adds the marketplace (`cursor-agent plugin marketplace add …`), all 8 skills load, and
+its CLI even executes the session-start hook — memory injection included. Elsewhere the hooks
+don't run, so `/memory-kit:setup` offers a small protocol block for your `AGENTS.md`: read
+memory first, respect the caps, save before compaction, close with the ritual. Three honest
+tiers: **enforcement** on Claude Code (and, measured, session-start injection on Cursor) · the
+same discipline **as instruction** on hosts that auto-load `AGENTS.md` (verified on Codex and
+Cursor) · and **plain files** anywhere else, including CI. Per-host reality checks:
+[docs/specs/](docs/specs/README.md).
 
 ---
 

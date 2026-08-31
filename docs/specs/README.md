@@ -24,5 +24,5 @@ which maintains an empirically-verified spec per foreign platform.
 |---|---|---|
 | [claude-code.md](claude-code.md) | T1 — full enforcement | baseline, verified |
 | [codex.md](codex.md) | T2 — skills + protocol | verified 2026-08-31 |
-| [cursor.md](cursor.md) | T2 (expected) | manual checks pending |
+| [cursor.md](cursor.md) | T2 + verified SessionStart injection (T1-grade wake-up; other hooks unprobed) | verified 2026-08-31 (CLI) |
 | [agents-md.md](agents-md.md) | the T2 delivery convention itself | mixed |

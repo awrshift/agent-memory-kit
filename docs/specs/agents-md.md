@@ -13,7 +13,7 @@ hooks can still be *told*, in a file it always reads, to go read the memory file
 | Host | Status | Evidence |
 |---|---|---|
 | Codex CLI | **verified 2026-08-31** | canary in `AGENTS.md` was in session context and its instruction was executed (see `codex.md`) |
-| Cursor | documented-only | vendor docs list `AGENTS.md` support alongside `.cursor/rules/` |
+| Cursor | **verified 2026-08-31** | same canary probe as Codex, via `cursor-agent -p`: the `AGENTS.md` instruction was in context and executed (see `cursor.md`) |
 | GitHub Copilot (agent mode) | documented-only | vendor docs |
 | Claude Code | **does not need it** | the kit's SessionStart hook injects the same content (`context/identity.md`); scaffolding the block is still harmless — CC reads `CLAUDE.md`, not `AGENTS.md` |
 
