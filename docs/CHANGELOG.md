@@ -19,6 +19,14 @@ and the "hook recreates MEMORY.md" answers described retired behaviour). Displac
 re-homed to `docs/ARCHITECTURE.md` and the plugin README so the no-orphan CI check keeps
 telling the truth. `displayName` → "Memory Kit"; manifest descriptions de-Claude-ified.
 
+Full asset sweep followed (every diagram opened and read — the ASSETS.md rule): five
+regenerated with new filenames (camo cache-bust) — the og-banner (old repo name + "The OS
+layer for Claude Code" headline), `02`/`04` ("Claude" as the actor → "the agent"), `08`
+("three lines in Claude Code" footer → "one install — Claude Code, Cursor or Codex"), and
+`09`, whose footer still pointed at `docs/qa/README.md` two versions after v6.2.0 moved the
+QA protocol to `projects/<name>/qa/README.md`. `03`/`05`/`06`/`07` verified host-neutral and
+kept. Details per asset: `docs/ASSETS.md`.
+
 <a id="v631"></a>
 
 ## [6.3.1] — 2026-08-31 — Cursor marketplace manifests

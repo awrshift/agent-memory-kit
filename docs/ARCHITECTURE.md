@@ -204,7 +204,7 @@ Per-session detail belongs in the handoff, not the header. A header that accrete
 
 ## The promotion flow (pattern → law)
 
-![](../.github/assets/04-promotion.png)
+![](../.github/assets/04-promotion-agent.png)
 
 Promotion is agent-driven, on `/close-session`, always on the user's verbal "yes".
 
@@ -303,7 +303,7 @@ Key property: **user never opens a file during the entire ritual.** They talk, a
 
 ## Multi-project architecture
 
-![](../.github/assets/08-one-operator-many-projects.png)
+![](../.github/assets/08-one-operator-any-agent.png)
 
 One agent, many projects. The split is not "big things vs small things" — it is **memory vs
 paperwork**. What the agent LEARNED is shared across every project; what the work PRODUCED

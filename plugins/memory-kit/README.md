@@ -46,7 +46,7 @@ Agents: `executor` (builds to a spec file in a worktree) · `recon` (read-only f
 `idea-validator` (isolated critic) · `qa` (one adversarial lens on the running app).
 
 ![](../../.github/assets/07-orchestrated-work-spec.png)
-![](../../.github/assets/09-agent-qa.png)
+![](../../.github/assets/09-agent-qa-projects.png)
 
 ## Beyond Claude Code
 

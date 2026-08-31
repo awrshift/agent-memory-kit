@@ -4,8 +4,8 @@ Nine diagrams in `.github/assets/` carry the visual story. They are PNGs, so the
 the product. The rule: **a diagram that states a fact is a fact that has to be swept like any
 other** — same discipline as the docs, and a stale panel is a lie in the most-read file.
 
-## State (03, 05 and 07 swept 2026-08-27 for v6.2.0 — the three the project layer touches;
-the rest carry their v6 / v6.1 state)
+## State (full sweep 2026-08-31 for v6.4.0 — every asset opened and read after the rebrand;
+five regenerated, four kept)
 
 > Every asset below was opened and read, not inferred. The first pass of this table marked `04`
 > and `08` "true" without looking; `08` turned out to be selling `git clone` per client on the
@@ -13,15 +13,15 @@ the rest carry their v6 / v6.1 state)
 
 | Asset | State |
 |---|---|
-| `02-session-loop.png` | regenerated for v6 (injection carries the hot cache; the ~50-message auto-save prompt is gone) |
-| `03-where-memory-lives.png` | regenerated for v6 (hot cache marked *injected every session*; namespaced skill) |
-| `04-promotion.png` | regenerated for v6 (the namespaced skill in the YOUR YES step) |
+| `02-session-loop-agent.png` | **regenerated 2026-08-31 for v6.4.0** (was `02-session-loop.png`): the actor is now "The agent", not "Claude" — twice in the card copy; everything else unchanged |
+| `03-where-memory-lives.png` | verified 2026-08-31: already host-neutral ("Agent writes all of them") — kept |
+| `04-promotion-agent.png` | **regenerated 2026-08-31 for v6.4.0** (was `04-promotion.png`): "Claude proposes" → "the agent proposes" in the YOUR YES caption |
 | `05-multi-project-layer.png` | **regenerated 2026-08-27 for v6.2.0** (was `05-multi-client.png`): the project tree now shows what a project folder actually holds — `README.md ← the map`, `BACKLOG.md`, `plans/`, `research/`, `decisions-log.md`, `qa/`, `materials/` — and the footer states the 6.2.0 line, «Per-project = the work's own documents. Shared = the memory.» |
-| `06-hooks-skills.png` | regenerated for v6.1 — four hooks, the eight remaining skills |
+| `06-hooks-skills.png` | verified 2026-08-31: four hooks + eight skills still exact, no host-specific copy — kept |
 | `07-orchestrated-work-spec.png` | **regenerated 2026-08-27 for v6.2.0** (was `07-orchestrated-work.png`): a new second row — «THE SPEC — a file, written before anyone fans out», `projects/<name>/plans/YYYY-MM-DD-<slug>.md`, goal · non-goals · acceptance pre-registered · the gate commands — and the three agents now fan out FROM the spec, not from the integrator. |
-| `08-one-operator-many-projects.png` | regenerated for v6 — the old one sold `git clone` per client, which is the model v6 replaced |
-| `09-agent-qa.png` | regenerated for v6 (footer: only the protocol file is copied) |
-| `og-banner.png` | true |
+| `08-one-operator-any-agent.png` | **regenerated 2026-08-31 for v6.4.0** (was `08-one-operator-many-projects.png`): footer "three lines in Claude Code" → "one install — Claude Code, Cursor or Codex"; top-right card "one install → new repo" |
+| `09-agent-qa-projects.png` | **regenerated 2026-08-31** (was `09-agent-qa.png`): footer path was still `docs/qa/README.md` — drifted since v6.2.0 moved the QA protocol to `projects/<name>/qa/README.md`; caught by looking, exactly as this file's own rule demands |
+| `og-banner-one-memory.png` | **regenerated 2026-08-31 for v6.4.0** (was `og-banner.png`): "claude-memory-kit / The OS layer for Claude Code" → "agent-memory-kit / One memory for every coding agent." with the host line; layer stack relabeled MEMORY.md · handoffs/ · concepts/ · rules/ (the old top layer said CLAUDE.md). Generated WITHOUT a style ref — the label substitution would have pulled the old strings back in (lesson 3 below) |
 
 All nine are capped at 2000 px wide: the set went from ~8.7 MB to ~2.7 MB, which matters because
 several of them sit above the fold.

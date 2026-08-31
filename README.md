@@ -1,4 +1,4 @@
-![Memory Kit](.github/assets/og-banner.png)
+![Memory Kit](.github/assets/og-banner-one-memory.png)
 
 # Memory Kit
 
@@ -52,7 +52,7 @@ the same memory, one discipline keeps it honest, git owns the history.
 
 ## How a session works
 
-![](.github/assets/02-session-loop.png)
+![](.github/assets/02-session-loop-agent.png)
 
 1. **Open** — the agent wakes up already knowing: your hot cache, the note the last session
    left, memory-health stats. You just continue.
