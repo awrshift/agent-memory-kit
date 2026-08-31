@@ -58,7 +58,9 @@ codex plugin marketplace add awrshift/agent-memory-kit
 codex plugin add memory-kit@memory-kit
 ```
 
-— and all 8 skills appear as `memory-kit:<name>`. On Cursor,
+— and all 8 skills appear as `memory-kit:<name>`. GitHub Copilot CLI installs the same way
+(`copilot plugin marketplace add` + `copilot plugin install memory-kit@memory-kit` — all 8
+skills load). On Cursor,
 `cursor-agent plugin marketplace add <git-url>` indexes the same manifests, `--plugin-dir`
 loads all 8 skills, and the CLI executes the SessionStart hook — injection works there.
 Hosts that don't run the hooks lose the automatic injection and the PreCompact block;

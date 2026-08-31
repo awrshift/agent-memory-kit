@@ -12,7 +12,7 @@
       "name": "memory-kit",
       "source": "plugins/memory-kit",
       "description": "Persistent memory for your coding agent: a hot cache injected every session and held under three size caps, per-session handoffs, agent-audited promotion into knowledge articles and rules — plus optional orchestration and QA layers as lazy-loaded skills. Installs into any existing repository.",
-      "version": "6.4.0",
+      "version": "6.4.1",
       "author": {
         "name": "awrshift"
       },

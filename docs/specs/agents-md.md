@@ -14,7 +14,7 @@ hooks can still be *told*, in a file it always reads, to go read the memory file
 |---|---|---|
 | Codex CLI | **verified 2026-08-31** | canary in `AGENTS.md` was in session context and its instruction was executed (see `codex.md`) |
 | Cursor | **verified 2026-08-31** | same canary probe as Codex, via `cursor-agent -p`: the `AGENTS.md` instruction was in context and executed (see `cursor.md`) |
-| GitHub Copilot (agent mode) | documented-only | vendor docs |
+| GitHub Copilot CLI | **verified 2026-08-31** | same canary probe via `copilot -p`: instruction in context, executed, MEMORY.md canary returned (see `copilot.md`) |
 | Claude Code | **does not need it** | the kit's SessionStart hook injects the same content (`context/identity.md`); scaffolding the block is still harmless — CC reads `CLAUDE.md`, not `AGENTS.md` |
 
 The compound-engineering-plugin repo treats one shared `AGENTS.md` as canonical and ships

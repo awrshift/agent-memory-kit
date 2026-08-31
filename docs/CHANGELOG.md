@@ -2,6 +2,19 @@
 
 All notable changes to Memory Kit are documented here. Breaking changes marked **BREAKING**.
 
+<a id="v641"></a>
+
+## [6.4.1] — 2026-08-31 — GitHub Copilot CLI verified, zero adapters
+
+Fourth host, same manifests: `copilot plugin marketplace add awrshift/agent-memory-kit` +
+`copilot plugin install memory-kit@memory-kit` → "Installed 8 skills" (Copilot's plugin
+system mirrors Claude Code's `marketplace.json`; the nested source resolves as-is). Live
+`copilot -p` probes: all 8 skills visible · `AGENTS.md` canary chain passes (auto-loaded,
+instruction followed, MEMORY.md read) · SessionStart hook NOT executed — Copilot is Tier 2
+like Codex, and is documented so in `docs/specs/copilot.md` (including the `GITHUB_TOKEN`
+401 gotcha). Hosts matrix, badge and tier table updated across the docs. The Cursor central
+marketplace application was also submitted today (recorded in `docs/specs/cursor.md`).
+
 <a id="v640"></a>
 
 ## [6.4.0] — 2026-08-31 — The rebrand: agent-memory-kit, and a README that breathes

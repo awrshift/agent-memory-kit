@@ -3,12 +3,12 @@
 # Memory Kit
 
 **One memory for every coding agent.**
-**Plain markdown in your repository — injected on Claude Code and Cursor, followed by Codex,
-readable by anything. Dated, capped, audited: it doesn't rot.**
+**Plain markdown in your repository — injected on Claude Code and Cursor, followed by Codex
+and Copilot, readable by anything. Dated, capped, audited: it doesn't rot.**
 
 [![Version](https://img.shields.io/github/v/release/awrshift/agent-memory-kit?label=version&color=CFEF4A&cacheSeconds=1800)](https://github.com/awrshift/agent-memory-kit/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-55503E?labelColor=55503E&color=55503E)](LICENSE)
-[![Works with](https://img.shields.io/badge/works_with-Claude_Code_·_Cursor_·_Codex-CFEF4A)](docs/specs/README.md)
+[![Works with](https://img.shields.io/badge/works_with-Claude_Code_·_Cursor_·_Codex_·_Copilot-CFEF4A)](docs/specs/README.md)
 
 > *"I wake up already knowing where we left off."* — the agent this kit builds.
 
@@ -72,11 +72,13 @@ the same memory, one discipline keeps it honest, git owns the history.
 | **Claude Code** | full enforcement: memory injected every session, compaction blocked until state is saved, test edits guarded |
 | **Cursor** | memory injected at session start + all 8 skills ([verified](docs/specs/cursor.md)) |
 | **Codex** | all 8 skills + the memory discipline via an `AGENTS.md` protocol block ([verified](docs/specs/codex.md)) |
+| **GitHub Copilot CLI** | all 8 skills + the `AGENTS.md` protocol block ([verified](docs/specs/copilot.md)) |
 | **Anything else, incl. CI** | the memory is plain markdown in your repo — readable, greppable, git-versioned |
 
 ```shell
 codex plugin marketplace add awrshift/agent-memory-kit && codex plugin add memory-kit@memory-kit
 cursor-agent plugin marketplace add https://github.com/awrshift/agent-memory-kit
+copilot plugin marketplace add awrshift/agent-memory-kit && copilot plugin install memory-kit@memory-kit
 ```
 
 Hosts that can't run hooks get the same discipline as an always-loaded instruction:
