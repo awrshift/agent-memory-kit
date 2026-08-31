@@ -35,6 +35,11 @@ undo the cap. If you ever switch to real PNGs, rename the files to match, and ex
 Removed in v6: `01-before-after.png` — the before/after table in the README says the same thing,
 and it was the one asset drawn in a different (emoji-face) style. Still in git history.
 
+**Embed homes moved 2026-08-31 (the README redesign):** the root README keeps only
+`og-banner`, `02` and `05`; `03`, `04`, `06`, `08` now live in `docs/ARCHITECTURE.md` and
+`07`, `09` in `plugins/memory-kit/README.md`. The no-orphan CI check counts embeds across all
+markdown, so a future trim must re-home or delete the asset, never just drop the reference.
+
 Asset filenames change when their content changes. GitHub's camo proxy caches images by URL, so
 an in-place overwrite keeps serving the old picture to everyone who already loaded the page —
 renaming is the only reliable cache bust.

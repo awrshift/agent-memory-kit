@@ -2,6 +2,23 @@
 
 All notable changes to Memory Kit are documented here. Breaking changes marked **BREAKING**.
 
+<a id="v640"></a>
+
+## [6.4.0] — 2026-08-31 — The rebrand: agent-memory-kit, and a README that breathes
+
+The kit is verifiably multi-host now, and both the name and the front page still said
+otherwise. Repo renamed `claude-memory-kit` → **`agent-memory-kit`** (supersedes D3; GitHub
+redirects preserve every existing link; the plugin id `memory-kit@memory-kit` is untouched, so
+no install breaks — done deliberately BEFORE the Cursor marketplace submission, so no external
+catalog ever carries the old slug).
+
+README rewritten around the new lead — **"One memory for every coding agent"** — cut from
+~2,700 to ~1,100 words: the hosts matrix moved above the fold, the Before/After table dropped
+(per D7), FAQ 9 → 4, and two stale v5 claims fixed while at it (the "~50-message autosave"
+and the "hook recreates MEMORY.md" answers described retired behaviour). Displaced diagrams
+re-homed to `docs/ARCHITECTURE.md` and the plugin README so the no-orphan CI check keeps
+telling the truth. `displayName` → "Memory Kit"; manifest descriptions de-Claude-ified.
+
 <a id="v631"></a>
 
 ## [6.3.1] — 2026-08-31 — Cursor marketplace manifests
@@ -49,7 +66,7 @@ release.
 ### Verified (2026-08-31, codex-cli 0.151.0, live `codex exec` probes)
 
 - **Codex installs the kit from the NATIVE manifests.** `codex plugin marketplace add
-  awrshift/claude-memory-kit` reads `.claude-plugin/marketplace.json` and resolves the nested
+  awrshift/agent-memory-kit` reads `.claude-plugin/marketplace.json` and resolves the nested
   `plugins/memory-kit` source — no adapter manifest, no root-native layout migration needed.
 - **All 8 skills are visible in a live Codex session**, namespaced `memory-kit:<name>`.
 - **The full T2 chain passed a canary probe**: `AGENTS.md` auto-loads, its instruction is

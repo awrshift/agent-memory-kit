@@ -10,7 +10,7 @@ Codex reads the kit's **native Claude Code manifests** directly. The nested
 root-native migration, no `.codex-plugin/` thin manifest required. Exact commands run:
 
 ```bash
-codex plugin marketplace add awrshift/claude-memory-kit   # or a local path — both accepted
+codex plugin marketplace add awrshift/agent-memory-kit   # or a local path — both accepted
 codex plugin add memory-kit@memory-kit
 ```
 

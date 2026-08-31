@@ -10,7 +10,7 @@ leave this board.
 |---|---|---|---|
 | D1 | Cut `v6.0.0` as a GitHub release, or ship quietly on `main`? | **Cut the release.** The version badge reads from GitHub releases, so it currently shows a v5 number on a v6 README — the first credibility signal a visitor sees is stale. | Low. A release can be re-tagged. |
 | D2 | Submit to the community marketplace (`anthropics/claude-plugins-community`)? | **Yes, after one week of self-use on the v6 layout.** Submission pins a commit SHA and CI follows the repo, so a rough week is visible forever. Run `claude plugin validate --strict` first (passes today). | Medium — a public listing is a public first impression. |
-| D3 | Keep the repo name `claude-memory-kit` now that it also carries the builder's layers? | **Keep it.** The name is the story and the install line reads `memory-kit@memory-kit`. Renaming breaks every existing link for a marginal gain in scope accuracy. | High to reverse. |
+| D3 | ~~Keep the repo name `claude-memory-kit`?~~ | **Superseded 2026-08-31** — renamed to `agent-memory-kit`: the kit is verifiably multi-host now (Codex, Cursor), and the old name undersold exactly that. Done before the Cursor marketplace submission so no external catalog carries the old slug. GitHub redirects preserve every existing link; the plugin id `memory-kit@memory-kit` is untouched, so installs don't break. | — |
 
 ## Product boundary
 

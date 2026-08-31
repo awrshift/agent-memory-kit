@@ -1,9 +1,9 @@
 # memory-kit (plugin)
 
-Persistent memory for Claude Code agents, installed into a repository you already have.
+Persistent memory for coding agents, installed into a repository you already have.
 
 ```shell
-/plugin marketplace add awrshift/claude-memory-kit
+/plugin marketplace add awrshift/agent-memory-kit
 /plugin install memory-kit@memory-kit
 /memory-kit:setup
 ```
@@ -45,13 +45,16 @@ nothing.
 Agents: `executor` (builds to a spec file in a worktree) · `recon` (read-only facts) ·
 `idea-validator` (isolated critic) · `qa` (one adversarial lens on the running app).
 
+![](../../.github/assets/07-orchestrated-work-spec.png)
+![](../../.github/assets/09-agent-qa.png)
+
 ## Beyond Claude Code
 
 The memory state is plain markdown, so any agent can follow it — with less enforcement.
 Verified on Codex CLI (0.151.0): the same manifests install directly —
 
 ```shell
-codex plugin marketplace add awrshift/claude-memory-kit
+codex plugin marketplace add awrshift/agent-memory-kit
 codex plugin add memory-kit@memory-kit
 ```
 

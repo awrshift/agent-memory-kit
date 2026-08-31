@@ -10,7 +10,7 @@ Two paths, both probed:
 
 - **Marketplace by git URL** — no central-marketplace publication needed:
   ```bash
-  cursor-agent plugin marketplace add https://github.com/awrshift/claude-memory-kit
+  cursor-agent plugin marketplace add https://github.com/awrshift/agent-memory-kit
   ```
   Result: `✓ Added marketplace memory-kit (1 plugin)` — Cursor's server-side indexer read
   `.claude-plugin/marketplace.json` and resolved the **nested** `plugins/memory-kit` source

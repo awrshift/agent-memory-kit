@@ -71,6 +71,8 @@ documented at `code.claude.com/docs`.
 ╚══════════════════════════════════════════════════════════════╝
 ```
 
+![](../.github/assets/03-where-memory-lives.png)
+
 ## What each layer is FOR (and is NOT)
 
 ### context/identity.md (in the plugin) — the working agreement
@@ -202,6 +204,8 @@ Per-session detail belongs in the handoff, not the header. A header that accrete
 
 ## The promotion flow (pattern → law)
 
+![](../.github/assets/04-promotion.png)
+
 Promotion is agent-driven, on `/close-session`, always on the user's verbal "yes".
 
 ```
@@ -299,6 +303,8 @@ Key property: **user never opens a file during the entire ritual.** They talk, a
 
 ## Multi-project architecture
 
+![](../.github/assets/08-one-operator-many-projects.png)
+
 One agent, many projects. The split is not "big things vs small things" — it is **memory vs
 paperwork**. What the agent LEARNED is shared across every project; what the work PRODUCED
 belongs to one of them.
@@ -334,6 +340,8 @@ maps each document class to the path the repo already uses, and that map is what
 before writing a plan. Defaults are a default; a working layout outranks them.
 
 ## Hooks (automatic, no user action)
+
+![](../.github/assets/06-hooks-skills.png)
 
 Four hooks, declared in the plugin's `hooks/hooks.json` — nothing to wire in your settings:
 
