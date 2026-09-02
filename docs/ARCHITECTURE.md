@@ -267,6 +267,8 @@ wants it back.
 
 ## The audit ritual (mechanics of /close-session)
 
+![](../.github/assets/02-session-loop-agent.png)
+
 ```
 User types: /close-session
     │

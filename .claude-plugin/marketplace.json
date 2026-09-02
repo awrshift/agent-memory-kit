@@ -10,7 +10,7 @@
       "name": "memory-kit",
       "source": "./plugins/memory-kit",
       "description": "Persistent memory for your agent as plain files in your folder: a hot cache injected every session and held under three size caps, per-session handoffs, and promotion into knowledge articles and rules only on your yes. Carries the builder's layers too — executor/recon/idea-validator agents, session review, second opinion, agent QA and a system audit — all lazy-loaded skills you only pay for on use. Installs into any existing repository.",
-      "version": "6.5.3",
+      "version": "6.5.4",
       "author": {
         "name": "awrshift"
       },

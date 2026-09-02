@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "defaultMode": "acceptEdits",
+    "allow": [
+      "Edit(.claude/memory/**)",
+      "Edit(.claude/rules/**)",
+      "Edit(context/**)",
+      "Edit(knowledge/**)",
+      "Edit(projects/**)",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(date:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(mkdir:*)",
+      "Bash(cp:*)",
+      "Bash(tail:*)",
+      "Bash(head:*)"
+    ]
+  },
+  "autoMemoryEnabled": false
+}

@@ -2,6 +2,42 @@
 
 All notable changes to Memory Kit are documented here. Breaking changes marked **BREAKING**.
 
+<a id="v654"></a>
+
+## [6.5.4] — 2026-09-02 — The demo, and the hook that failed on every exit
+
+### Fixed
+
+- **`session-end.sh` printed "SessionEnd hook … failed: Hook cancelled" on every exit.** The
+  hook read its stdin with a bare `cat`; Claude Code does not always close that pipe, so the
+  hook was still waiting when the process exited and got cancelled — visible as an error line
+  in the terminal after `/exit` and after every `claude -p`. Found while recording the demo.
+  Stdin is now read with a one-second `select`; the session id is logged when present,
+  `unknown` when not, and the exit is silent.
+
+### Added
+
+- **The README demo** — four scene clips (`.github/assets/demo-1…4-*.gif`) and the full
+  session (`demo-full-session.mp4`), each placed next to the claim it proves: a
+  real Claude Code session in a seeded folder with two clients, and not one slash command
+  typed: "morning, where are we with Nestlé?" is answered from the handoff; "the client came
+  back: no em-dash …" becomes a dated line; "now IKEA, what's due this week?" switches project
+  scope; "that's all for today, wrap up" triggers the close ritual from the skill's description,
+  which proposes a rule for the pattern seen on four dates, writes it on "yes", updates both
+  backlogs and writes the handoff; a second session the next morning answers from all of it.
+  Nothing is staged in the transcript; the seed and the tape are in the repo so the recording is
+  reproducible: `tools/demo/seed.sh` builds the folder, `tools/demo/demo.tape` drives
+  [VHS](https://github.com/charmbracelet/vhs), `tools/demo/cut.py` collapses the model's
+  thinking time out of the video (spinner frames dropped, a short hold after every change).
+  Details and lessons in `docs/ASSETS.md`.
+
+### Recorded
+
+- **Claude Code treats `.claude/memory/MEMORY.md` as a sensitive file** (2.1.258): the first
+  edit per session asks, regardless of allow rules, with a "for this project" option that
+  persists. `docs/specs/claude-code.md` documents it; D14 decides to keep the path and say it
+  out loud.
+
 <a id="v653"></a>
 
 ## [6.5.3] — 2026-09-02 — The front page speaks to the operator

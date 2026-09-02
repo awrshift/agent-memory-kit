@@ -21,9 +21,19 @@ STATE_DIR="$PROJECT_DIR/.claude/state"
 mkdir -p "$STATE_DIR"
 LOG_FILE="$STATE_DIR/session-end.log"
 
-# Read stdin JSON
-HOOK_INPUT=$(cat)
-SESSION_ID=$(echo "$HOOK_INPUT" | python3 -c "import sys, json; print(json.load(sys.stdin).get('session_id', 'unknown'))" 2>/dev/null || echo "unknown")
+# Read stdin JSON — but never block on it. Claude Code cancels SessionEnd hooks that are
+# still running when the process exits, and a bare `cat` on a stdin nobody closes is exactly
+# that: every exit printed "SessionEnd hook … failed: Hook cancelled" (found 2026-09-02 while
+# recording the demo). One second is plenty for a JSON payload that is already written.
+SESSION_ID=$(python3 -c '
+import json, select, sys
+ready, _, _ = select.select([sys.stdin], [], [], 1.0)
+raw = sys.stdin.read() if ready else ""
+try:
+    print(json.loads(raw).get("session_id", "unknown") or "unknown")
+except Exception:
+    print("unknown")
+' 2>/dev/null || echo "unknown")
 
 echo "$(date '+%Y-%m-%d %H:%M:%S') [hook] SessionEnd: session=$SESSION_ID" >> "$LOG_FILE"
 

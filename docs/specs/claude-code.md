@@ -28,6 +28,17 @@ the kit's whole content-vs-delivery split, and the reason the T2 protocol file
 (`templates/workspace/AGENTS-MEMORY-PROTOCOL.md`) could be distilled at all: the content was
 already separated from the mechanism.
 
+## The sensitive-file prompt (`verified` 2026-09-02, Claude Code 2.1.258)
+
+Claude Code treats everything under `.claude/` as sensitive: the first edit of
+`.claude/memory/MEMORY.md` (and of `.claude/rules/*.md`) in a session asks the user, even in
+`acceptEdits` mode and even with an `Edit(.claude/memory/**)` allow rule (`claude -p` reports
+"requested permissions to edit … which is a sensitive file" and stops). The prompt's second option
+("allow … for this session" on an Edit, "always allow access to `.claude/memory` from this
+project" when the write goes through a shell command) covers the rest of the session or the
+project. Consequence for the kit: "the agent writes MEMORY.md freely" costs one keystroke per
+session on this host; `context/handoffs/` and `knowledge/` are not affected. Recorded as D14.
+
 ## Guarantees unique to this tier
 
 - Memory is **injected**, not fetched — the agent wakes up already knowing (no instruction to

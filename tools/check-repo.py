@@ -9,7 +9,7 @@ Deterministic, stdlib-only, no auth: runs in CI and on your machine identically.
   3. every hook command referenced in hooks.json exists and is executable
   4. every skill has frontmatter with a description; every agent has a name
   5. every relative link and every image embed in the markdown resolves
-  6. no asset in .github/assets is orphaned (nothing embeds it)
+  6. no asset in .github/assets is orphaned (nothing embeds or links it)
 
 usage: python3 tools/check-repo.py     # exit 1 on any failure
 """
@@ -119,8 +119,8 @@ for md in ROOT.rglob("*.md"):
             continue
         resolved = (md.parent / target).resolve()
         check(resolved.exists(), f"{md.relative_to(ROOT)}: dead link -> {target}")
-        if resolved.suffix.lower() in {".png", ".jpg", ".svg", ".gif"}:
-            embedded.add(resolved)
+        if resolved.suffix.lower() in {".png", ".jpg", ".svg", ".gif", ".mp4", ".webm"}:
+            embedded.add(resolved)   # an embed or a plain link — both keep an asset alive
 
 for asset in (ROOT / ".github" / "assets").glob("*"):
     if asset.name == "og-banner.png":

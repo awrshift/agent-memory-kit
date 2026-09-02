@@ -1,6 +1,6 @@
 # README assets — state and how they are made
 
-Nine diagrams in `.github/assets/` carry the visual story. They are PNGs, so their text ages with
+Nine diagrams and five demo clips in `.github/assets/` carry the visual story. Their text ages with
 the product. The rule: **a diagram that states a fact is a fact that has to be swept like any
 other** — same discipline as the docs, and a stale panel is a lie in the most-read file.
 
@@ -37,7 +37,10 @@ Removed in v6: `01-before-after.png` — the before/after table in the README sa
 and it was the one asset drawn in a different (emoji-face) style. Still in git history.
 
 **Embed homes (2026-09-02):** the root README carries `og-banner`, `01-system-map-five-hosts`
-(after "The problem"), `02`, and `07` + `09` inside the collapsed "For builders" block — the
+(after "The problem"), the four demo clips (`demo-1` under "A day with it", `demo-3` + `demo-4`
+under the comparison table, `demo-2` under "Many clients"), and `07` + `09` inside the collapsed
+"For builders" block; `02` moved to `docs/ARCHITECTURE.md` (the audit-ritual section) when the
+open/saved clip took its slot — the
 front page is written for the solo operator, the builder panels open on click. Depth panels live in `docs/ARCHITECTURE.md` (`03`, `04`, `05`, `06`,
 `08`) and `plugins/memory-kit/README.md` (`07`, `09` again). The no-orphan CI check counts
 embeds across all markdown, so a future trim must re-home or delete the asset, never just
@@ -77,6 +80,56 @@ Two lessons from doing this, both cheap to repeat and expensive to skip:
 
 The prompt files used for the v6 batch are not kept — the spec they encode is this file's state
 table plus the copy already visible in each asset.
+
+## The demo recording (`demo-1…4-*.gif` + `demo-full-session.mp4`)
+
+One take, five clips — the README shows the scene next to the claim it proves, the launch post
+gets the whole session:
+
+| Clip | Scene | Seconds · KB |
+|---|---|---|
+| `demo-1-open-already-knowing.gif` | "morning, where are we with Nestlé?" → answered from the handoff (it names the files it read) · "the client came back: …" → `saved:` + the dated line | 15 · ~650 |
+| `demo-2-two-clients.gif` | "now IKEA, what's due this week? and Anna wants the status on Thursdays" → reads the second project, saves the schedule change | 13 · ~1,470 |
+| `demo-3-wrap-up-this-one-asks.gif` | "that's all for today, wrap up" → `Skill(memory-kit:close-session)` loads from its description → `PROPOSAL:` the four-date pattern → "yes" → rule written, both backlogs updated, handoff written, `Session closed.` | 26 · ~2,840 |
+| `demo-4-next-morning.gif` | new session, "what did we settle about em-dashes, and when is the IKEA status due now?" → answered from the rule + memory | 16 · ~380 |
+| `demo-full-session.mp4` | all of the above, thinking time collapsed | 68 · ~2,600 |
+
+Scene boundaries are the keystroke clusters `cut.py`'s input-band detector finds (print them
+with a few lines of the same code); the clips are `ffmpeg -ss/-to` segments of the take, each
+run through `cut.py` (`--hold 1.5`, the close clip `--hold 1.2 --width 850`).
+
+A real session, not a mock-up, and not a single slash command typed: the operator talks
+("morning, where are we with Nestlé?", "the client came back: …", "now IKEA…", "that's all for
+today, wrap up"), the skills trigger from their descriptions, and a second session the next
+morning answers from what the first one wrote. `tools/demo/seed.sh` builds `~/dev/mk-demo`
+(hot cache with the em-dash pattern on three dates, one handoff, two projects, a demo
+`CLAUDE.md` that asks for terse English and two marker strings, acceptEdits permissions), `tools/demo/demo.tape`
+drives Claude Code through [VHS](https://github.com/charmbracelet/vhs) (`brew install vhs`),
+`tools/demo/cut.py` drops the spinner frames so ~2 minutes of model time become a watchable
+clip. Re-record whenever the UI, the skill's wording or the lead changes:
+
+```bash
+tools/demo/seed.sh                      # fresh folder every take — the old take's writes stay otherwise
+cd /tmp && env $(env | grep -i '^CLAUDE' | cut -d= -f1 | sed 's/^/-u /') vhs ~/dev/claude-memory-kit/tools/demo/demo.tape
+python3 tools/demo/cut.py demo.mp4 demo-cut        # the full session; then segment per scene, see the table
+```
+
+Lessons, each paid for once (2026-09-02):
+
+1. **Run VHS from a shell that is NOT inside Claude Code**, or strip every `CLAUDE*` variable:
+   the nested session inherits `CLAUDE_CODE_CHILD_SESSION` and runs in a reduced mode.
+2. **Do not `Wait` on a word that can appear earlier.** `/rule/` matched scene 1's answer and
+   the tape typed "yes" before anything was proposed. The demo `CLAUDE.md` makes the agent emit
+   `PROPOSAL:` and `Session closed.`, and the tape waits on those.
+3. **Claude Code asks before the first `.claude/memory` write of a session** (sensitive file,
+   see `specs/claude-code.md`) — regardless of allow rules, and `auto` mode does not suppress it
+   either (probed). The tape answers it between `Hide` and `Show`, so the clip does not show
+   the one keystroke; D14 and the spec say it exists. Pre-accept the folder-trust dialog in
+   `~/.claude.json` — `seed.sh` does.
+4. **Fixed sleeps after launch, not a `Wait` on the prompt glyph**: the glyph appears before the
+   input accepts keys, and the first Enter is lost.
+5. **Read the frames.** `ffmpeg -vf fps=1/6` into PNGs, open them — the take that "succeeded"
+   by exit code had skipped the proposal scene entirely.
 
 ## Style notes
 

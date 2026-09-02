@@ -57,16 +57,22 @@ after you agree, with a date on every line so a stale fact looks stale.
 
 ## A day with it
 
-![](.github/assets/02-session-loop-agent.png)
-
 1. **Open.** The agent wakes up already knowing: your hot cache, the note the last session
    left, and whether memory is healthy. You just continue.
 2. **Work.** When something worth keeping comes up, the agent saves it as a dated one-liner and
    says "saved". Before the context is compressed, it has to save state. Editing an existing
    test needs your yes.
-3. **Close.** `/memory-kit:close-session` audits instead of dumping logs: "you rejected
-   em-dashes on three different dates, make it a rule?" You say yes, it writes, and leaves the
-   note tomorrow's session opens with.
+3. **Close.** Say you are done for the day. The close ritual audits instead of dumping logs:
+   "you rejected em-dashes on four different dates, make it a rule?" You say yes, it writes,
+   and leaves the note tomorrow's session opens with.
+
+No slash commands in any of this. You talk, the skills trigger from what you said:
+
+![](.github/assets/demo-1-open-already-knowing.gif)
+
+The whole session, uncut except for the model's thinking time:
+[68-second video](.github/assets/demo-full-session.mp4). Seeded folder, real Claude Code,
+reproducible from `tools/demo/`.
 
 ## Why not the built-in memory?
 
@@ -87,6 +93,15 @@ is the vendor's silo. The kit is the opposite trade.
 Running both means two writers and two truths, so `/memory-kit:setup` asks you to pick.
 Either answer is legitimate.
 
+This is the moment the table is about. "That's all for today, wrap up" — the close ritual
+finds the pattern on four dates and asks; the rule exists only after the yes:
+
+![](.github/assets/demo-3-wrap-up-this-one-asks.gif)
+
+And the next morning, a new session, a plain question:
+
+![](.github/assets/demo-4-next-morning.gif)
+
 ## Many clients, one agent
 
 The line is **memory vs paperwork**. What the agent *learned* is shared across everything you
@@ -98,6 +113,11 @@ one repository per client, both work.
 A pattern's journey: noticed, saved as a dated line, repeats on 3+ dates, the agent proposes
 promotion, your "yes" makes it a knowledge article or a rule, and the raw lines are pruned.
 Observation, candidate, law. You approve every step.
+
+"Now IKEA" — the agent reads that client's folder, and a schedule change becomes a dated line
+without leaving the conversation:
+
+![](.github/assets/demo-2-two-clients.gif)
 
 ## Works with your agents
 
