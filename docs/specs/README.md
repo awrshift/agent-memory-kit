@@ -27,4 +27,5 @@ which maintains an empirically-verified spec per foreign platform.
 | [cursor.md](cursor.md) | T2 + verified SessionStart injection (T1-grade wake-up; other hooks unprobed) | verified 2026-08-31 (CLI) |
 | [copilot.md](copilot.md) | T2 — skills + protocol | verified 2026-08-31 (CLI) |
 | [opencode.md](opencode.md) | **T1 — real injection via the shipped plugin** (per-call system prompt; compaction-proof) | verified 2026-08-31 |
+| [cowork.md](cowork.md) | T2 at best — skills load, plugin hooks do not fire (open upstream issues) | documented-only 2026-09-02, manual checklist inside |
 | [agents-md.md](agents-md.md) | the T2 delivery convention itself | mixed |

@@ -368,6 +368,12 @@ every turn, to re-state what PreCompact already enforces at the moment it matter
 
 Hooks are invisible to the user. They just make sure state survives.
 
+**What the injection costs** (measured 2026-09-02 by running `session-start.py` and counting
+characters ÷ 4): a fresh install ~2.3k tokens, a working 6 KB cache with a handoff ~3.5k, and a
+hard ceiling of ~12k when the cache sits at all three caps and the handoff at its 6 KB inject
+cap. Skill and agent descriptions add ~1.8k on every host that loads them. The caps are what
+make the ceiling a number instead of a trend.
+
 ## Platform tiers (beyond Claude Code)
 
 The kit is authored as a Claude Code plugin, but the STATE it manages is plain markdown in your
@@ -377,7 +383,7 @@ every host is equal:
 | Tier | Hosts | What runs |
 |---|---|---|
 | **T1 — enforcement** | Claude Code · OpenCode (via the shipped `.opencode/plugins/memory-kit.js` shim, verified 2026-08-31) | Guarantees, not requests — but not the same three on both hosts. **Claude Code:** injection at session start, the PreCompact block, the test guard. **OpenCode:** memory rides `experimental.chat.system.transform` into EVERY model call, so compaction cannot drop it (the block is unnecessary rather than missing); no test guard yet; `experimental.session.compacting` appends a save-state instruction. |
-| **T2 — protocol** | Codex and GitHub Copilot CLI (both verified 2026-08-31), Cursor (verified 2026-08-31 — its CLI even executes the SessionStart hook, giving T1-grade wake-up; the other three hooks unprobed) — anything that auto-loads `AGENTS.md` | `/memory-kit:setup` appends a marker-fenced block (`templates/workspace/AGENTS-MEMORY-PROTOCOL.md`, <2.1 KB) telling the agent to do by hand what the hooks do mechanically: read memory first, respect the caps, save before compaction, close with the ritual. Advisory — an agent can forget an instruction; it cannot ignore a hook. |
+| **T2 — protocol** | Codex and GitHub Copilot CLI (both verified 2026-08-31), Cursor (verified 2026-08-31 — its CLI even executes the SessionStart hook, giving T1-grade wake-up; the other three hooks unprobed), Claude Cowork (documented-only 2026-09-02: skills load, plugin hooks do not fire — `specs/cowork.md`) — anything that auto-loads `AGENTS.md` or `CLAUDE.md` | `/memory-kit:setup` appends a marker-fenced block (`templates/workspace/AGENTS-MEMORY-PROTOCOL.md`, <2.1 KB) telling the agent to do by hand what the hooks do mechanically: read memory first, respect the caps, save before compaction, close with the ritual. Advisory — an agent can forget an instruction; it cannot ignore a hook. |
 | **T3 — plain files** | anything else, including CI | the memory files themselves need no runtime: markdown, git-versioned, one `grep` away. |
 
 Codex empirics (see `specs/codex.md` for the probes): it installs the kit from the NATIVE

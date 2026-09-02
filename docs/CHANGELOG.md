@@ -2,6 +2,33 @@
 
 All notable changes to Memory Kit are documented here. Breaking changes marked **BREAKING**.
 
+## [Unreleased, docs only] — 2026-09-02 — The front page speaks to the operator
+
+No plugin change; the next code release absorbs this entry.
+
+- **README rewritten around the actual differentiator.** Two independent reviews of the
+  positioning agreed on the same point: "wakes up knowing where you left off" is what Claude
+  Code auto memory and Copilot Memory now promise by default, for free — leading with it invites
+  "mine already does that". The lead is now the contrast: **"Built-in memory decides what to
+  remember. This one asks."** A three-column comparison (built-in · kit · database tools)
+  answers the first question every visitor has, with a measured session-start cost instead of
+  an adjective. Install commands for the other hosts, the builders' layer and the file layout
+  moved into collapsed blocks; the page is written for a solo operator running clients, and
+  says honestly that install is a handful of terminal commands once. "Not a programmer" is
+  gone — the reader types `git init`. The unverifiable "1000+ sessions" is replaced by what git
+  shows.
+- **`docs/specs/cowork.md`** — Claude Cowork, the app the operator persona is most likely to
+  hold, loads plugin skills but does not run plugin hooks (open upstream issues #27398, #47993,
+  #51281): no injection, no block, no guard. Documented as Tier 2 at best, with the manual probe
+  checklist; the README hosts table carries the row. Decision D13 opened.
+- **`.github/ISSUE_TEMPLATE/first-week.md`** — five questions; the README asks for it. Until
+  today the kit had received zero feedback from anyone, and there was nowhere to leave it.
+- **`docs/DISTRIBUTION.md`** — the go-to-market plan as a dated, reviewable file: channels in
+  order, what each costs, what to measure, and the metric to distrust (443 clones against 52
+  visitors is not humans).
+- `docs/ASSETS.md` flags the banner's headline as stale (regeneration needs an image-model key
+  that is not working today); `ARCHITECTURE.md` records the measured injection cost.
+
 <a id="v652"></a>
 
 ## [6.5.2] — 2026-09-02 — PreCompact blocked every compaction on Linux

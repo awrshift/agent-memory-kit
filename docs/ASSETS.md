@@ -22,7 +22,7 @@ five regenerated, four kept)
 | `07-orchestrated-work-spec.png` | **regenerated 2026-08-27 for v6.2.0** (was `07-orchestrated-work.png`): a new second row — «THE SPEC — a file, written before anyone fans out», `projects/<name>/plans/YYYY-MM-DD-<slug>.md`, goal · non-goals · acceptance pre-registered · the gate commands — and the three agents now fan out FROM the spec, not from the integrator. |
 | `08-one-operator-any-agent.png` | **regenerated 2026-08-31 for v6.4.0** (was `08-one-operator-many-projects.png`): footer "three lines in Claude Code" → "one install — Claude Code, Cursor or Codex"; top-right card "one install → new repo" |
 | `09-agent-qa-projects.png` | **regenerated 2026-08-31** (was `09-agent-qa.png`): footer path was still `docs/qa/README.md` — drifted since v6.2.0 moved the QA protocol to `projects/<name>/qa/README.md`; caught by looking, exactly as this file's own rule demands |
-| `og-banner-one-memory.png` | **regenerated 2026-08-31 for v6.4.0** (was `og-banner.png`): "claude-memory-kit / The OS layer for Claude Code" → "agent-memory-kit / One memory for every coding agent." with the host line; layer stack relabeled MEMORY.md · handoffs/ · concepts/ · rules/ (the old top layer said CLAUDE.md). Generated WITHOUT a style ref — the label substitution would have pulled the old strings back in (lesson 3 below) |
+| `og-banner-one-memory.png` | **⚠ STALE HEADLINE since 2026-09-02** — the README lead is now "Built-in memory decides what to remember. This one asks." and the host line has five names; the banner still says "One memory for every coding agent." with three. Regenerate (new filename, e.g. `og-banner-this-one-asks.png`) as soon as an image-model key works; until then the banner is a known lie on the front page, listed here so it cannot be forgotten. Previous state: regenerated 2026-08-31 for v6.4.0 (was `og-banner.png`): "claude-memory-kit / The OS layer for Claude Code" → "agent-memory-kit / One memory for every coding agent." with the host line; layer stack relabeled MEMORY.md · handoffs/ · concepts/ · rules/ (the old top layer said CLAUDE.md). Generated WITHOUT a style ref — the label substitution would have pulled the old strings back in (lesson 3 below) |
 
 All nine are capped at 2000 px wide: the set went from ~8.7 MB to ~2.7 MB, which matters because
 several of them sit above the fold.
@@ -36,9 +36,9 @@ undo the cap. If you ever switch to real PNGs, rename the files to match, and ex
 Removed in v6: `01-before-after.png` — the before/after table in the README says the same thing,
 and it was the one asset drawn in a different (emoji-face) style. Still in git history.
 
-**Embed homes (final for 2026-08-31):** the root README carries `og-banner`, `01-system-map`
-(after "The problem"), `02`, `07`, `09` — every CONCEPT is on the front page, with the map as
-the simplified umbrella. Depth panels live in `docs/ARCHITECTURE.md` (`03`, `04`, `05`, `06`,
+**Embed homes (2026-09-02):** the root README carries `og-banner`, `01-system-map`
+(after "The problem"), `02`, and `07` + `09` inside the collapsed "For builders" block — the
+front page is written for the solo operator, the builder panels open on click. Depth panels live in `docs/ARCHITECTURE.md` (`03`, `04`, `05`, `06`,
 `08`) and `plugins/memory-kit/README.md` (`07`, `09` again). The no-orphan CI check counts
 embeds across all markdown, so a future trim must re-home or delete the asset, never just
 drop the reference. (The `01` slot previously belonged to `01-before-after.png`, removed in

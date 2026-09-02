@@ -2,9 +2,10 @@
 
 # Memory Kit
 
-**One memory for every coding agent.**
-**Plain markdown in your repository — injected on Claude Code, Cursor and OpenCode, followed
-by Codex and Copilot, readable by anything. Dated, capped, audited: it doesn't rot.**
+**Built-in memory decides what to remember. This one asks.**
+
+Your agent proposes, you say yes, it writes a dated line into plain files in your own folder.
+One memory per client, readable by every agent you run, nothing remembered without your yes.
 
 [![Version](https://img.shields.io/github/v/release/awrshift/agent-memory-kit?label=version&color=CFEF4A&cacheSeconds=1800)](https://github.com/awrshift/agent-memory-kit/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-55503E?labelColor=55503E&color=55503E)](LICENSE)
@@ -14,7 +15,8 @@ by Codex and Copilot, readable by anything. Dated, capped, audited: it doesn't r
 
 ## Install
 
-In Claude Code, into a repository you already have:
+Three commands in Claude Code, inside the folder where you work. No repository yet? An empty
+folder with `git init` is one.
 
 ```shell
 /plugin marketplace add awrshift/agent-memory-kit
@@ -22,61 +24,95 @@ In Claude Code, into a repository you already have:
 /memory-kit:setup
 ```
 
-Work as usual; say `/memory-kit:close-session` when you're done. That's the whole loop — no
-database, no service, no extra cost. Setup reads what your repo already has and **proposes
-before writing anything**; your `CLAUDE.md` stays yours. Codex and Cursor install from the
-same repository — see [Works with your agents](#works-with-your-agents).
+That is the technical part, and it happens once. From then on you only talk: work as usual, and
+say `/memory-kit:close-session` when you are done for the day. No database, no service, no
+extra cost. Setup reads what your folder already has and **proposes before writing anything**;
+your `CLAUDE.md` stays yours. Other agents install from the same repository, see
+[Works with your agents](#works-with-your-agents).
 
 <details>
-<summary>Upgrading later — two commands, and the second needs the full id</summary>
+<summary>Upgrading later, two commands, and the second needs the full id</summary>
 
 ```shell
 claude plugin marketplace update memory-kit     # refresh the catalog
 claude plugin update memory-kit@memory-kit      # the bare name resolves to nothing
 ```
 
-Restart the session to apply. Upgrades never touch your repo — memory, handoffs and knowledge
-live in your files, not in the plugin.
+Restart the session to apply. Upgrades never touch your files. Memory, handoffs and knowledge
+live in your folder, not in the plugin.
 </details>
 
 ## The problem
 
-Every session starts from zero: yesterday you locked the brand voice, today you explain it
-again. What your tools do remember is scattered — Claude Code's notes in one silo, Cursor's in
-another, none of it in your repo, none of it yours. And memory nobody audits **rots**: a
-status file that froze three weeks ago still reads like today's truth, and the agent
-confidently acts on it.
+Every session starts from zero: yesterday you locked the brand voice for a client, today you
+explain it again. Your tools do remember things now, but each one keeps its own notes, outside
+your folder, and decides by itself what goes in. And memory nobody audits **rots**: a status
+note that froze three weeks ago still reads like today's truth, and the agent confidently acts
+on it.
 
-Memory Kit's answer: **one set of plain markdown files in your repository.** Every agent reads
-the same memory, one discipline keeps it honest, and whatever you choose to commit — the
-knowledge wiki and rules by default, the hot cache too if you say so — carries its history in
-git.
+Memory Kit's answer: **one set of plain text files in your folder**, written by the agent only
+after you agree, with a date on every line so a stale fact looks stale.
 
 ![](.github/assets/01-system-map.png)
 
-## How a session works
+## A day with it
 
 ![](.github/assets/02-session-loop-agent.png)
 
-1. **Open** — the agent wakes up already knowing: your hot cache, the note the last session
-   left, memory-health stats. You just continue.
-2. **Work** — when something worth keeping comes up, the agent saves it as a dated one-liner
-   and says "saved". Compaction is blocked until state is written; editing an existing test
-   needs your yes.
-3. **Close** — `/memory-kit:close-session` audits instead of dumping logs: "you rejected
-   em-dashes on three different dates — make it a rule?" You say yes, it writes, and leaves
-   the note tomorrow's session opens with.
+1. **Open.** The agent wakes up already knowing: your hot cache, the note the last session
+   left, and whether memory is healthy. You just continue.
+2. **Work.** When something worth keeping comes up, the agent saves it as a dated one-liner and
+   says "saved". Before the context is compressed, it has to save state. Editing an existing
+   test needs your yes.
+3. **Close.** `/memory-kit:close-session` audits instead of dumping logs: "you rejected
+   em-dashes on three different dates, make it a rule?" You say yes, it writes, and leaves the
+   note tomorrow's session opens with.
+
+## Why not the built-in memory?
+
+Claude Code, Cursor and Copilot all ship memory now, on by default. It is effortless, and it
+is the vendor's silo. The kit is the opposite trade.
+
+| | Built-in auto memory | Memory Kit | Database memory tools |
+|---|---|---|---|
+| Who decides what is remembered | the agent, silently | the agent proposes, **you approve** | the agent, silently |
+| Where it lives | the vendor's directory, outside your folder | **plain files in your folder** | a database or a service |
+| Can you read it, diff it, delete a wrong belief | partly | **yes, it is text in git** | through the tool's UI |
+| One memory per client | no | **yes**, `projects/<client>/` | usually no |
+| Read by other agents | no | **yes**, Claude Code, Cursor, Codex, Copilot, OpenCode | via that tool's integrations |
+| How staleness shows | it doesn't | **every line carries its date**; caps force a prune | it doesn't |
+| Cost at session start (measured 2026-09-02) | vendor's index, up to 25 KB | 2–4k tokens on a working cache, hard ceiling ~12k at the caps | tool-specific |
+| Infrastructure | none | **none** | a database, often a daemon or API key |
+
+Running both means two writers and two truths, so `/memory-kit:setup` asks you to pick.
+Either answer is legitimate.
+
+## Many clients, one agent
+
+The line is **memory vs paperwork**. What the agent *learned* is shared across everything you
+do: patterns, knowledge, rules. What the work *produced* belongs to one client:
+`projects/<client>/` holds that client's backlog, specs, research, decisions and QA records.
+Say "we're working on Nestlé" and the agent loads that scope only. One folder per client, or
+one repository per client, both work.
+
+A pattern's journey: noticed, saved as a dated line, repeats on 3+ dates, the agent proposes
+promotion, your "yes" makes it a knowledge article or a rule, and the raw lines are pruned.
+Observation, candidate, law. You approve every step.
 
 ## Works with your agents
 
 | Agent | What you get |
 |---|---|
 | **Claude Code** | full enforcement: memory injected every session, compaction blocked until state is saved, test edits guarded |
-| **Cursor** | memory injected at session start + all 8 skills ([verified](docs/specs/cursor.md)) |
-| **Codex** | all 8 skills + the memory discipline via an `AGENTS.md` protocol block ([verified](docs/specs/codex.md)) |
-| **GitHub Copilot CLI** | all 8 skills + the `AGENTS.md` protocol block ([verified](docs/specs/copilot.md)) |
-| **OpenCode** | memory injected into EVERY model call via the shipped plugin — compaction can't drop it ([verified](docs/specs/opencode.md)) |
-| **Anything else, incl. CI** | the memory is plain markdown in your repo — readable, greppable, git-versioned |
+| **Cursor** | memory injected at session start, all 8 skills ([verified](docs/specs/cursor.md)) |
+| **OpenCode** | memory injected into EVERY model call via the shipped plugin ([verified](docs/specs/opencode.md)) |
+| **Codex** | all 8 skills, the memory discipline via an `AGENTS.md` protocol block ([verified](docs/specs/codex.md)) |
+| **GitHub Copilot CLI** | all 8 skills, the `AGENTS.md` protocol block ([verified](docs/specs/copilot.md)) |
+| **Claude Cowork** (desktop) | skills only: Cowork does not run plugin hooks yet, so memory is not injected there ([documented](docs/specs/cowork.md)) |
+| **Anything else, incl. CI** | the memory is plain text in your folder: readable, greppable, git-versioned |
+
+<details>
+<summary>Install commands for the other agents</summary>
 
 ```shell
 codex plugin marketplace add awrshift/agent-memory-kit && codex plugin add memory-kit@memory-kit
@@ -84,15 +120,47 @@ cursor-agent plugin marketplace add https://github.com/awrshift/agent-memory-kit
 copilot plugin marketplace add awrshift/agent-memory-kit && copilot plugin install memory-kit@memory-kit
 ```
 
-OpenCode instead takes one line in `opencode.json`:
+OpenCode takes one line in `opencode.json`:
 `"plugin": ["memory-kit@git+https://github.com/awrshift/agent-memory-kit.git"]`
 
-Hosts that can't run hooks get the same discipline as an always-loaded instruction:
-`/memory-kit:setup` offers a small protocol block for your `AGENTS.md`. Every claim above is
-probed, dated and labeled in [docs/specs/](docs/specs/README.md) — degradation stated, never
-hidden.
+Hosts that cannot run hooks get the same discipline as an always-loaded instruction:
+`/memory-kit:setup` offers a small protocol block for your `AGENTS.md`. Every claim is probed,
+dated and labeled in [docs/specs/](docs/specs/README.md), degradation stated, never hidden.
+</details>
 
-## Where memory lives
+## Private by default
+
+Everything is plain text on your machine; nothing leaves. The hot cache and the session notes
+are gitignored by default, so they stay private even if you push. `knowledge/` and rules are
+tracked: they are your curated wiki, keep the repository private or prune before publishing.
+Working from two machines, or sharing memory with a teammate? Say so at `/memory-kit:setup`
+and the hot cache gets committed instead.
+
+<details>
+<summary><b>What if I forget to run /close-session?</b></summary>
+
+Nothing breaks. Compaction still refuses to run over unsaved state, and the next session still
+opens with your hot cache. You lose that session's handoff note and the pattern audit, the
+deliberate part. Run it next time.
+</details>
+
+<details>
+<summary><b>For builders: the orchestration and QA layers (opt-in)</b></summary>
+
+The same plugin carries the orchestration discipline distilled from hundreds of multi-agent
+sessions: specs as files with pre-registered acceptance, `executor` / `recon` /
+`idea-validator` agents, adversarial `/session-review` and `/second-opinion`, and a multi-lens
+`/qa-sweep` for running products. All lazy-loaded skills, they cost nothing until invoked.
+
+![](.github/assets/07-orchestrated-work-spec.png)
+![](.github/assets/09-agent-qa-projects.png)
+
+Depth: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and the plugin's
+[reference/](plugins/memory-kit/reference/).
+</details>
+
+<details>
+<summary><b>How it is built: where memory lives, what is in the repo</b></summary>
 
 ```mermaid
 flowchart LR
@@ -104,107 +172,33 @@ flowchart LR
     H -->|"injected in full"| S
 ```
 
-Four files, each answering a different question — the agent writes all of them, you only talk.
-A pattern's journey: noticed → saved as a dated line → repeats on 3+ dates → the agent
-proposes promotion → your "yes" makes it a knowledge article or a rule, and the raw lines are
-pruned. Observation → candidate → law. You approve every step.
-
-## Why it doesn't rot
-
-Memory systems don't die loudly — they rot quietly. The kit is built around the failure modes
-a year of production actually produced:
-
-- **Three size caps** on the hot cache (180 lines / 32 KB / 3000 chars per line), checked
-  every session — because line count alone lies while content densifies.
-- **Every entry carries a date.** Undated memory is noise; dated memory makes repetition —
-  and staleness — visible.
-- **Handoffs instead of a rolling status file.** One immutable note per session; a note that
-  states its date can't pretend to be today's.
-- **A stale-reference detector**: paths mentioned in memory are checked against disk every
-  session start.
-- **Nothing is remembered without a decision** — unlike auto-memory, every promotion needs
-  your yes, and `git log` shows how the project's memory evolved.
-
-## Many clients, one discipline
-
-One repo per client, or one workspace with `projects/<name>/` per client — both supported. The
-line is **memory vs paperwork**: what the agent *learned* is shared (patterns, knowledge,
-rules); what the work *produced* belongs to one project (backlog, specs, research, decisions,
-QA). Say "we're working on Nestlé" and the agent loads that scope only.
-
-## For builders (opt-in)
-
-![](.github/assets/07-orchestrated-work-spec.png)
-
-The same plugin carries the orchestration discipline distilled from hundreds of multi-agent
-sessions: specs as files with pre-registered acceptance, `executor`/`recon`/`idea-validator`
-agents, adversarial `/session-review` and `/second-opinion`, and a multi-lens `/qa-sweep` for
-running products. All lazy-loaded skills — they cost nothing until invoked. Depth:
-[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and the plugin's
-[reference/](plugins/memory-kit/reference/).
-
-![](.github/assets/09-agent-qa-projects.png)
-
-## What's inside
+Four files, each answering a different question. The agent writes all of them, you only talk.
+Three size caps on the hot cache (180 lines / 32 KB / 3000 chars per line), checked every
+session, because line count alone lies while content densifies. A stale-reference detector
+checks that paths mentioned in memory still exist on disk.
 
 ```
-.claude-plugin/marketplace.json   ← THE catalog. Despite the name, this is the manifest
-                                    format the ecosystem standardized on — Claude Code,
-                                    Codex and Copilot all install straight from it
+.claude-plugin/marketplace.json   ← THE catalog: Claude Code, Codex and Copilot install from it
 .cursor-plugin/                   ← metadata for Cursor's central-marketplace listing only
-                                    (Cursor installs from the same catalog above)
-plugins/memory-kit/               ← the plugin itself: hooks · skills · agents · templates
+plugins/memory-kit/               ← the plugin: hooks · skills · agents · templates
 docs/specs/                       ← what each host actually honours, probe by probe
 docs/ARCHITECTURE.md              ← the full design, with rationale
 ```
 
-The `.claude-plugin/` name is the protocol, not the scope — the same way every editor reads
-`.gitignore`. In **your** repository the kit owns only state: `.claude/memory/MEMORY.md`,
-`context/handoffs/`, `knowledge/`, `.claude/rules/`, plus one `projects/<name>/` per client.
-
-## FAQ
-
-<details open>
-<summary><b>How is this different from my agent's built-in memory?</b></summary>
-
-Built-in auto-memory is effortless — and it is the vendor's silo: the agent decides what
-enters it, the record lives outside your repo, and no other tool can read it. The kit is the
-opposite trade: nothing remembered without a decision, everything a plain file in git that any
-agent reads. Running both means two writers and two truths, so `/memory-kit:setup` asks you to
-pick — either answer is legitimate.
-</details>
-
-<details>
-<summary><b>I'm not a programmer. Will this work?</b></summary>
-
-Yes. You talk in plain language; you never edit memory files yourself — that's the kit's first
-rule: *you only talk, the agent writes.*
-</details>
-
-<details>
-<summary><b>Is my data private?</b></summary>
-
-Everything is plain text on your machine; nothing leaves. `MEMORY.md` and handoffs are
-gitignored by default (created at setup), so they stay private even if you push. `knowledge/`
-and rules ARE tracked — they're your curated wiki; keep the repo private or prune before
-publishing. Working from two machines, or sharing memory with a teammate? Say so at
-`/memory-kit:setup` and the hot cache gets committed instead — then every clone wakes up
-knowing the same things.
-</details>
-
-<details>
-<summary><b>What if I forget to run /close-session?</b></summary>
-
-Nothing breaks. The PreCompact hook still refuses to compact over unsaved state, and the next
-session still opens with your hot cache. You lose that session's handoff note and pattern
-audit — the deliberate part. Run it next time.
+In **your** folder the kit owns only state: `.claude/memory/MEMORY.md`, `context/handoffs/`,
+`knowledge/`, `.claude/rules/`, plus one `projects/<name>/` per client.
 </details>
 
 ## Origin
 
-Distilled from **1000+ real sessions over 12 months** of daily agent work by one operator
-across marketing, R&D and production code — including the scars: the layers that quietly
-rotted were retired, and what remains is what kept earning its place.
+Built and used daily by one operator since March 2026, across marketing, research and product
+work, in Claude Code first and the other agents as they arrived. The scars are in the changelog:
+seven layers were retired because they quietly rotted, and for a year the kit claimed its hot
+cache was "always loaded" while the hook only measured it. v6 found that, fixed it, and CI now
+checks the injection on every push. What remains is what kept earning its place.
+
+**Tell me how your first week went:** [open a note](https://github.com/awrshift/agent-memory-kit/issues/new?template=first-week.md).
+It is the only feedback channel, and it decides what gets built next.
 
 **Architecture:** [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) ·
 **Per-host specs:** [docs/specs/](docs/specs/README.md) ·
@@ -212,4 +206,4 @@ rotted were retired, and what remains is what kept earning its place.
 **Contributing:** [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) ·
 **Open decisions:** [docs/DECISIONS.md](docs/DECISIONS.md)
 
-MIT — see [LICENSE](LICENSE).
+MIT, see [LICENSE](LICENSE).
