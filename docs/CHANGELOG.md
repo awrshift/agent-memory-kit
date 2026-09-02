@@ -2,6 +2,27 @@
 
 All notable changes to Memory Kit are documented here. Breaking changes marked **BREAKING**.
 
+<a id="v652"></a>
+
+## [6.5.2] — 2026-09-02 — PreCompact blocked every compaction on Linux
+
+The new CI probe from 6.5.1 failed on its first run, on Ubuntu, and the failure was not the
+probe's. `pre-compact.sh` read the cache's mtime with `stat -f '%m' … || stat -c '%Y' …`:
+on BSD/macOS `-f` is "format", on GNU/Linux it is "file system" — the command *succeeds* with
+filesystem statistics as output, the fallback never runs, the age arithmetic throws, and the
+hook falls through to **block**. So on every Linux host, since v5.0.0, compaction was refused
+regardless of how fresh the cache was; the agent was told its memory was stale each time.
+Nobody noticed because the hook had only ever been exercised on macOS, and "verified" in
+`docs/specs/claude-code.md` silently meant "verified on the maintainer's laptop".
+
+### Fixed
+
+- The mtime is read with `python3` (`os.stat`), which the hook already requires. Verified in
+  a `python:3.12-slim` container and by CI on `ubuntu-latest`; `docs/specs/claude-code.md`
+  now says which platforms the probes ran on.
+
+Nothing in a user's repository changes.
+
 <a id="v651"></a>
 
 ## [6.5.1] — 2026-09-02 — The audit release: what a full sweep found after the multi-host week

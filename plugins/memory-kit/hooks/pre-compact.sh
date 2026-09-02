@@ -36,7 +36,10 @@ if [ -f "$MEMORY_FILE" ]; then
     MEMORY_LINES=$(wc -l < "$MEMORY_FILE" | tr -d ' ')
     MEMORY_BYTES=$(wc -c < "$MEMORY_FILE" | tr -d ' ')
     MEMORY_MAX_LINE=$(awk '{ if (length($0) > m) m = length($0) } END { print m + 0 }' "$MEMORY_FILE")
-    MEMORY_MTIME=$(stat -f '%m' "$MEMORY_FILE" 2>/dev/null || stat -c '%Y' "$MEMORY_FILE" 2>/dev/null)
+    # Not `stat`: `-f '%m'` is "format" on BSD/macOS but "file system" on GNU/Linux, where it
+    # succeeds with junk output, the `||` fallback never runs, and the age arithmetic breaks —
+    # which blocked EVERY compaction on Linux. python3 is already required by the hook.
+    MEMORY_MTIME=$(python3 -c 'import os,sys; print(int(os.stat(sys.argv[1]).st_mtime))' "$MEMORY_FILE" 2>/dev/null)
     if [ -n "$MEMORY_MTIME" ]; then
         AGE_SECONDS=$(( $(date +%s) - MEMORY_MTIME ))
         [ "$AGE_SECONDS" -lt 120 ] && FRESH=1

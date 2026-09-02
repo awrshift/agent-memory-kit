@@ -1,4 +1,4 @@
-<!-- memory-kit protocol v6.5.1 — managed block; a newer kit version REPLACES everything down to the end marker -->
+<!-- memory-kit protocol v6.5.2 — managed block; a newer kit version REPLACES everything down to the end marker -->
 # Memory protocol (for any agent working in this repository)
 
 This repository keeps agent memory in plain files. Follow this protocol every session.

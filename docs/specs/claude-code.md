@@ -1,8 +1,11 @@
 # Claude Code — the baseline host (Tier 1)
 
-Last verified: 2026-08-31, against the kit's own CI (`.github/workflows/checks.yml`) and a live
-session. Claude Code is the canonical host: the plugin is authored in its format, and every
-mechanism below is exercised by CI on each push — the whole file is `verified`.
+Last verified: 2026-09-02, against the kit's own CI (`.github/workflows/checks.yml`, Ubuntu)
+and live sessions on macOS. Claude Code is the canonical host: the plugin is authored in its
+format, and every mechanism below is exercised by CI on each push — the whole file is
+`verified`. Platform note: until 6.5.2 the PreCompact hook had only ever run on macOS, and on
+Linux it blocked every compaction (a `stat` flag that means something else on GNU). "Verified"
+here now means both platforms; Windows remains `manual-check-needed`.
 
 ## Mechanisms the kit actually uses
 
