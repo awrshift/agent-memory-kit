@@ -1,4 +1,4 @@
-![Memory Kit](.github/assets/og-banner-one-memory.png)
+![Memory Kit](.github/assets/og-banner-this-one-asks.png)
 
 # Memory Kit
 

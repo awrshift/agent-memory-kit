@@ -26,8 +26,9 @@ No plugin change; the next code release absorbs this entry.
 - **`docs/DISTRIBUTION.md`** — the go-to-market plan as a dated, reviewable file: channels in
   order, what each costs, what to measure, and the metric to distrust (443 clones against 52
   visitors is not humans).
-- `docs/ASSETS.md` flags the banner's headline as stale (regeneration needs an image-model key
-  that is not working today); `ARCHITECTURE.md` records the measured injection cost.
+- **The banner carries the new lead** — `og-banner-this-one-asks.png` replaces
+  `og-banner-one-memory.png` (same-day, once the image-model key had billing); all five hosts
+  on the sub-line. `ARCHITECTURE.md` records the measured injection cost.
 
 <a id="v652"></a>
 
