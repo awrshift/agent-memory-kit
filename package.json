@@ -1,6 +1,6 @@
 {
   "name": "memory-kit",
-  "version": "6.5.0",
+  "version": "6.5.1",
   "description": "Memory Kit's OpenCode plugin entry — one memory for every coding agent. The plugin itself lives in plugins/memory-kit; this package exists so OpenCode can install the shim via `\"plugin\": [\"memory-kit@git+https://github.com/awrshift/agent-memory-kit.git\"]`.",
   "type": "module",
   "main": ".opencode/plugins/memory-kit.js",

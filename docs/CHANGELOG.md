@@ -2,6 +2,80 @@
 
 All notable changes to Memory Kit are documented here. Breaking changes marked **BREAKING**.
 
+<a id="v651"></a>
+
+## [6.5.1] — 2026-09-02 — The audit release: what a full sweep found after the multi-host week
+
+A file-by-file audit of the v6.5.0 tree — hooks exercised on every profile, every host claim
+re-checked against the vendor's current docs, every cross-reference resolved, the market
+re-read. The mechanics held; the fixes below are the places where the kit's own words drifted
+from its behaviour, plus one option in setup that could not have worked.
+
+### Fixed
+
+- **`/memory-kit:setup` Step 2 offered an impossible option.** "Native owns capture" told the
+  agent to point `autoMemoryDirectory` at the repo's `.claude/memory`. Claude Code accepts only
+  an absolute or `~/` path there (so it cannot be committed portably), and it would have
+  rewritten the kit's `MEMORY.md` in its own index format. The option is now "both, side by
+  side" — native keeps its machine-local index, the kit keeps the repo files — with an explicit
+  warning never to redirect one into the other. `CLAUDE_CODE_DISABLE_AUTO_MEMORY=1` is named as
+  the headless equivalent of `autoMemoryEnabled: false`.
+- **PreCompact called a fresh cache "stale".** A cache over its caps was blocked with a reason
+  that said "memory files are stale … last updated 0 min ago", steering the agent to refresh
+  instead of prune. The hook now names the breached cap(s) and asks for a prune; the stale
+  message is reserved for a stale file. CI exercises all three states.
+- **`system-audit`'s transcript telemetry looked in the wrong directory** for any repository
+  whose path contains a dot, space or other non-alphanumeric character: `collect.sh` encoded
+  the path by replacing slashes only, while Claude Code (and the sibling `usage.py`) replace
+  every non-alphanumeric character. Same encoding now.
+- **`system-audit` shipped its report template and severity vocabulary in Russian** — the one
+  file the skill copies verbatim into a user's `context/audits/`. Translated; the Russian
+  trigger phrases in the skill's description stay, they are intentional.
+- **`reference/qa-PROTOCOL-TEMPLATE.md` named a file that does not exist** (`mcp.json.example`
+  → `reference/qa-mcp.json.example`).
+- **The AGENTS.md protocol block carried `v6.3.0`** since it was born; the "replace the marked
+  block on upgrade" mechanism keys on that marker. It now matches `VERSION`, and
+  `tools/check-repo.py` fails the build when it doesn't.
+- **`docs/specs/agents-md.md` ignored its own label convention** (bold dates instead of the
+  backticked `verified` / `documented-only` labels `docs/specs/README.md` mandates) and lacked
+  the OpenCode row.
+
+### Changed
+
+- **`MEMORY-TEMPLATE.md` is a header and an entries block, nothing else.** The old template
+  carried ~2.5 KB of doctrine — why dates matter, the caps, what not to put here — that the
+  hook injects every session AND that `context/identity.md` already injects every session.
+  Doctrine in a user-owned file also never updates with the plugin. Existing caches are
+  untouched; the next `/memory-kit:memory-audit` may drop those sections. Injection on a fresh
+  repo shrinks by ~1.4 KB per session.
+- **The README no longer claims "git owns the history"** two sections before the FAQ says the
+  hot cache is gitignored by default. It now says what is true: the wiki and rules are
+  versioned by default, the cache too when you say so at setup — and the privacy FAQ tells a
+  two-machine or team user to say so.
+- **`docs/ARCHITECTURE.md`**: the T1 tier row no longer credits OpenCode with "the PreCompact
+  block, the test guard" in its summary column (the caveat was in the same cell, the summary
+  lied alone); the hot-cache description said entries were "noticed 2+ times" against the
+  3+-dates rule everywhere else.
+- **`reference/doc-governance.md` prescribed a frontmatter schema no file in the kit used**
+  (`last_verified`, `status`, `authority`). The spec now matches the kit's own practice —
+  `created` + `last-reviewed` required, the rest opt-in — and the two `reference/` docs that had
+  no frontmatter got it.
+- **The plugin README linked to `docs/specs/` and `../../docs/ARCHITECTURE.md`**, which are not
+  part of the installed plugin; the links are now absolute.
+- **`docs/CONTRIBUTING.md`** still introduced "Claude Memory Kit, an OSS starter kit for Claude
+  Code", promised Obsidian compatibility and a `claude -p` subprocess, and pointed script fixes
+  at a `scripts/` directory that has not existed since 6.1.0.
+- **CI** gains a PreCompact probe (fresh → allow, stale → block, over-cap → names the cap) and a
+  Node step that syntax-checks the OpenCode shim, resolves it through `package.json`, and runs
+  the injection against a canary — the shim was JavaScript in a CI that only ever ran Python.
+- The Origin section's outbound link was removed at the maintainer's request.
+
+### Recorded, not changed (see `docs/DECISIONS.md`)
+
+- D10 — four versions shipped with no tag or release since D1 declared the badge current.
+- D11 — the `qa` agent's `tools: "*"` against its observe-only mandate.
+- D12 — nothing measures whether `/memory-kit:close-session` ever runs.
+
 <a id="v650"></a>
 
 ## [6.5.0] — 2026-08-31 — OpenCode: the first real Tier 1 outside Claude Code

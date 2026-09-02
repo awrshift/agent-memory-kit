@@ -28,7 +28,10 @@ SESSION_ID=$(printf '%s' "$SESSION_ID" | tr -cd 'a-zA-Z0-9_-')
 echo "[$(date '+%H:%M:%S')] PRE-COMPACT triggered for session $SESSION_ID" >> "$STATE_DIR/hook.log"
 
 MEMORY_LINES=0
+MEMORY_BYTES=0
+MEMORY_MAX_LINE=0
 MEMORY_AGE="unknown"
+FRESH=0
 if [ -f "$MEMORY_FILE" ]; then
     MEMORY_LINES=$(wc -l < "$MEMORY_FILE" | tr -d ' ')
     MEMORY_BYTES=$(wc -c < "$MEMORY_FILE" | tr -d ' ')
@@ -36,21 +39,37 @@ if [ -f "$MEMORY_FILE" ]; then
     MEMORY_MTIME=$(stat -f '%m' "$MEMORY_FILE" 2>/dev/null || stat -c '%Y' "$MEMORY_FILE" 2>/dev/null)
     if [ -n "$MEMORY_MTIME" ]; then
         AGE_SECONDS=$(( $(date +%s) - MEMORY_MTIME ))
-        if [ "$AGE_SECONDS" -lt 120 ] && [ "$MEMORY_LINES" -le 180 ] \
-           && [ "$MEMORY_BYTES" -le 32768 ] && [ "$MEMORY_MAX_LINE" -le 3000 ]; then
-            echo "[$(date '+%H:%M:%S')] MEMORY.md fresh (${AGE_SECONDS}s, ${MEMORY_LINES} lines) — allowing compact" >> "$STATE_DIR/hook.log"
-            echo '{}'
-            exit 0
-        fi
+        [ "$AGE_SECONDS" -lt 120 ] && FRESH=1
         MEMORY_AGE="$((AGE_SECONDS / 60)) min ago"
     fi
 fi
 
-echo "[$(date '+%H:%M:%S')] BLOCKING compact — MEMORY.md last updated $MEMORY_AGE" >> "$STATE_DIR/hook.log"
+# Which caps are tripped — the reason must name the real problem, not call a fresh file stale.
+OVER=""
+[ "$MEMORY_LINES" -gt 180 ] && OVER="${OVER}lines ${MEMORY_LINES}/180; "
+[ "$MEMORY_BYTES" -gt 32768 ] && OVER="${OVER}size $((MEMORY_BYTES / 1024)) KB/32 KB; "
+[ "$MEMORY_MAX_LINE" -gt 3000 ] && OVER="${OVER}longest line ${MEMORY_MAX_LINE}/3000 chars; "
+
+if [ "$FRESH" -eq 1 ] && [ -z "$OVER" ]; then
+    echo "[$(date '+%H:%M:%S')] MEMORY.md fresh (${AGE_SECONDS}s, ${MEMORY_LINES} lines) — allowing compact" >> "$STATE_DIR/hook.log"
+    echo '{}'
+    exit 0
+fi
+
+if [ -n "$OVER" ]; then
+    # Fresh or not, an oversized cache must be pruned, not merely refreshed.
+    PROBLEM="your hot cache is OVER its caps (${OVER%; }) — last updated ${MEMORY_AGE}"
+    STEP1=".claude/memory/MEMORY.md — PRUNE it back inside the caps (180 lines / 32 KB / 3000 chars per line): promote settled 3+-date patterns to knowledge/concepts/, drop what a handoff already holds, then REPLACE the header current-state lines and add this session's date-tagged patterns"
+else
+    PROBLEM="your memory files are stale (MEMORY.md: ${MEMORY_LINES}/180 lines, last updated ${MEMORY_AGE})"
+    STEP1=".claude/memory/MEMORY.md — REPLACE the header current-state lines and add this session's date-tagged patterns (caps: 180 lines / 32 KB / 3000 chars per line)"
+fi
+
+echo "[$(date '+%H:%M:%S')] BLOCKING compact — ${PROBLEM}" >> "$STATE_DIR/hook.log"
 
 cat << HOOKJSON
 {
   "decision": "block",
-  "reason": "CONTEXT COMPRESSION IMMINENT and your memory files are stale (MEMORY.md: ${MEMORY_LINES}/180 lines, last updated ${MEMORY_AGE}). Save before compaction proceeds:\n\n1. .claude/memory/MEMORY.md — REPLACE the header current-state lines and add this session's date-tagged patterns (caps: 180 lines / 32 KB / 3000 chars per line)\n2. context/handoffs/ — write or refresh this session's handoff: what was done + the immediate next step\n\nWrite these files NOW, then continue. Full ritual: /memory-kit:close-session."
+  "reason": "CONTEXT COMPRESSION IMMINENT and ${PROBLEM}. Save before compaction proceeds:\n\n1. ${STEP1}\n2. context/handoffs/ — write or refresh this session's handoff: what was done + the immediate next step\n\nWrite these files NOW, then continue. Full ritual: /memory-kit:close-session."
 }
 HOOKJSON

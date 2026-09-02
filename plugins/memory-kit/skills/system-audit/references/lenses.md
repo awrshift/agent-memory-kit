@@ -3,8 +3,8 @@
 Each brief is written to be pasted verbatim into a subagent prompt (lenses 2-6) or followed
 inline (1, 4, 7). Every lens obeys three shared rules:
 
-- **Evidence or nothing.** A finding carries `path:line` or a command + its output. No evidence → label it `гипотеза` and name the check that would settle it.
-- **н/п is a valid answer.** If the layer doesn't exist in this repo, say so in one line and stop. Do not invent a layer that should exist — that belongs to lens 6.
+- **Evidence or nothing.** A finding carries `path:line` or a command + its output. No evidence → label it `hypothesis` and name the check that would settle it.
+- **n/a is a valid answer.** If the layer doesn't exist in this repo, say so in one line and stop. Do not invent a layer that should exist — that belongs to lens 6.
 - **Raw facts, not architecture.** Lenses 2-6 report what IS. Recommendations are the integrator's job (lens 7 and step 4 of the skill are where "should" lives).
 
 ---
@@ -44,7 +44,7 @@ inline (1, 4, 7). Every lens obeys three shared rules:
 - **Rules:** each one — is it a mechanical always/never (good) or vague advice (weak)? Does it contradict another rule or the main instruction file? Is its scope (`paths:`) accurate? Does it have the required metadata?
 - **Agents/subagent definitions:** is each one's trigger description distinct enough to route correctly? Do two agents overlap so much that the orchestrator can't choose? Is the model tier per agent consistent with the project's model policy?
 - **Memory:** caps respected? entries date-tagged? header = current state, not a stacked chronicle? any fact in memory that belongs in a deeper home (and vice versa)?
-- **The self-improvement loops** (findings registry → promotion → drop; decisions ledger; session handoffs): trace ONE example end to end. Does a finding logged N sessions ago actually reach a rule or a check? If the loop has never completed a full cycle, that's the finding — mark it 🟡 не проверено, not 🔴.
+- **The self-improvement loops** (findings registry → promotion → drop; decisions ledger; session handoffs): trace ONE example end to end. Does a finding logged N sessions ago actually reach a rule or a check? If the loop has never completed a full cycle, that's the finding — mark it 🟡 unverified, not 🔴.
 - **Hooks / automation:** defined vs actually firing (the collector's telemetry section gives the raw data).
 
 **Output:** per artefact — `path · purpose in one line · coherent? · contradiction/gap found`.
@@ -76,7 +76,7 @@ This is the lens that prevents an agent system from becoming an unread constitut
 
 - **Reproducibility:** are dependencies pinned? is there ONE documented command to run each tool? does a fresh clone work, or is there undocumented local state (a path, an env var, an installed binary, a logged-in browser profile)?
 - **Secrets:** anything committed (gitleaks / grep for key shapes) · `.env` tracked or ignored · keys pasted into docs, transcripts or fixtures · key rotation debt (a key known to be exposed and not yet rotated).
-- **Backup AND restore:** a backup that has never been restored is 🟡 не проверено, not a backup. Check: what's covered, where it lands, encryption, retention, and whether a restore has ever been exercised.
+- **Backup AND restore:** a backup that has never been restored is 🟡 unverified, not a backup. Check: what's covered, where it lands, encryption, retention, and whether a restore has ever been exercised.
 - **External state ownership:** what lives outside the repo (cron jobs, cloud scripts, deployed automations, third-party dashboards) — who owns it, how would we know it broke, and is that monitoring itself alive?
 - **PII / sensitive material:** is it in git? should it be? if it was purged, is it purged from history too?
 - **Tests / gates:** do they run green right now — you run them, not the docs' claim.

@@ -68,8 +68,9 @@ Hosts that don't run the hooks lose the automatic injection and the PreCompact b
 (`templates/workspace/AGENTS-MEMORY-PROTOCOL.md`) that hands them the same discipline as an
 always-loaded instruction. **OpenCode** goes further: the repo ships a real plugin for it
 (`.opencode/plugins/memory-kit.js`, one `opencode.json` line) that injects memory into every
-model call, compaction-proof. What each host honours, probe by probe:
-[`docs/specs/`](../../docs/specs/README.md).
+model call, compaction-proof. What each host honours, probe by probe: the kit repository's
+[`docs/specs/`](https://github.com/awrshift/agent-memory-kit/tree/main/docs/specs) (not part
+of the installed plugin).
 
 ## State it owns in your repository
 
@@ -83,4 +84,5 @@ Per project: `projects/<name>/` — `README.md` (the map of where that project's
 `CMK_INJECT_BUDGET` (48000) · `CMK_MEMORY_LINE_CAP` (180) · `CMK_MEMORY_BYTE_CAP` (32768) ·
 `CMK_MEMORY_MAXLINE_CAP` (3000) · `CMK_ALLOW_TEST_EDITS`.
 
-Architecture and rationale: [`../../docs/ARCHITECTURE.md`](../../docs/ARCHITECTURE.md).
+Architecture and rationale: the kit repository's
+[`docs/ARCHITECTURE.md`](https://github.com/awrshift/agent-memory-kit/blob/main/docs/ARCHITECTURE.md).

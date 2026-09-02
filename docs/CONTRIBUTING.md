@@ -1,6 +1,6 @@
-# Contributing to Claude Memory Kit
+# Contributing to Memory Kit
 
-Thank you for your interest in contributing. This project is an OSS starter kit for Claude Code, focused on persistent memory and structured context management.
+Thank you for your interest in contributing. This project is a plugin that gives coding agents persistent memory as plain markdown in the user's repository — authored in the Claude Code plugin format, installable on Cursor, Codex, Copilot CLI and OpenCode from the same manifests.
 
 ## Ways to contribute
 
@@ -23,17 +23,20 @@ Any contribution that pushes users toward editing memory files manually — a sc
   - Stdlib-only Python (no `pip install`)
   - English in everything tracked by git (skill examples can illustrate any-language conversation; the prose is English)
 - Validate and exercise before pushing:
-  `claude plugin validate ./plugins/memory-kit`, then run the changed hook against a scratch repo
-  for EVERY SessionStart `source` (startup · resume · compact · fork · clear). A broken profile
-  fails silently — that class of bug lived in the kit for a year.
+  `claude plugin validate --strict ./plugins/memory-kit` and `python3 tools/check-repo.py`, then
+  run the changed hook against a scratch repo for EVERY SessionStart `source` (startup · resume ·
+  compact · fork · clear). A broken profile fails silently — that class of bug lived in the kit
+  for a year. CI (`.github/workflows/checks.yml`) repeats the hook probes and loads the OpenCode
+  shim, but does not run `claude plugin validate` — that one is on you.
+- A claim about a host other than Claude Code needs a probe, not a doc quote — record it in
+  `docs/specs/<host>.md` with the label convention from `docs/specs/README.md`.
 - If you change behavior, update `docs/CHANGELOG.md` (Added / Changed / Removed / Migration) and
   say so in the PR description. A layer change also touches `docs/ARCHITECTURE.md`.
 
 ## Ground rules
 
-- **Zero dependencies.** Scripts use Python stdlib only. No `pip install`. No external services beyond the `claude -p` subprocess.
-- **Pure Markdown for content.** Keep the wiki and memory plain `.md` so any editor works.
-- **Obsidian remains optional.** Don't add features that require Obsidian to be installed (wikilinks are the only Obsidian-style convention; they degrade cleanly to plain text).
+- **Zero dependencies.** Hooks and scripts use Python stdlib and bash only; the OpenCode shim uses Node built-ins only. No `pip install`, no `npm install`, no external services.
+- **Pure Markdown for content.** Keep the wiki and memory plain `.md` so any editor and any agent works. No tool-specific syntax the plain file would not survive.
 - **Don't invent new layers.** The kit ships exactly: `MEMORY.md`, `context/handoffs/`, `.claude/rules/`, plugin skills, `knowledge/concepts/`, and optionally `projects/` + `experiments/` in the user's repo. Proposals to add `playbooks/`, `wisdom/`, `lessons/`, `<role>-guidance/` need a high bar: we killed each at least once because real users never filled them, and the `daily/` chronicle went the same way — opt-in in v5, retired in v6.
 - **Be kind in issues and PRs.** Assume good intent.
 
@@ -43,7 +46,8 @@ Any contribution that pushes users toward editing memory files manually — a sc
 |---|---|
 | New skill | `plugins/memory-kit/skills/<name>/SKILL.md` — namespaced `/memory-kit:<name>` automatically |
 | New agent | `plugins/memory-kit/agents/<name>.md` |
-| Script fix | `plugins/memory-kit/scripts/<file>.py` — project paths from `CLAUDE_PROJECT_DIR`, never from `__file__` |
+| Script fix | `plugins/memory-kit/hooks/lib/` or `plugins/memory-kit/skills/<skill>/scripts/` — project paths from `CLAUDE_PROJECT_DIR`, never from `__file__` |
+| A host other than Claude Code | `docs/specs/<host>.md` (probed, labeled) and, if it needs an adapter, a shim beside `.opencode/` — never a fork of the skill bodies |
 | New hook | `plugins/memory-kit/hooks/<name>.{py,sh}` + register in `plugins/memory-kit/hooks/hooks.json` (never in a user's `settings.json`) |
 | Depth that shouldn't sit in context | `plugins/memory-kit/reference/<name>.md` |
 | Doc fix | `README.md`, `CLAUDE.md` (this repo's own), or `docs/*.md` |

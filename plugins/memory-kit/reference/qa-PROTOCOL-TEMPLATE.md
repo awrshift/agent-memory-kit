@@ -1,3 +1,8 @@
+---
+created: 2026-07-18
+last-reviewed: 2026-09-02
+---
+
 # Agent QA Harness — protocol (TEMPLATE)
 
 > Copy this file to `projects/<name>/qa/README.md` and fill every `<placeholder>`. One
@@ -24,8 +29,8 @@ integrator's own acceptance walk.
     destructive run to restore it. Make the seed deterministic (same command → same fixture)
     so findings are reproducible.
 - **Parallel browser lenses:** each concurrent browser lens gets its OWN isolated Playwright
-  MCP server — the project `.mcp.json` defines `playwright-qa` + `playwright-qa-b` (see this
-  layer's `mcp.json.example`), both `@playwright/mcp --isolated` (in-memory profile → zero
+  MCP server — the project `.mcp.json` defines `playwright-qa` + `playwright-qa-b` (see the
+  plugin's `reference/qa-mcp.json.example`), both `@playwright/mcp --isolated` (in-memory profile → zero
   cross-lens collision) with `--caps=testing,devtools` (the `browser_verify_*` machine oracles
   + tracing/video) and `--test-id-attribute=<your testid attribute>`. Assign one server per
   browser lens; N concurrent browser lenses = N isolated servers (add more `playwright-qa-*`

@@ -1,6 +1,7 @@
 ---
 paths: ["src/**/*"]        # scope it, or delete this line to load the rule in EVERY session
 created: YYYY-MM-DD
+last-reviewed: YYYY-MM-DD   # bump when you re-verify the rule still holds, not when you edit it
 ---
 
 # <rule name>

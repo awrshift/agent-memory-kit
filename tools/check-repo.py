@@ -76,6 +76,14 @@ if pkg_path.exists():
     entry = pkg.get("main", "")
     check((ROOT / entry).exists(), f"package.json main -> missing file {entry}")
 
+# 1 for the AGENTS.md protocol block — its version marker is what "replace on upgrade" keys on
+proto_path = ROOT / "plugins" / "memory-kit" / "templates" / "workspace" / "AGENTS-MEMORY-PROTOCOL.md"
+if proto_path.exists():
+    first = proto_path.read_text(encoding="utf-8").splitlines()[0]
+    m = re.search(r"memory-kit protocol v(\S+)", first)
+    check(bool(m) and m.group(1) == version,
+          f"{proto_path}: protocol marker {m.group(1) if m else '(missing)'} != VERSION {version}")
+
 # 3 — hooks -------------------------------------------------------------------------
 for hooks_json in ROOT.glob("plugins/*/hooks/hooks.json"):
     plugin_root = hooks_json.parent.parent

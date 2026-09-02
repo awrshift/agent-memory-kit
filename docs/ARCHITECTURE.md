@@ -85,8 +85,9 @@ never writes to it.
 
 ### .claude/memory/MEMORY.md — hot cache
 **Is:** a current-state header (2-3 sentences, replaced every close) followed by date-tagged
-patterns that have already been noticed 2+ times. Short strings. Cross-session accumulator.
-Held under three caps (below).
+one-liners captured during sessions — observations worth keeping, each with the date it was
+seen, so that repetition on 3+ distinct dates becomes visible. Short strings. Cross-session
+accumulator. Held under three caps (below).
 **Is not:** full session logs (those live in the handoffs). Not detailed articles.
 
 ### context/handoffs/*.md — session handoffs
@@ -375,7 +376,7 @@ every host is equal:
 
 | Tier | Hosts | What runs |
 |---|---|---|
-| **T1 — enforcement** | Claude Code · OpenCode (via the shipped `.opencode/plugins/memory-kit.js` shim — verified 2026-08-31: memory rides `experimental.chat.system.transform` into EVERY model call, so compaction cannot drop it; no compaction BLOCK exists there, `experimental.session.compacting` appends a save-state instruction instead) | injection at session start, the PreCompact block, the test guard. Guarantees, not requests. |
+| **T1 — enforcement** | Claude Code · OpenCode (via the shipped `.opencode/plugins/memory-kit.js` shim, verified 2026-08-31) | Guarantees, not requests — but not the same three on both hosts. **Claude Code:** injection at session start, the PreCompact block, the test guard. **OpenCode:** memory rides `experimental.chat.system.transform` into EVERY model call, so compaction cannot drop it (the block is unnecessary rather than missing); no test guard yet; `experimental.session.compacting` appends a save-state instruction. |
 | **T2 — protocol** | Codex and GitHub Copilot CLI (both verified 2026-08-31), Cursor (verified 2026-08-31 — its CLI even executes the SessionStart hook, giving T1-grade wake-up; the other three hooks unprobed) — anything that auto-loads `AGENTS.md` | `/memory-kit:setup` appends a marker-fenced block (`templates/workspace/AGENTS-MEMORY-PROTOCOL.md`, <2.1 KB) telling the agent to do by hand what the hooks do mechanically: read memory first, respect the caps, save before compaction, close with the ritual. Advisory — an agent can forget an instruction; it cannot ignore a hook. |
 | **T3 — plain files** | anything else, including CI | the memory files themselves need no runtime: markdown, git-versioned, one `grep` away. |
 

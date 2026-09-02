@@ -1,3 +1,8 @@
+---
+created: 2026-07-18
+last-reviewed: 2026-09-02
+---
+
 # Pattern: capability-map reuse sweep
 
 > A recon pattern for the "the library already does this" defect class: hand-rolled code that

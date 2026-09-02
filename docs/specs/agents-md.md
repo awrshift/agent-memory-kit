@@ -1,6 +1,6 @@
 # The AGENTS.md convention — the Tier 2 delivery mechanism
 
-Last verified: 2026-08-31 (Codex probe only; everything else `documented-only`).
+Last verified: 2026-08-31 (Codex, Cursor and Copilot canary probes; OpenCode `documented-only`).
 
 `AGENTS.md` at a repository root is the emerging cross-vendor convention for "instructions
 every agent host auto-loads". It is what makes Tier 2 possible at all: a host that executes no
@@ -12,10 +12,11 @@ hooks can still be *told*, in a file it always reads, to go read the memory file
 
 | Host | Status | Evidence |
 |---|---|---|
-| Codex CLI | **verified 2026-08-31** | canary in `AGENTS.md` was in session context and its instruction was executed (see `codex.md`) |
-| Cursor | **verified 2026-08-31** | same canary probe as Codex, via `cursor-agent -p`: the `AGENTS.md` instruction was in context and executed (see `cursor.md`) |
-| GitHub Copilot CLI | **verified 2026-08-31** | same canary probe via `copilot -p`: instruction in context, executed, MEMORY.md canary returned (see `copilot.md`) |
-| Claude Code | **does not need it** | the kit's SessionStart hook injects the same content (`context/identity.md`); scaffolding the block is still harmless — CC reads `CLAUDE.md`, not `AGENTS.md` |
+| Codex CLI | `verified` 2026-08-31 | canary in `AGENTS.md` was in session context and its instruction was executed (see `codex.md`) |
+| Cursor | `verified` 2026-08-31 | same canary probe as Codex, via `cursor-agent -p`: the `AGENTS.md` instruction was in context and executed (see `cursor.md`) |
+| GitHub Copilot CLI | `verified` 2026-08-31 | same canary probe via `copilot -p`: instruction in context, executed, MEMORY.md canary returned (see `copilot.md`) |
+| OpenCode | `documented-only` | its rules docs say `AGENTS.md` is auto-loaded (see `opencode.md`); with the shipped plugin the block is a fallback, not the mechanism |
+| Claude Code | `verified` — does not need it | the kit's SessionStart hook injects the same content (`context/identity.md`); scaffolding the block is still harmless — CC reads `CLAUDE.md`, not `AGENTS.md` |
 
 The compound-engineering-plugin repo treats one shared `AGENTS.md` as canonical and ships
 `CLAUDE.md` as a filesystem symlink to it — the same "one file, many host conventions" move,

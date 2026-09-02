@@ -84,11 +84,17 @@ Claude Code has its own auto memory (`~/.claude/projects/<project>/memory/`, loa
 session, written by Claude without asking). Running it alongside the kit means two writers and
 two truths. Put the choice to the user in one question:
 
-- **Kit owns memory (default).** Write `"autoMemoryEnabled": false` into `.claude/settings.json`.
-  You get dated entries, human-confirmed promotion, handoffs, and one file the user can read.
-- **Native owns capture, kit owns the ritual.** Set `"autoMemoryDirectory"` to this repo's
-  `.claude/memory` and lower the caps to the native limits (200 lines / 25 KB) — the audit,
-  promotion and handoffs still come from the kit.
+- **Kit owns memory (default).** Write `"autoMemoryEnabled": false` into `.claude/settings.json`
+  (for CI or a headless run, `CLAUDE_CODE_DISABLE_AUTO_MEMORY=1` does the same). You get dated
+  entries, human-confirmed promotion, handoffs, and one file the user can read.
+- **Both, side by side.** Leave auto memory on. It keeps writing its own index under
+  `~/.claude/projects/<project>/memory/` (machine-local, outside the repo); the kit keeps the
+  repo files and the ritual. Two writers, two truths — say so, and make the kit's `MEMORY.md`
+  the one that counts for handoffs and promotion.
+
+Do NOT point `autoMemoryDirectory` at the kit's `.claude/memory`: the setting only accepts an
+absolute path or one starting with `~/` (so it cannot be committed portably), and Claude Code
+would rewrite the kit's `MEMORY.md` in its own index format, overwriting the dated cache.
 
 Whichever is chosen, say plainly which system now owns the file.
 

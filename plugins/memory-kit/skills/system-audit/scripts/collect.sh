@@ -29,7 +29,7 @@ inv() { # label, path, glob
     n=$(find_in "$p" -type f -name "$g" | wc -l | tr -d ' ')
     echo "| $label | \`$p\` | $n |"
   else
-    echo "| $label | — | н/п |"
+    echo "| $label | — | n/a |"
   fi
 }
 inv "instructions"   "CLAUDE.md"            '*'
@@ -81,7 +81,7 @@ if [ -f "$MEM" ]; then
   echo "- date-tagged entries: $UND"
   echo "- distinct dates in memory: $(grep -o -E '\[[0-9]{4}-[0-9]{2}-[0-9]{2}\]' "$MEM" | sort -u | wc -l | tr -d ' ')"
 else
-  echo "- н/п (no $MEM)"
+  echo "- n/a (no $MEM)"
 fi
 echo
 
@@ -114,7 +114,7 @@ if git rev-parse --git-dir >/dev/null 2>&1; then
     d=$(git log -1 --format=%ad --date=short -- "$f" 2>/dev/null); [ -n "$d" ] && echo "$d $f"
   done | sort | head -15 | sed 's/^/  - /'
 else
-  echo "- н/п (not a git repo)"
+  echo "- n/a (not a git repo)"
 fi
 echo
 
@@ -139,13 +139,13 @@ echo
 # ─────────────────────────────────────────── 7. LAYER TELEMETRY
 echo "## 7. Layer telemetry — did it ever fire?"
 echo
-SLUG="$(echo "$ROOT" | sed 's|/|-|g')"
+SLUG="$(printf '%s' "$ROOT" | sed 's|[^A-Za-z0-9]|-|g')"
 TDIR="$HOME/.claude/projects/$SLUG"
 if [ -d "$TDIR" ]; then
   echo "transcripts: \`$TDIR\` ($(ls -1 "$TDIR"/*.jsonl 2>/dev/null | wc -l | tr -d ' ') sessions)"
 else
   TDIR=""
-  echo "transcripts: н/п (no transcript dir for this repo — telemetry limited to git)"
+  echo "transcripts: n/a (no transcript dir for this repo — telemetry limited to git)"
 fi
 echo
 # Structural markers, not bare names: a bare name like "qa" matches thousands of unrelated

@@ -2,56 +2,56 @@
 title: System audit — <repo/system name>
 date: YYYY-MM-DD
 depth: quick | standard | deep
-scope: <layers audited; layers marked н/п>
-prior_audit: <path to previous report, or "первый">
+scope: <layers audited; layers marked n/a>
+prior_audit: <path to previous report, or "first">
 ---
 
-# Аудит системы — YYYY-MM-DD
+# System audit — YYYY-MM-DD
 
-## 0. Вердикт (три строки)
+## 0. Verdict (three lines)
 
-- **Работает:** …
-- **Дрейфует:** …
-- **Чего нет:** …
+- **Works:** …
+- **Drifts:** …
+- **Missing:** …
 
-## 1. Delta с прошлого аудита
+## 1. Delta from the previous audit
 
-| приоритет прошлого раза | статус | доказательство |
+| previous priority | status | evidence |
 |---|---|---|
-| … | сделано / частично / проигнорировано | file:line или команда |
+| … | done / partial / ignored | file:line or command |
 
-> Если большинство прошлых приоритетов проигнорировано — это находка №1. Причина важнее списка.
+> If most of last time's priorities were ignored — that's finding #1. The reason matters more than the list.
 
-## 2. Находки по осям
+## 2. Findings by lens
 
-Одна таблица на весь аудит. `severity`: 🔴 сломано · 🟠 дрейфует · 🟡 не проверено · ⚪ отсутствует · 🗑 лишнее.
-`evidence` — то, что проверено ЛИЧНО (file:line / команда+вывод). Без него — `гипотеза` + чем проверять.
+One table for the whole audit. `severity`: 🔴 broken · 🟠 drifting · 🟡 unverified · ⚪ missing · 🗑 excess.
+`evidence` — what was verified PERSONALLY (file:line / command+output). Without it — `hypothesis` + what would verify it.
 
-| # | ось | sev | находка | evidence | verified by | статус |
+| # | lens | sev | finding | evidence | verified by | status |
 |---|---|---|---|---|---|---|
-| F-01 | 1 delivery | 🟠 | … | `path:line` | я / recon+перепроверено | принято |
+| F-01 | 1 delivery | 🟠 | … | `path:line` | me / recon+reverified | accepted |
 
-## 3. Приоритеты (максимум 5)
+## 3. Priorities (max 5)
 
-| # | что делать | зачем сейчас | стоимость | что сломается, если не делать |
+| # | what to do | why now | cost | what breaks if not done |
 |---|---|---|---|---|
-| P1 | … | … | ~20 мин | … |
+| P1 | … | … | ~20 min | … |
 
-## 4. Вычитание (квота ≥3)
+## 4. Subtraction (quota ≥3)
 
-| что | доказательство, что мертво | цена содержания | что сломается при удалении | действие |
+| what | evidence it's dead | cost to keep | what breaks if removed | action |
 |---|---|---|---|---|
-| … | не встречалось в N сессиях | внимание/токены/дрейф | ничего | удалить / слить / пометить historical |
+| … | not seen in N sessions | attention/tokens/drift | nothing | delete / merge / label historical |
 
-## 5. Не рекомендовано (сознательно)
+## 5. Not recommended (deliberately)
 
-Что напрашивалось, но дороже пользы на текущем масштабе — с одной строкой «почему нет».
-Этот раздел так же важен, как приоритеты: он не даёт аудиту раздувать систему.
+What suggested itself but costs more than it's worth at the current scale — with one line "why not".
+This section matters as much as the priorities: it keeps the audit from bloating the system.
 
-## 6. Что уже починено в этой сессии
+## 6. What was already fixed this session
 
-- … (file:line, что изменено)
+- … (file:line, what changed)
 
-## 7. Требует решения пользователя
+## 7. Needs the user's decision
 
-- … (удаления, purge истории, внешние действия, стоимость)
+- … (deletions, history purge, external actions, cost)

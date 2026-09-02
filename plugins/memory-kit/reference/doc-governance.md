@@ -11,12 +11,19 @@ per fact, depth distilled out.
 
 ## Lifecycle frontmatter (every non-trivial doc)
 
+The minimum is two dates — the same pair the kit's own `reference/` docs and rule template
+carry. The rest is opt-in for repositories whose docs actually change status.
+
 | Field | Values |
 |---|---|
-| `status` | `current` · `frozen` · `superseded` · `planned` · `historical` · `archived` |
-| `authority` | `ssot` (the one deciding home) · `derived` (a view; sources win) |
-| `last_verified` | `YYYY-MM-DD` |
+| `created` | `YYYY-MM-DD` — required |
+| `last-reviewed` | `YYYY-MM-DD` — required; bump it when you re-verify, not when you edit |
+| `status` | `current` · `frozen` · `superseded` · `planned` · `historical` · `archived` (optional; absent = `current`) |
+| `authority` | `ssot` (the one deciding home) · `derived` (a view; sources win) (optional) |
 | `superseded_by` | a pointer (only when superseded) |
+
+`knowledge/concepts/` articles use the richer schema in `knowledge/index.md` (title · status ·
+created · updated · tags) — that index is their SSOT, not this table.
 
 ## The three rules
 

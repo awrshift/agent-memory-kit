@@ -49,6 +49,52 @@ jobs:
             python3 "$GITHUB_WORKSPACE/plugins/memory-kit/hooks/session-start.py" <<< '{"source":"startup"}' >/dev/null
           test -z "$(ls -A /tmp/virgin)" || { echo "the hook created files in an unadopted repo:"; ls -Ra /tmp/virgin; exit 1; }
 
+      # PreCompact must allow a fresh in-cap cache, block a stale one, and name the REAL
+      # problem (a cap breach is not "stale") — the reason text is what the agent acts on.
+      - name: PreCompact allows fresh, blocks stale, names a cap breach
+        run: |
+          set -euo pipefail
+          export CLAUDE_PROJECT_DIR=/tmp/probe
+          H="$PWD/plugins/memory-kit/hooks/pre-compact.sh"
+          touch /tmp/probe/.claude/memory/MEMORY.md
+          [ "$(printf '{"session_id":"ci"}' | bash "$H")" = "{}" ] || { echo "fresh cache was blocked"; exit 1; }
+          touch -d '2024-01-01' /tmp/probe/.claude/memory/MEMORY.md
+          printf '{"session_id":"ci"}' | bash "$H" | grep -q '"decision": "block"' || { echo "stale cache was not blocked"; exit 1; }
+          python3 -c "open('/tmp/probe/.claude/memory/MEMORY.md','a').write('x'*3100+'\n')"
+          touch /tmp/probe/.claude/memory/MEMORY.md
+          OUT=$(printf '{"session_id":"ci"}' | bash "$H")
+          grep -q 'OVER its caps' <<< "$OUT" || { echo "cap breach not named: $OUT"; exit 1; }
+          printf '# Hot cache\n\n- [2026-01-01] CANARY-CI\n' > /tmp/probe/.claude/memory/MEMORY.md
+          echo "  ok"
+
+      # The OpenCode shim is JavaScript and CI has no other reason to load Node — so load it:
+      # syntax, module resolution from package.json, and the injection itself with a canary.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: OpenCode shim loads and injects
+        run: |
+          set -euo pipefail
+          node --check .opencode/plugins/memory-kit.js
+          node --input-type=module -e "
+            import path from 'node:path';
+            const pkg = JSON.parse((await import('node:fs')).readFileSync('package.json','utf8'));
+            const mod = await import(path.resolve(pkg.main));
+            const hooks = await mod.default({ directory: '/tmp/probe' });
+            const cfg = {}; await hooks.config(cfg);
+            if (!cfg.skills.paths.some(p => p.endsWith('plugins/memory-kit/skills'))) throw new Error('skills path not registered');
+            const out = { system: [] };
+            await hooks['experimental.chat.system.transform']({}, out);
+            const text = out.system.join('\n');
+            if (!text.includes('CANARY-CI')) throw new Error('hot cache not injected');
+            if (!text.includes('The user talks. You write.')) throw new Error('identity.md not injected');
+            const virgin = await mod.default({ directory: '/tmp/virgin' });
+            const v = { system: [] };
+            await virgin['experimental.chat.system.transform']({}, v);
+            if (!v.system.join('').includes('not set up in this repository')) throw new Error('virgin repo pointer missing');
+            console.log('  ok');
+          "
+
       - name: Test guard still asks, and never blocks the TDD loop
         run: |
           set -euo pipefail

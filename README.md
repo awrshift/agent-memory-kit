@@ -48,7 +48,9 @@ status file that froze three weeks ago still reads like today's truth, and the a
 confidently acts on it.
 
 Memory Kit's answer: **one set of plain markdown files in your repository.** Every agent reads
-the same memory, one discipline keeps it honest, git owns the history.
+the same memory, one discipline keeps it honest, and whatever you choose to commit — the
+knowledge wiki and rules by default, the hot cache too if you say so — carries its history in
+git.
 
 ![](.github/assets/01-system-map.png)
 
@@ -185,7 +187,9 @@ rule: *you only talk, the agent writes.*
 Everything is plain text on your machine; nothing leaves. `MEMORY.md` and handoffs are
 gitignored by default (created at setup), so they stay private even if you push. `knowledge/`
 and rules ARE tracked — they're your curated wiki; keep the repo private or prune before
-publishing.
+publishing. Working from two machines, or sharing memory with a teammate? Say so at
+`/memory-kit:setup` and the hot cache gets committed instead — then every clone wakes up
+knowing the same things.
 </details>
 
 <details>
@@ -200,8 +204,7 @@ audit — the deliberate part. Run it next time.
 
 Distilled from **1000+ real sessions over 12 months** of daily agent work by one operator
 across marketing, R&D and production code — including the scars: the layers that quietly
-rotted were retired, and what remains is what kept earning its place. Write-up:
-[awrshift.com](https://awrshift.com).
+rotted were retired, and what remains is what kept earning its place.
 
 **Architecture:** [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) ·
 **Per-host specs:** [docs/specs/](docs/specs/README.md) ·
