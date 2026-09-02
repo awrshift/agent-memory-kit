@@ -10,7 +10,7 @@ leave this board.
 |---|---|---|---|
 | D1 | ~~Cut a GitHub release for the version badge?~~ | **Done 2026-08-31** — `v6.4.0` released (the rebrand release, with the multi-host story in the notes); the badge now reads a current number. Releases accompany notable versions from here on. | — |
 | D2 | Submit to the community marketplace (`anthropics/claude-plugins-community`)? | **Yes, after one week of self-use on the v6 layout.** Submission pins a commit SHA and CI follows the repo, so a rough week is visible forever. Run `claude plugin validate --strict` first (passes today). | Medium — a public listing is a public first impression. |
-| D10 | Tag every version, or only "notable" ones? (Audit 2026-09-02: 6.3.0, 6.3.1, 6.4.1, 6.5.0 shipped with no tag or release; the README badge reads the latest release, so it lagged VERSION the same day D1 declared the badge current.) | **Every version** — `gh release create v<VERSION> --generate-notes` is one line, and the badge, the marketplace catalog and `git describe` all stop lying at once. | Low — a missing tag is only ever noticed by the person who trusts the badge. |
+| D10 | ~~Tag every version, or only "notable" ones?~~ | **Settled 2026-09-02** — every version gets a tag and a release from 6.5.1 on; the four that shipped untagged (6.3.0, 6.3.1, 6.4.1, 6.5.0) got retroactive annotated tags the same day, releases only from 6.5.1 forward. | — |
 | D3 | ~~Keep the repo name `claude-memory-kit`?~~ | **Superseded 2026-08-31** — renamed to `agent-memory-kit`: the kit is verifiably multi-host now (Codex, Cursor), and the old name undersold exactly that. Done before the Cursor marketplace submission so no external catalog carries the old slug. GitHub redirects preserve every existing link; the plugin id `memory-kit@memory-kit` is untouched, so installs don't break. | — |
 
 ## Product boundary
@@ -28,9 +28,9 @@ leave this board.
 
 | # | Question | Recommendation | Cost of being wrong |
 |---|---|---|---|
-| D7 | README is ~2.7k words against a ~800–1500 median for developer tools. Trim, or keep the story? | **Keep the narrative but move the proof up:** install is now above the fold, and the FAQ answers the "vs built-in memory" question early. If a trim happens, cut the "Before / after" table (the graphic already says it) before cutting the origin story — the story is the differentiator. | Low, reversible. |
+| D7 | ~~README is ~2.7k words against a ~800–1500 median for developer tools. Trim, or keep the story?~~ | **Settled 2026-09-02** — the operator rewrite landed at ~1,470 words including the collapsed blocks (install for other hosts, builders' layer, file layout), so the visible page is inside the median. The origin story stayed, shortened to what git can prove. | — |
 | D8 | The strongest claim available is unused: *"the kit's own memory was never actually loaded for a year, and the fix is measurable."* Lead with it? | **Use it in the release notes and a launch post, not in the README hero.** It is credibility for practitioners and confusion for newcomers who never ran v5. | Low. |
-| D9 | ~~Regenerate the stale diagrams~~ | **Done** — six regenerated with `gemini-3-pro-image`, set re-compressed from ~8.7 MB to ~3.0 MB. `01` was dropped rather than redrawn — the table under it already carried the point. | — |
+| D9 | ~~Regenerate the stale diagrams~~ | **Done** — six regenerated with `gemini-3-pro-image`, set re-compressed from ~8.7 MB to ~3.0 MB. the old `01-before-after.png` was dropped rather than redrawn — the table under it already carried the point (the current `01-system-map.png` is a later, unrelated asset). | — |
 
 ## Recently settled
 

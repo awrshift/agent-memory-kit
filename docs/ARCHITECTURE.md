@@ -306,7 +306,7 @@ Key property: **user never opens a file during the entire ritual.** They talk, a
 
 ![](../.github/assets/05-multi-project-layer.png)
 
-![](../.github/assets/08-one-operator-any-agent.png)
+![](../.github/assets/08-one-operator-five-hosts.png)
 
 One agent, many projects. The split is not "big things vs small things" — it is **memory vs
 paperwork**. What the agent LEARNED is shared across every project; what the work PRODUCED
@@ -372,7 +372,8 @@ Hooks are invisible to the user. They just make sure state survives.
 characters ÷ 4): a fresh install ~2.3k tokens, a working 6 KB cache with a handoff ~3.5k, and a
 hard ceiling of ~12k when the cache sits at all three caps and the handoff at its 6 KB inject
 cap. Skill and agent descriptions add ~1.8k on every host that loads them. The caps are what
-make the ceiling a number instead of a trend.
+make the ceiling a number instead of a trend. For comparison, Claude Code's own auto memory
+loads the first 200 lines or 25 KB of its index at every start (its docs, read 2026-09-02).
 
 ## Platform tiers (beyond Claude Code)
 

@@ -1,6 +1,6 @@
 # Contributing to Memory Kit
 
-Thank you for your interest in contributing. This project is a plugin that gives coding agents persistent memory as plain markdown in the user's repository — authored in the Claude Code plugin format, installable on Cursor, Codex, Copilot CLI and OpenCode from the same manifests.
+Thank you for your interest in contributing. This project is a plugin that gives an AI agent persistent memory as plain markdown in the user's own folder — authored in the Claude Code plugin format, installable on Cursor, Codex, Copilot CLI and OpenCode from the same manifests.
 
 ## Ways to contribute
 

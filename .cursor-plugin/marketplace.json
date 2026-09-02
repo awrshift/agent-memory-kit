@@ -4,15 +4,15 @@
     "name": "awrshift"
   },
   "metadata": {
-    "description": "Memory for coding agents that survives the session boundary — and the builder's layers distilled from a year of daily production use.",
+    "description": "Built-in memory decides what to remember. This one asks. Agent memory as plain files in your folder — the agent proposes, you approve, every line dated — plus the builder's layers distilled from daily production use.",
     "version": "1.0.0"
   },
   "plugins": [
     {
       "name": "memory-kit",
       "source": "plugins/memory-kit",
-      "description": "Persistent memory for your coding agent: a hot cache injected every session and held under three size caps, per-session handoffs, agent-audited promotion into knowledge articles and rules — plus optional orchestration and QA layers as lazy-loaded skills. Installs into any existing repository.",
-      "version": "6.5.2",
+      "description": "Persistent memory for your agent as plain files in your folder: a hot cache injected every session and held under three size caps, per-session handoffs, and promotion into knowledge articles and rules only on your yes. Carries the builder's layers too — executor/recon/idea-validator agents, session review, second opinion, agent QA and a system audit — all lazy-loaded skills you only pay for on use. Installs into any existing repository.",
+      "version": "6.5.3",
       "author": {
         "name": "awrshift"
       },

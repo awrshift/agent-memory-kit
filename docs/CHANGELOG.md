@@ -2,9 +2,22 @@
 
 All notable changes to Memory Kit are documented here. Breaking changes marked **BREAKING**.
 
-## [Unreleased, docs only] — 2026-09-02 — The front page speaks to the operator
+<a id="v653"></a>
 
-No plugin change; the next code release absorbs this entry.
+## [6.5.3] — 2026-09-02 — The front page speaks to the operator
+
+No hook or skill changes. The manifest descriptions (`marketplace.json`, `plugin.json`, the
+Cursor twins, `package.json`) now carry the same lead as the page, so what `/plugin` shows at
+install no longer says "memory for coding agents" while the README says something else.
+
+A final fact-check of the whole tree (two independent read-only sweeps, every README claim
+against code, every changelog bullet against the diff, every diagram opened and read) closed
+the last gaps: the system map and the one-operator panel named three hosts of five and the
+latter still carried "1000+ sessions" — both regenerated; the README's `git init` hint claimed
+a requirement no code has (any folder works, git is optional); the comparison table's cost row
+now credits the vendor's 200 lines / 25 KB to Claude Code's docs and adds the ~2k of skill
+descriptions to the kit's own ceiling; "seven layers" became the layers by name; D7 and D10
+settled in `DECISIONS.md`.
 
 - **README rewritten around the actual differentiator.** Two independent reviews of the
   positioning agreed on the same point: "wakes up knowing where you left off" is what Claude

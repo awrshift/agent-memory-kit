@@ -15,8 +15,8 @@ One memory per client, readable by every agent you run, nothing remembered witho
 
 ## Install
 
-Three commands in Claude Code, inside the folder where you work. No repository yet? An empty
-folder with `git init` is one.
+Three commands in Claude Code, inside the folder where you work. Any folder will do; git is
+optional, and only needed if you want the wiki and rules to carry their history.
 
 ```shell
 /plugin marketplace add awrshift/agent-memory-kit
@@ -53,7 +53,7 @@ on it.
 Memory Kit's answer: **one set of plain text files in your folder**, written by the agent only
 after you agree, with a date on every line so a stale fact looks stale.
 
-![](.github/assets/01-system-map.png)
+![](.github/assets/01-system-map-five-hosts.png)
 
 ## A day with it
 
@@ -81,7 +81,7 @@ is the vendor's silo. The kit is the opposite trade.
 | One memory per client | no | **yes**, `projects/<client>/` | usually no |
 | Read by other agents | no | **yes**, Claude Code, Cursor, Codex, Copilot, OpenCode | via that tool's integrations |
 | How staleness shows | it doesn't | **every line carries its date**; caps force a prune | it doesn't |
-| Cost at session start (measured 2026-09-02) | vendor's index, up to 25 KB | 2–4k tokens on a working cache, hard ceiling ~12k at the caps | tool-specific |
+| Cost at session start | its index, up to 200 lines / 25 KB (Claude Code's docs) | 2–4k tokens on a working cache, ~12k hard ceiling at the caps, plus ~2k of skill descriptions (measured 2026-09-02) | tool-specific |
 | Infrastructure | none | **none** | a database, often a daemon or API key |
 
 Running both means two writers and two truths, so `/memory-kit:setup` asks you to pick.
@@ -193,8 +193,9 @@ In **your** folder the kit owns only state: `.claude/memory/MEMORY.md`, `context
 
 Built and used daily by one operator since March 2026, across marketing, research and product
 work, in Claude Code first and the other agents as they arrived. The scars are in the changelog:
-seven layers were retired because they quietly rotted, and for a year the kit claimed its hot
-cache was "always loaded" while the hook only measured it. v6 found that, fixed it, and CI now
+a daily journal, a rolling status file, a staging layer and several more were retired because
+they quietly rotted, and for a year the kit claimed its hot cache was "always loaded" while the
+hook only measured it. v6 found that, fixed it, and CI now
 checks the injection on every push. What remains is what kept earning its place.
 
 **Tell me how your first week went:** [open a note](https://github.com/awrshift/agent-memory-kit/issues/new?template=first-week.md).

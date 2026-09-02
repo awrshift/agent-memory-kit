@@ -1,6 +1,7 @@
 # memory-kit (plugin)
 
-Persistent memory for coding agents, installed into a repository you already have.
+Built-in memory decides what to remember. This one asks. Persistent memory for your agent as
+plain files in a folder you already have.
 
 ```shell
 /plugin marketplace add awrshift/agent-memory-kit
