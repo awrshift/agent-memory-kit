@@ -47,6 +47,8 @@ opening note). The SessionStart hook injects the newest handoff next time — th
   nobody verified is still `IN PROGRESS`.
 - **Project map:** anything you wrote today into a project folder is a row in that project's
   `README.md` map, and the map's `Last verified` is today's date.
+- **Specs vs code:** any spec still `building` after a merge, or any `assumed` spec → run
+  `/memory-kit:code-sync` (it reconciles statuses from repo evidence; this ritual does not).
 - **Caps:** if MEMORY.md is near any cap, do a deeper prune now, not "next time".
 
 ## What NOT to do
