@@ -61,6 +61,13 @@ MEMORY_INJECT_CAP = 40_000  # a cache at its 32 KB cap fits whole; a bloated one
 HANDOFF_INJECT_CAP = 6_000
 STATE_TTL_DAYS = 30
 
+# A spec left in `building` for this long is either done-but-unmarked or abandoned; both are
+# a lie in the project's plans/ folder. Surfaced at session start, never auto-corrected.
+SPEC_STALE_DAYS = int(os.environ.get("CMK_SPEC_STALE_DAYS", 14))
+SPEC_HEAD_LINES = 30  # the status/created header lives at the top; never read a whole spec
+SPEC_STATUS_RE = re.compile(r"\*\*Status:?\*\*:?\s*([A-Za-z][A-Za-z-]*)")
+SPEC_CREATED_RE = re.compile(r"\*\*Created:?\*\*:?\s*(\d{4}-\d{2}-\d{2})")
+
 # Stale-ref auto-check scope = the always-loaded layer only.
 HOT_MEMORY_TARGETS = ["CLAUDE.md", ".claude/memory/MEMORY.md"]
 
@@ -230,6 +237,53 @@ def list_dirs(base: Path) -> list[Path]:
     )
 
 
+def spec_flags(project: Path) -> tuple[int, int]:
+    """(assumed specs, `building` specs older than SPEC_STALE_DAYS) in <project>/plans/.
+
+    Non-recursive, stdlib only, header lines only — the stats block must stay cheap. Any
+    unreadable or unparsable file is skipped: a malformed spec must never break the hook.
+    """
+    assumed = stale = 0
+    try:
+        paths = sorted((project / "plans").glob("*.md"))
+    except OSError:
+        return 0, 0
+    for path in paths:
+        try:
+            with path.open(encoding="utf-8", errors="replace") as handle:
+                head = "".join(line for _, line in zip(range(SPEC_HEAD_LINES), handle))
+        except OSError:
+            continue
+        status_match = SPEC_STATUS_RE.search(head)
+        if not status_match:
+            continue
+        status = status_match.group(1).lower()
+        if status == "assumed":
+            assumed += 1
+        elif status == "building":
+            created_match = SPEC_CREATED_RE.search(head)
+            if not created_match:
+                continue
+            try:
+                created = datetime.strptime(created_match.group(1), "%Y-%m-%d")
+            except ValueError:
+                continue
+            if (datetime.now() - created).days > SPEC_STALE_DAYS:
+                stale += 1
+    return assumed, stale
+
+
+def project_line(project: Path) -> str:
+    """One stats row. A zero count prints nothing — the line stays quiet until it matters."""
+    line = f"- projects/{project.name}/ — touched {human_age(age_days(project))}"
+    assumed, stale = spec_flags(project)
+    if assumed:
+        line += f" · {assumed} spec{'s' if assumed != 1 else ''} assumed (owed ratification)"
+    if stale:
+        line += f" · {stale} building > {SPEC_STALE_DAYS} d"
+    return line
+
+
 def build_stats(session_num: int | None, content: str | None) -> str:
     today = datetime.now().strftime("%Y-%m-%d")
     counter = f" (session #{session_num})" if session_num is not None else ""
@@ -254,7 +308,7 @@ def build_stats(session_num: int | None, content: str | None) -> str:
     projects = list_dirs(PROJECTS_DIR)
     if projects:
         lines.append("## Projects")
-        lines += [f"- projects/{p.name}/ — touched {human_age(age_days(p))}" for p in projects[:6]]
+        lines += [project_line(p) for p in projects[:6]]
         lines.append("")
 
     experiments = list_dirs(EXPERIMENTS_DIR)

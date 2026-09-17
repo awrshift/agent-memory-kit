@@ -41,6 +41,33 @@ jobs:
             echo "  ok: $src"
           done
 
+      # v7: the stats block must surface specs owed ratification and builds left open too
+      # long — and must stay silent for a project that has no plans/ at all.
+      - name: SessionStart surfaces assumed and stale-building specs
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/probe/projects/demo/plans /tmp/probe/projects/nospecs
+          printf '# demo — assumed\n\n**Created:** 2026-01-01 · **Status:** assumed\n' \
+            > /tmp/probe/projects/demo/plans/2026-01-01-old-assumed.md
+          printf '# demo — building\n\n**Created:** 2026-01-01 · **Status:** building\n' \
+            > /tmp/probe/projects/demo/plans/2026-01-01-old-building.md
+          export CLAUDE_PROJECT_DIR=/tmp/probe
+          export CLAUDE_PLUGIN_ROOT="$PWD/plugins/memory-kit"
+          printf '{"session_id":"ci","source":"startup"}' \
+            | python3 "$CLAUDE_PLUGIN_ROOT/hooks/session-start.py" > /tmp/specs.json
+          python3 -c "import json; print(json.load(open('/tmp/specs.json'))['hookSpecificOutput']['additionalContext'])" \
+            > /tmp/specs.txt
+          grep -q '1 spec assumed (owed ratification)' /tmp/specs.txt \
+            || { echo "assumed spec not surfaced"; cat /tmp/specs.txt; exit 1; }
+          grep -q '1 building > 14 d' /tmp/specs.txt \
+            || { echo "stale building spec not surfaced"; cat /tmp/specs.txt; exit 1; }
+          grep -q 'projects/nospecs/' /tmp/specs.txt \
+            || { echo "a project without plans/ vanished from the stats"; cat /tmp/specs.txt; exit 1; }
+          ! grep 'projects/nospecs/' /tmp/specs.txt | grep -qE 'specs? assumed|building >' \
+            || { echo "a project without plans/ printed a spec fragment"; cat /tmp/specs.txt; exit 1; }
+          rm -rf /tmp/probe/projects
+          echo "  ok"
+
       - name: Never scaffold into a repo that did not ask
         run: |
           set -euo pipefail
