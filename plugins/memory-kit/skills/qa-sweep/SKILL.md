@@ -33,13 +33,22 @@ and fill the placeholders before sweeping.
    servers the protocol lists (one server per concurrent browser agent — mechanism + logged-in
    seed recipe in the protocol § Parallel lenses). Browser lenses: user-flow · edge-state ·
    ux-critique. Non-browser: contract (curl) · honesty (curl + read-only store queries).
-3. **Spawn `qa` agents** with the lens brief from the protocol § Lens briefs + the run scope
-   (which screens/flows changed recently — QA the delta first, then one broad pass).
+3. **Spawn `qa` agents** with the lens brief from the protocol § Lens briefs + the run scope.
+   The run scope MUST name: the governing spec (`projects/<name>/plans/YYYY-MM-DD-<slug>.md`),
+   the `AC-n` ids under test from that spec's Acceptance table, the project's workflow tier
+   (from `projects/<name>/README.md`, or the task's `Tier:` override in `BACKLOG.md`), and which
+   screens/flows changed recently — QA the delta first, then one broad pass. At tier
+   `prototype` no sweep is expected: say so and stop.
 4. **Verify before ticketing (the fact-check rule):** reproduce every P1/P2 finding yourself
    (the named repro steps) before it becomes a ticket. Unreproducible → back to the agent or
-   drop with a note. «Impressions» never become tickets directly.
+   drop with a note. «Impressions» never become tickets directly. A «pass» on an AC counts only
+   when you reproduced the walked path yourself or ran the check named in that AC's «How it is
+   checked» cell — an agent's report alone never passes an AC.
 5. **Land the results:** verified findings → backlog tickets (P1/P2) or a minors batch (P3) ·
-   one run record `projects/<name>/qa/qa-run-YYYYMMDD.md` (lenses run · coverage · findings table with
-   verified/dropped status · pointers to tickets) · a row in the protocol's § Runs index.
+   one run record `projects/<name>/qa/qa-run-YYYYMMDD.md` (lenses run · coverage · a per-AC table
+   `AC | result (pass/fail/not exercised) | evidence` · findings table with an `AC` column
+   (`—` when the finding ties to no AC) and verified/dropped status · pointers to tickets) · a
+   row in the protocol's § Runs index. After landing, fill the spec's `Verified` cell for every
+   AC that passed — the date + `qa/qa-run-YYYYMMDD.md`.
 6. **Cleanup:** stop dev servers, remove stray screenshots from the repo root, re-seed the
    sacrificial account if a mutation run dirtied it.

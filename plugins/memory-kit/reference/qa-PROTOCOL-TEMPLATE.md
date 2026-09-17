@@ -57,7 +57,8 @@ integrator's own acceptance walk.
 | **ux-critique** | yes | Screenshot the changed screens at `<your target widths, e.g. 1440 and 1024>`; judge against `<your design doc / tokens>` + neighboring-screen copy voice: hierarchy, spacing rhythm, truncation/overflow (long names/titles), empty-state quality, button affordance, copy-language consistency. Impressions allowed, but separate them from evidenced findings. |
 
 ## Findings format (the agent's final report, verbatim contract)
-`id | severity P1/P2/P3 | screen-or-endpoint | expected | observed (verbatim) | repro steps | evidence`
+`id | severity P1/P2/P3 | screen-or-endpoint | expected | observed (verbatim) | repro steps | evidence | AC`
+(`AC` = the `AC-n` from the run's governing spec that this finding violates, `—` when none)
 then an «Impressions» list (unevidenced hunches), then ONE coverage line (walked / not reached).
 Severity: P1 = a user is lied to, blocked, or sees dev language · P2 = a real journey degrades /
 contract inconsistency · P3 = polish.
@@ -68,8 +69,12 @@ contract inconsistency · P3 = polish.
 2. Verified → a backlog ticket (or fold P3s into a standing minors batch); dropped → noted in
    the run record with the reason. Impressions may seed a design question, never a ticket
    directly.
-3. Run record: `projects/<name>/qa/qa-run-YYYYMMDD.md` (lenses · scope · coverage · findings + verdicts ·
-   tickets minted) + a row in § Runs. Screenshots stay OUT of git (reference by description).
+3. Run record: `projects/<name>/qa/qa-run-YYYYMMDD.md` (lenses · scope — the governing spec and the
+   `AC-n` ids under test · coverage · a per-AC table `AC | result (pass/fail/not exercised) |
+   evidence` · findings + verdicts, each row carrying its `AC` (`—` when none) · tickets minted)
+   + a row in § Runs. Screenshots stay OUT of git (reference by description). An AC is marked
+   `pass` only on the integrator's own repro or the check named in its «How it is checked» cell;
+   passed ACs get their `Verified` cell filled in the spec (date + the run-record path).
 
 ## Calibration — how the lenses get BETTER
 Three layers, cheapest first:

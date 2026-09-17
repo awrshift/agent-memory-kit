@@ -27,12 +27,14 @@ Every integrator-CONFIRMED finding from a code review, QA sweep, or design revie
 row. Refuted findings are NOT logged — the ledger tracks real defect classes only. Counts are
 derived by grep, never hand-tallied.
 
-Row: `date · class-slug · found-by · where (file) · outcome`
+Row: `date · class-slug · found-by · where (file) · AC · outcome`
+
+`AC` is the acceptance criterion the finding violates, `—` if none.
 
 ```markdown
 # Review-finding class registry
-| date | class | found-by | where | outcome |
-|---|---|---|---|---|
+| date | class | found-by | where | AC | outcome |
+|---|---|---|---|---|---|
 ```
 
 **The promotion rule — on a class's 3rd occurrence, promote it to the CHEAPEST layer that
