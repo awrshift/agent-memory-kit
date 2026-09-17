@@ -27,12 +27,16 @@ Those four are MEMORY, and there is no fifth — no `wisdom/`, `playbooks/`, `pa
 memory layer is how this system dies.
 
 **The work's own documents are not memory.** They live per project in `projects/<name>/`:
-`README.md` (the map of where this project's documents live — read it before writing one),
+`README.md` (the map of where this project's documents live — read it before writing one — and
+the project's **workflow tier**: `prototype · alpha · beta · ga`, how much proof a `done` owes),
 `BACKLOG.md`, `plans/YYYY-MM-DD-<slug>.md` — the spec an executor builds to, which is not
 delegable without **Goal · Non-goals (what it must NOT do) · Acceptance written before building**,
 plus the exact gate commands once there is something to run (the kit ships the full form as
-`SPEC-TEMPLATE.md`; the skills know its path) — `research/`,
-`decisions-log.md`, `review-findings.md`, `qa/`. One folder per client or product — a
+`SPEC-TEMPLATE.md`; the skills know its path). Acceptance rows carry stable `AC-n` ids that
+slices, tests, QA runs and findings quote, a `Value sources` table names where every value comes
+from, and a spec may be `assumed` — an executor's recorded override of a missing source, owed
+ratification. The rest of the folder is `research/`, `decisions-log.md`,
+`review-findings.md`, `qa/`. One folder per client or product — a
 single-product repo has exactly one. A spec, a backlog or a QA protocol never goes into
 `MEMORY.md`; a dated cross-session pattern never goes into a project folder. If a repo already
 keeps its documents elsewhere, its project README says so and that mapping wins.
@@ -55,7 +59,9 @@ flat. A tripped cap means run `/memory-kit:memory-audit` BEFORE other work.
 
 **Operators**, all namespaced `/memory-kit:` — bodies load only on invoke: `close-session` ·
 `memory-audit` (when a cap trips) · `system-audit` (the periodic seven-lens sweep) ·
-`session-review` · `second-opinion` · `qa-sweep` · `setup` · `tour`.
+`session-review` · `second-opinion` · `qa-sweep` · `document` (PR · changelog · release note ·
+postmortem, written from the diff) · `code-sync` (specs reconciled against the code) · `setup` ·
+`tour`.
 
 **Depth, read on demand** from the plugin's `reference/` directory — free until you open it:
 `orchestrator-fact-check` (a report is INPUT, never a fact) · `review-loop` (the diff gate + the

@@ -43,7 +43,8 @@ prevents it, and mark the promotion in its row:**
 1. a **deterministic check** — lint rule / hook / grep gate (zero LLM context, fires forever);
 2. a line in the relevant **agent definition** (`.claude/agents/*`), or a standing gate recorded
    in `projects/<name>/README.md` so every future spec inherits it — never an edit to the kit's
-   own `SPEC-TEMPLATE.md`, which ships inside the plugin and is replaced on upgrade;
+   own `SPEC-TEMPLATE.md` (the `AC-n` rows, the `Value sources` table, the
+   `assumed` / `stale` statuses), which ships inside the plugin and is replaced on upgrade;
 3. a line in a **review/QA lens brief** (`projects/<name>/qa/README.md`);
 4. a `knowledge/concepts/` entry (last resort — knowledge nobody is forced to read is the
    weakest layer).

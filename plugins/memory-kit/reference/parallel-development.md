@@ -15,8 +15,10 @@ written first, by the main session, at `projects/<name>/plans/YYYY-MM-DD-<slug>.
 instead of restating it. A spec pasted into N prompts is N specs that drift the moment one is
 amended; a spec that lives only in a prompt cannot be re-read at merge, cannot be diffed against
 what was built, and is gone by the next session. Its Acceptance section is pre-registered — written
-BEFORE building, or it is not acceptance. The spec is integrator-owned: executors read it, never
-edit it.
+BEFORE building, or it is not acceptance — its rows carry stable `AC-n` ids that slices, tests and
+QA runs quote, its `## Value sources` table names where every value comes from, and its status may
+be `assumed` (an executor's recorded override, owed ratification) or `stale`. The spec is
+integrator-owned: executors read it, never edit it.
 
 ## Level 1 — intra-session fan-out (the default; use aggressively)
 

@@ -20,9 +20,9 @@ claude plugin update memory-kit@memory-kit
 ## What it does at runtime
 
 - **SessionStart** — injects the working agreement (`context/identity.md`), the discipline nudges
-  that fire, session stats, **the hot cache itself**, the newest handoff and the knowledge index.
-  Profile depends on `source`: `compact` gets back exactly what compaction dropped; `resume` gets
-  only the nudges and stats.
+  that fire, session stats and per-project spec flags (`assumed` · `building > 14 d`), **the hot
+  cache itself**, the newest handoff and the knowledge index. Profile depends on `source`:
+  `compact` gets back exactly what compaction dropped; `resume` gets only the nudges and stats.
 - **PreCompact** — blocks compaction until `MEMORY.md` is fresh and inside its three caps
   (180 lines / 32 KB / 3000 chars per line).
 - **PreToolUse(Edit|Write)** — asks before an existing test file is edited; never blocks the
@@ -41,7 +41,9 @@ nothing.
 | `system-audit` | the periodic seven-lens sweep of the whole system, every finding evidence-backed — including the transcript profiler that answers "did this layer ever fire" |
 | `setup` · `tour` | adopt the kit here · walk through it on your own files |
 | `session-review` · `second-opinion` | adversarial review of a session · of one high-stakes decision |
-| `qa-sweep` | multi-lens agent QA of a running product (needs `projects/<name>/qa/README.md`, template in `reference/`) |
+| `qa-sweep` | multi-lens agent QA of a running product (needs `projects/<name>/qa/README.md`, template in `reference/`), every finding and run record bound to the spec's `AC-n` |
+| `document` | the human record of a change — PR body · changelog entry · release note · postmortem — drafted only from `git diff` / `git log`, never from what the model remembers building |
+| `code-sync` | after a merge: specs reconciled against the code — `building → done` on a gate you ran, `stale` with the reason, `assumed` specs listed as owed ratification, the project map and `Last verified` refreshed. Surgical edits only |
 
 Agents: `executor` (builds to a spec file in a worktree) · `recon` (read-only facts) ·
 `idea-validator` (isolated critic) · `qa` (one adversarial lens on the running app).
@@ -76,9 +78,13 @@ of the installed plugin).
 ## State it owns in your repository
 
 Shared memory: `.claude/memory/MEMORY.md` · `context/handoffs/` · `knowledge/` · `.claude/rules/`.
-Per project: `projects/<name>/` — `README.md` (the map of where that project's documents live),
-`BACKLOG.md`, `plans/` (specs executors build to), `research/`, `decisions-log.md`,
-`review-findings.md`, `qa/`, `materials/`. Everything past the first two appears on first use.
+Per project: `projects/<name>/` — `README.md` (the map of where that project's documents live,
+plus the workflow tier), `BACKLOG.md`, `plans/` (specs executors build to, including a
+`plans/*-assumed.md` when an executor was told to build past a missing decision), `research/`,
+`decisions-log.md`, `review-findings.md`, `qa/`, `materials/`. Everything past the first two
+appears on first use. `document` writes outside that tree, where a human looks for it:
+`CHANGELOG.md` at the repo root, `docs/releases/`, `docs/postmortems/` — or wherever the
+project README's map already sends that class.
 
 ## Environment knobs
 

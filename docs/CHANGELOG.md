@@ -2,6 +2,98 @@
 
 All notable changes to Memory Kit are documented here. Breaking changes marked **BREAKING**.
 
+<a id="v700dev"></a>
+
+## [7.0.0-dev] — 2026-09-17 — The development lifecycle layer
+
+**BREAKING: none.** Every change here is additive and backward compatible. A spec written under
+v6 — no `AC-n` ids, no `Value sources` table, no tier line — still parses, still delegates, and
+still passes every gate; the session-start hook prints nothing for it, and `code-sync` simply
+finds no status to reconcile. No memory layer changed, no cap moved, no hook contract changed.
+
+v6 covered memory between sessions and orchestration. What it left open was the middle — the
+path from a task to a decided spec, to a build that refuses to invent decisions, to proof
+against that spec, to a human record, to documents reconciled with the code. v7 adds exactly
+that, with **no fifth memory layer**: everything new lives in `projects/<name>/` or in an
+operator that walks it. Design and rejected alternatives: `docs/V7-DESIGN.md`.
+
+### Added
+
+- **Acceptance criteria get stable ids** —
+  `plugins/memory-kit/templates/workspace/project/SPEC-TEMPLATE.md`: Acceptance rows are
+  `AC-1…n` and the table gains a `Verified` column (integrator-only, date + pointer to the run
+  record or gate output); the Slices table gains a `Serves` column. The id is what threads a
+  requirement through slices, tests, QA runs and the findings registry instead of four
+  paraphrases of it.
+- **`## Value sources` and the input-coverage gate** — the same `SPEC-TEMPLATE.md` now lists
+  every value the slice must produce, compute or display against its named source, and
+  `plugins/memory-kit/agents/executor.md` runs the gate BEFORE the first file: any value with
+  no source is an **OWED DECISION**, reported in a fixed shape, and the build stops. This is
+  the defect class the layer exists for — a threshold or a fallback invented inside a diff that
+  looks finished.
+- **The `assumed` spec status** —
+  `plugins/memory-kit/templates/workspace/project/ASSUMED-SPEC-TEMPLATE.md`, the ONLY spec file
+  an executor may create, and only on the integrator's explicit "build anyway": it records the
+  assumption, who authorised it and the code area. It is a debt owed ratification, surfaced
+  every session until it is paid.
+- **Workflow tier per project** —
+  `plugins/memory-kit/templates/workspace/project/README-TEMPLATE.md` carries
+  `**Workflow tier:** prototype | alpha | beta | ga` with one line each, and
+  `BACKLOG-TEMPLATE.md` takes a per-task `**Tier:**` override. One rigor dial, decided once,
+  read by `executor`, `qa-sweep` and `code-sync`.
+- **`/memory-kit:document`** — `plugins/memory-kit/skills/document/SKILL.md` plus four
+  templates in `skills/document/templates/`: PR body · changelog entry · release note ·
+  postmortem, every sentence traced to a hunk or commit the skill read via `git diff` / `git
+  log` in that invocation, never to the model's memory of what it did. It writes no code, no
+  tests, no specs.
+- **`/memory-kit:code-sync`** — `plugins/memory-kit/skills/code-sync/SKILL.md`: walks each
+  project's `building` and `assumed` specs, flips `building → done` only from a gate it ran
+  itself at the tier's evidence bar, marks `stale` with a reason and `file:line`, lists
+  `assumed` specs owed ratification, refreshes the README map and `Last verified:`. Surgical
+  edits only, `--dry-run` supported, creates no file and deletes no document.
+  `plugins/memory-kit/skills/close-session/SKILL.md` gains one pointer line to it.
+- **Spec flags at session start** — `plugins/memory-kit/hooks/session-start.py` adds
+  `N specs assumed (owed ratification) · M building > 14 d` to each project's stats row:
+  header-lines-only read, stdlib, zero LLM, silent at zero, unparsable specs skipped,
+  threshold `CMK_SPEC_STALE_DAYS`. A CI probe in `.github/workflows/checks.yml` covers it, and
+  the virgin-repo guarantee (a repo that never ran `/memory-kit:setup` gets one pointer line
+  and no writes) is unchanged.
+- **Hot-path budget in the repo checker** — `tools/check-repo.py` check 7: every
+  `plugins/*/skills/*/SKILL.md` ≤ 24 000 bytes, every `plugins/*/agents/*.md` ≤ 8 000 bytes,
+  a warning line at 90 % of the ceiling, failure over 100 %. The kit stops being able to bloat
+  the way it audits other repositories for.
+
+### Changed
+
+- **QA is bound to acceptance ids** — `plugins/memory-kit/skills/qa-sweep/SKILL.md`: the run
+  scope must name the governing spec, the `AC-n` under test and the project's tier (at
+  `prototype` it says so and stops); the run record carries a per-AC `AC | result | evidence`
+  table, and passed ACs fill the spec's `Verified` cell. An AC passes only on the integrator's
+  own repro — an agent's report never passes one.
+- **`plugins/memory-kit/agents/qa.md`** — the lens brief names the spec and its ACs, and the
+  findings table gains an `AC` column (`—` when a finding ties to none).
+- **`plugins/memory-kit/reference/qa-PROTOCOL-TEMPLATE.md`** — the verbatim findings contract
+  and the run-record recipe carry the `AC` column and the per-AC table.
+- **`plugins/memory-kit/reference/review-loop.md`** — the findings-class registry row gains an
+  `AC` column, so a defect class and the criterion it breaks are countable together. The
+  promotion rule is untouched.
+- **`plugins/memory-kit/agents/executor.md`** — the input-coverage gate is rule 3; the
+  "never write project docs" rule now names its single exception (the `*-assumed.md` above).
+- **`plugins/memory-kit/templates/rules/orchestration.md`** — one line names the gate; the file
+  stays inside its always-loaded line budget.
+- **`plugins/memory-kit/context/identity.md`** — six lines: the two new operators, the `AC-n` /
+  `Value sources` / `assumed` sentence, and the tier clause. It is injected every session, so
+  it gets facts, not prose.
+- **Docs** — `docs/ARCHITECTURE.md` gains "v7 — the development lifecycle layer" (the
+  acceptance thread, the gate, the tier, the two operators, the per-file ownership table, the
+  session-entry flags, the hot-path budget); both readmes list `document` and `code-sync`;
+  `plugins/memory-kit/reference/parallel-development.md` and `skills/setup/SKILL.md` name what
+  the spec template now contains and where `plans/` comes from.
+- **Version `7.0.0-dev`** in `VERSION`, both `plugin.json`s, both `marketplace.json`s,
+  `package.json` and the `AGENTS-MEMORY-PROTOCOL.md` marker. A development version on the
+  `v7/dev-lifecycle` branch: install it with `--plugin-dir` in a lab repository, never over a
+  repo running the marketplace build.
+
 <a id="v654"></a>
 
 ## [6.5.4] — 2026-09-02 — The demo, and the hook that failed on every exit

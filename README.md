@@ -170,7 +170,11 @@ deliberate part. Run it next time.
 The same plugin carries the orchestration discipline distilled from hundreds of multi-agent
 sessions: specs as files with pre-registered acceptance, `executor` / `recon` /
 `idea-validator` agents, adversarial `/session-review` and `/second-opinion`, and a multi-lens
-`/qa-sweep` for running products. All lazy-loaded skills, they cost nothing until invoked.
+`/qa-sweep` for running products. Two more close the loop: `/document` writes the PR body,
+changelog entry, release note or postmortem from the actual `git diff`, never from what the
+model remembers building; `/code-sync` walks the specs after a merge and reconciles their
+status with what the code now shows, surgically. All lazy-loaded skills, they cost nothing
+until invoked.
 
 ![](.github/assets/07-orchestrated-work-spec.png)
 ![](.github/assets/09-agent-qa-projects.png)

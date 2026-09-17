@@ -59,7 +59,10 @@ Ask for the name(s), then create per project — nothing more:
 
 The rest of the project layer — `plans/`, `research/`, `decisions-log.md`, `review-findings.md`,
 `qa/`, `materials/` — is **created on first use by whoever produces the artifact**, never
-scaffolded upfront. An empty folder is not a layer; it is a promise nobody kept.
+scaffolded upfront. An empty folder is not a layer; it is a promise nobody kept. `plans/` appears
+with the first spec, written from `templates/workspace/project/SPEC-TEMPLATE.md`; an `executor`
+told to build past a missing decision may add one `plans/<date>-<slug>-assumed.md` from
+`ASSUMED-SPEC-TEMPLATE.md`, and nothing else in that folder is an agent's to create.
 
 **If the repository already has a documentation home**, do NOT move anything and do NOT propose a
 migration. Fill the README's map table with the paths it already uses, written from the repo root

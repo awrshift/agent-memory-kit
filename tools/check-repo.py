@@ -10,6 +10,8 @@ Deterministic, stdlib-only, no auth: runs in CI and on your machine identically.
   4. every skill has frontmatter with a description; every agent has a name
   5. every relative link and every image embed in the markdown resolves
   6. no asset in .github/assets is orphaned (nothing embeds or links it)
+  7. the hot-path budget: every SKILL.md and every agent body under its byte ceiling
+     (warning at 90 % of it, failure over 100 %)
 
 usage: python3 tools/check-repo.py     # exit 1 on any failure
 """
@@ -23,6 +25,16 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 fail: list[str] = []
+warn: list[str] = []
+
+# Check 7 — the hot-path budget. A skill body and an agent body are loaded whole the moment they
+# are invoked, so their size is a context bill, not a file size. Ceilings from
+# docs/plans/2026-09-17-v7-dev-lifecycle.md § Value sources.
+BUDGETS = (
+    ("plugins/*/skills/*/SKILL.md", 24_000),
+    ("plugins/*/agents/*.md", 8_000),
+)
+WARN_AT = 0.9  # a file at 90 % of its ceiling is the last moment to split it, not the first
 
 
 def check(cond: bool, msg: str) -> None:
@@ -127,7 +139,19 @@ for asset in (ROOT / ".github" / "assets").glob("*"):
         continue  # also used as the social preview, embedded or not
     check(asset.resolve() in embedded, f"orphan asset: {asset.relative_to(ROOT)} is embedded nowhere")
 
+# 7 — hot-path budget ---------------------------------------------------------------
+for pattern, ceiling in BUDGETS:
+    for path in sorted(ROOT.glob(pattern)):
+        size = path.stat().st_size
+        rel = path.relative_to(ROOT)
+        check(size <= ceiling,
+              f"hot-path budget: {rel} is {size} B, over the {ceiling} B ceiling")
+        if ceiling * WARN_AT <= size <= ceiling:
+            warn.append(f"{rel} is {size} B — {size * 100 // ceiling} % of its {ceiling} B ceiling")
+
 # ----------------------------------------------------------------------------------
+for w in warn:
+    print("⚠ ", w)
 if fail:
     print(f"✗ {len(fail)} problem(s):")
     for f in fail:

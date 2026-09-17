@@ -68,10 +68,132 @@ documented at `code.claude.com/docs`.
 ║  session-review   adversarial close loop                     ║
 ║  second-opinion   cross-check before commit                  ║
 ║  qa-sweep         multi-lens QA of the running app           ║
+║  document         PR · changelog · release note · postmortem ║
+║  code-sync        specs reconciled against the code          ║
 ╚══════════════════════════════════════════════════════════════╝
 ```
 
 ![](../.github/assets/03-where-memory-lives.png)
+
+## v7 — the development lifecycle layer
+
+v6 covers two layers: memory between sessions, and orchestration (the main session decides, an
+`executor` builds to a spec file, a report is INPUT and never a fact). v7 adds the middle one —
+the path from a task to a decided spec, to a build that refuses to invent decisions, to proof
+against that spec, to a human-readable record, to documents reconciled with the code. **No fifth
+memory layer**: everything new lives in `projects/<name>/`, or in an operator that walks it.
+The design, with its rejected alternatives, is [V7-DESIGN.md](V7-DESIGN.md).
+
+### The acceptance-criteria thread
+
+One id runs through the whole lifecycle. A spec's Acceptance rows are numbered `AC-1…n`
+(`templates/workspace/project/SPEC-TEMPLATE.md`), and every later artifact quotes those ids
+instead of paraphrasing the requirement:
+
+```
+spec Acceptance AC-3 ──▶ slice S2 "Serves: AC-3" ──▶ the test that names AC-3
+        │                                                    │
+        ▼                                                    ▼
+qa run record: per-AC table "AC-3 | pass | walked path X"   review-findings row · AC | AC-3
+        │
+        ▼
+spec Acceptance table: Verified = 2026-09-20 · qa/qa-run-20260920.md
+```
+
+The `Verified` column is filled by the integrator only, and only from a check they ran
+themselves — an agent's report never passes an AC. This is the old "a DONE nobody verified is
+IN PROGRESS" rule with an address: a `done` that cannot be traced to a `Verified` cell is not
+done. The findings registry (`reference/review-loop.md`) carries the same id in an `AC` column
+(`—` when a finding ties to no criterion), so a defect class and the criterion it breaks are
+countable together.
+
+### The input-coverage gate, and the `assumed` status
+
+The failure this closes is an executor that silently invents a value nobody decided — a
+threshold, a fallback, a sort order — and buries it in a diff that looks finished.
+
+Every spec carries a **`## Value sources`** table: each value the slice must produce, compute or
+display, against its named source (an input, a store column, a derivation, or a prior decision).
+`agents/executor.md` runs the gate **before the first file**: enumerate the values, check each
+against that table, and any value with no source is an **OWED DECISION** — the build STOPS and
+the executor reports in a fixed shape (`OWED DECISION · value: … · needed by: AC-n ·
+candidates: …`). Feeling is not the test; the list is.
+
+The integrator may answer "build anyway, assume X". Then, and only then, the executor writes
+`plans/YYYY-MM-DD-<slug>-assumed.md` from `ASSUMED-SPEC-TEMPLATE.md` — status `assumed`, the
+assumption, who authorised it, the code area it governs — and builds against that. It is the
+single spec file an executor may create, and it never edits an existing one. An `assumed` spec
+is a **debt**: it is owed ratification, `code-sync` lists it every run and the session-start
+stats count it until the integrator either folds the decision into the real spec (and marks the
+assumed one `superseded`) or changes the code.
+
+### The workflow tier — one rigor dial per project
+
+`projects/<name>/README.md` carries a `**Workflow tier:**` line, and a `BACKLOG.md` task may
+override it with its own `**Tier:**`. It answers one question — how much proof a `done` owes:
+
+| Tier | What `done` requires |
+|---|---|
+| `prototype` | build + the executor's own gate output |
+| `alpha` | + the integrator's acceptance walk against the spec's `AC-n` |
+| `beta` | + a `qa/qa-run-*.md` record and tests naming each `AC-n` |
+| `ga` | + a review pass on the diff and a `document` entry for the change |
+
+`executor`, `qa-sweep` and `code-sync` all read it, so rigor is decided once per project instead
+of re-argued per task. At `prototype`, `qa-sweep` says so and stops rather than pretending.
+
+### Two new operators
+
+- **`document`** (`skills/document/SKILL.md`) owns the human record: a PR body, a `CHANGELOG.md`
+  entry, `docs/releases/<version>.md`, `docs/postmortems/YYYY-MM-DD-<slug>.md`. Every sentence
+  traces to a hunk or a commit it read via `git diff` / `git log` **in that invocation** — never
+  to the session's memory of what it built. It never edits code, tests, configuration or a spec,
+  never touches `MEMORY.md`, handoffs, a backlog or the findings registry, and does not run
+  `git commit` or `gh pr create` unless asked. A postmortem *proposes* registry rows; it does
+  not append them.
+- **`code-sync`** (`skills/code-sync/SKILL.md`) owns the reconciliation: walk each project's
+  `building` and `assumed` specs, check what they claim against the tree, flip `building → done`
+  only from a gate it ran itself (at the tier's evidence bar), mark `stale` with a
+  `**Stale since:**` line naming the reason and `file:line`, list `assumed` specs owed
+  ratification, and refresh the README map plus `Last verified:`. **Surgical edits only** — a
+  status value, a `Verified` cell, a stale line, a map row, a backlog Done line; it rewrites no
+  prose, creates no file, deletes no document, never flips an `assumed` spec, and never touches
+  memory, knowledge or rules. `--dry-run` prints the edit plan instead of applying it.
+
+Both sit beside `close-session`, which is unchanged: `close-session` reconciles the SESSION with
+memory, `code-sync` reconciles a PROJECT's documents with the CODE.
+
+### Ownership — one writer per file
+
+The v6 rule ("the main agent is the single integrator") holds; v7 states it per file, because
+two of the writers are now skills:
+
+| File | Created by | Changed by |
+|---|---|---|
+| `projects/<name>/README.md` (map, tier default) | setup / integrator | integrator; `code-sync` updates `Last verified` and map rows |
+| `BACKLOG.md` | integrator | integrator; `code-sync` may flip a status line it can prove |
+| `plans/*.md` (specs) | integrator, before any fan-out | integrator (content, status); `executor` only creates an `*-assumed.md`; `code-sync` flips `building → done/stale` status lines only |
+| `qa/qa-run-*.md` | `qa-sweep` | nobody |
+| `review-findings.md` | integrator | integrator |
+| `CHANGELOG.md`, PR body, `docs/releases/`, `docs/postmortems/` | `document` | `document`, humans |
+| `.claude/memory/MEMORY.md`, handoffs, knowledge, rules | unchanged (v6) | unchanged |
+
+### Session entry: the spec flags
+
+`hooks/session-start.py` adds, per project row in the stats block, `N specs assumed (owed
+ratification) · M building > 14 d`. It reads only the header lines of `projects/*/plans/*.md`,
+stdlib only, zero LLM; a count of zero prints nothing, an unparsable spec is skipped rather than
+breaking the hook, and the threshold is `CMK_SPEC_STALE_DAYS` (default 14). A spec left
+`building` for a fortnight is either done-but-unmarked or abandoned — both are a lie in the
+project's own folder, and both are surfaced, never auto-corrected.
+
+### The hot-path budget (the kit audits itself)
+
+A skill body and an agent body load whole the moment they are invoked, so their size is a
+context bill. `tools/check-repo.py` check 7 holds every `skills/*/SKILL.md` under **24 000
+bytes** and every `agents/*.md` under **8 000 bytes**, prints a warning line at 90 % of the
+ceiling and fails the run over 100 %. A kit that audits other repositories for bloat cannot
+grow the same way unnoticed.
 
 ## What each layer is FOR (and is NOT)
 
