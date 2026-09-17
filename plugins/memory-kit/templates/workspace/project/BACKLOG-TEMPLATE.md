@@ -12,7 +12,9 @@ and verified. A `DONE` nobody verified is `IN PROGRESS` — the delivery-reality
 
 ### T-001: <one line, imperative>
 **Status:** TODO · **Priority:** P0 | P1 | P2 · **Opened:** YYYY-MM-DD
-**Spec:** `plans/YYYY-MM-DD-<slug>.md` (or "none — too small for a spec")
+**Tier:** <override, else project default> — optional; the default lives in this project's `README.md`
+**Spec:** `plans/YYYY-MM-DD-<slug>.md` — required. Either a path, or "none — too small for a
+spec", and then the Acceptance list below IS this task's AC set.
 
 What and why, 1-3 sentences. Not how — how lives in the spec.
 

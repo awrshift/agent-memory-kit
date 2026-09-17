@@ -1,6 +1,6 @@
 # <Slug> — spec
 
-**Created:** YYYY-MM-DD · **Status:** draft | decided | building | done | superseded
+**Created:** YYYY-MM-DD · **Status:** draft | decided | building | done | superseded | assumed | stale
 **Authority:** ssot for this slice · **Superseded by:** `<path>` (only when superseded)
 
 > This file is the CONTRACT an `executor` builds to. Decided here, by the main session, BEFORE
@@ -20,12 +20,24 @@ forbidden to attempt.
 ## Acceptance — pre-registered
 
 Written BEFORE building, or it is not acceptance. Each row must be checkable by someone who
-did not build it.
+did not build it. The ids are stable: executor slices, qa runs, tests and the findings registry
+reference them by name. `Verified` is filled by the integrator only — a date plus a pointer to
+the run record or the gate output.
 
-| # | What will prove this worked | How it is checked |
-|---|---|---|
-| A1 | | command / walked path / query |
-| A2 | | |
+| # | What will prove this worked | How it is checked | Verified |
+|---|---|---|---|
+| AC-1 | | command / walked path / query | |
+| AC-2 | | | |
+
+## Value sources
+
+List every value this slice must produce, compute or display. Each source is an input, a store
+column, a derivation from a named value, or a prior decision (spec id). **A value with no source
+is an OWED DECISION and this spec is not `decided`.**
+
+| Value | Source |
+|---|---|
+| | |
 
 ## Gates
 
@@ -43,9 +55,9 @@ commands, not their intent.
 Ordered, independently mergeable. One executor per slice when they touch disjoint files;
 sequential when they don't.
 
-| # | Slice | Files it owns | Depends on |
-|---|---|---|---|
-| S1 | | | — |
+| # | Slice | Files it owns | Serves | Depends on |
+|---|---|---|---|---|
+| S1 | | | AC-1, AC-2 | — |
 
 ## Inputs the executor is given
 

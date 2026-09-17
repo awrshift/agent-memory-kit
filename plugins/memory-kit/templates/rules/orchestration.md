@@ -10,11 +10,14 @@
    prompt, carrying Goal · Non-goals · pre-registered Acceptance · Gate commands · slices
    (`SPEC-TEMPLATE.md` in the plugin). They never redesign; a forced deviation is REGISTERED
    in the report and adjudicated at merge.
-3. **The main session is the single integrator** — it alone writes memory and everything under
+3. **An executor builds nothing until every value its slice produces has a named source in the
+   spec** — a gap is an OWED DECISION reported back, never invented. An override is written to
+   disk as an `assumed` spec, never left in chat.
+4. **The main session is the single integrator** — it alone writes memory and everything under
    `projects/<name>/`, merges worktrees, and re-runs the full gate set on the merged tree.
    Subagent-green is not integrated-green.
-4. **A failing test means the CODE is wrong**, not the test.
-5. **Never count reviewer votes — adjudicate on merits.** One dissenter with a file:line beats
+5. **A failing test means the CODE is wrong**, not the test.
+6. **Never count reviewer votes — adjudicate on merits.** One dissenter with a file:line beats
    three abstract agreements; a repo-reading reviewer outranks a brief-only one on code facts.
 
 Deeper procedure: `orchestrator-fact-check` (acceptance layers + claim→check table),

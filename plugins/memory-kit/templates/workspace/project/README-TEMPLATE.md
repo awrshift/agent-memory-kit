@@ -2,6 +2,14 @@
 
 **Status:** active | paused | shipped | archived
 **Started:** YYYY-MM-DD · **Last verified:** YYYY-MM-DD
+**Workflow tier:** prototype | alpha | beta | ga
+
+- `prototype` — build + executor self-check, no separate verification.
+- `alpha` — + the integrator's acceptance walk against the spec's `AC-n`.
+- `beta` — + a `qa-sweep` run record and tests per `AC-n`.
+- `ga` — + a second-opinion review on the diff and a `document` entry.
+
+The tier is this project's default; a task in `BACKLOG.md` overrides it with its own `**Tier:**`.
 
 One paragraph: what this project is, for whom, and what "done" looks like. No history —
 history lives in the handoffs.
