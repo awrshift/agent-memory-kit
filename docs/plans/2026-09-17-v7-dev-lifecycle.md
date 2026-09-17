@@ -1,6 +1,6 @@
 # v7 dev-lifecycle — spec
 
-**Created:** 2026-09-17 · **Status:** decided
+**Created:** 2026-09-17 · **Status:** done · **Verified:** 2026-09-17, integrator ran every gate below on the merged tree (see Acceptance)
 **Authority:** ssot for this slice · **Design:** `docs/V7-DESIGN.md`
 
 > This file is the CONTRACT an `executor` builds to. Decided by the main session BEFORE any
@@ -91,7 +91,31 @@ S1–S5 touch disjoint files and run in parallel. S6 runs after.
 None blocking. Deferred to evaluation: whether `code-sync` should also touch `.claude/rules/`
 (v7 answer: no, rules are promoted only via `close-session` on a yes).
 
+## Verification (integrator, 2026-09-17)
+
+| AC | Verified by |
+|---|---|
+| AC-1..4 | read the six S1 files; `wc -l orchestration.md` = 26; `wc -c executor.md` = 3547 |
+| AC-5 | CI step "SessionStart surfaces assumed and stale-building specs" run locally, ok; plural fixed to `1 spec` |
+| AC-6 | read `skills/document/SKILL.md` + 4 templates; de-localised the branch example; registry row order aligned |
+| AC-7 | read `skills/code-sync/SKILL.md`; close-session diff = one bullet |
+| AC-8, AC-9 | read the four S5 diffs; `wc -c qa.md` = 3396 |
+| AC-10 | `python3 tools/check-repo.py` exit 0; S6 probe: 21 739 B skill → warning, 24 139 B → fail |
+| AC-11 | `check-repo.py` compares 7 locations, all `7.0.0-dev` |
+| AC-12 | read identity.md diff (+6 lines), CHANGELOG, both READMEs |
+| AC-13 | `claude plugin validate ./plugins/memory-kit` → Validation passed |
+| AC-14 | all `checks.yml` steps run locally (PreCompact with `touch -t` for BSD; OpenCode `node --check` only), all ok; test-guard step passes only with `CMK_ALLOW_TEST_EDITS` unset (personal env, not a regression) |
+
 ## Registered deviations (filled at merge, by the integrator)
 
 | # | What the executor hit | Why | Accepted / rejected |
 |---|---|---|---|
+| 1 | S1: executor rule 6 ("never touch project docs") contradicted new rule 3 (write `*-assumed.md`) | brief did not name the exception | accepted: one-clause exception in rule 6 |
+| 2 | S1: new orchestration invariant rendered with the house bold-lead format | consistency with the other five | accepted |
+| 3 | S2: stats string always plural (`1 specs`) | copied the design's format string verbatim | rejected: integrator fixed to `spec`/`specs`, CI grep updated |
+| 4 | S3: mode example hardcoded this repo's branch name | illustrative example | rejected: generalised to `<branch>`/`<n>`/`<base>` |
+| 5 | S3: postmortem registry row had `outcome` before `AC` | written before S5 landed | rejected: reordered to match review-loop |
+| 6 | S5: added the `AC` column to qa.md hard rule 5 (beyond the named rule 3) | otherwise the agent's own report format contradicted rule 3 | accepted |
+| 7 | S6: bumped `package.json` and the AGENTS protocol marker too | the checker compares seven locations, not five | accepted |
+| 8 | S6: ARCHITECTURE title left "v6"; "all 8 skills" probe results left as-is | a title flip is a release act; probe results are dated evidence | accepted; both go to the release checklist |
+| 9 | S6 worked in a harness-created worktree off `main`, not in this one | executor frontmatter `isolation: worktree` | accepted: patch applied here, harness worktree removed. Lesson for the kit: an executor spawned into a non-git cwd gets a worktree off whatever repo the harness picks; name the target path in the prompt AND check `pwd` in the report |
