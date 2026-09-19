@@ -97,3 +97,30 @@ impressions. Recorded in `~/dev/SE System Design/backlog.md` (Decision log):
 3. `document pr` on the same diff vs a hand-written PR body. Anything invented?
 4. `code-sync` after a merge with one spec that the code silently diverged from. Flagged?
 5. Session start stats in a lab repo with two `assumed` specs. Shown?
+
+## [2026-09-19] Evaluation testbed and the planned seventh slice
+
+**Testbed.** The five steps above are run in a real project, not the toy lab: `~/dev/factcheck-agent`
+(a Python/LangGraph claim-verification service, spec `docs/spec.md` there). Launch:
+`claude --plugin-dir ~/dev/claude-memory-kit-v7/plugins/memory-kit` with the marketplace v6 disabled in
+that repo's `.claude/settings.json`. What that repo already carries in v7 form: `AC-1…7` with a `Verified`
+column, `## Value sources` (17 rows; the values that had no prior source were ratified as its D-011),
+`**Workflow tier:** prototype`, slices with a `Serves` column. Mapping of the plan: step 1 = its executor on
+slice S0/S1 (does the gate stop on any value that slipped the table?); step 2 = its first `qa-sweep` with
+`AC-n`; step 3 = `document pr` on its S1 diff; step 4 = `code-sync` after S1 merge; step 5 = its session
+start once an `assumed` spec exists. Evidence for each step is filed in that repo
+(`context/handoffs/`, `projects/.../qa/`) and summarised here before merge. `~/dev/memory-kit-v7-lab` is superseded.
+
+**Planned slice S7 — evidence** (from `docs/research/openresearch-comparison-2026-09-19.md`, alphaXiv/OpenResearch, MIT;
+no fifth layer, no infrastructure):
+1. `EXPERIMENT-TEMPLATE.md`: fields `branch`, `run command`, `result run id`, `frozen: yes/no`; rule: a run that
+   produced any result freezes the experiment, a new hypothesis is a new experiment, never an edit.
+2. `reference/orchestrator-fact-check.md`: "validate before reporting" checklist (the log names the variant and
+   config; the final metric is present; the trajectory is recoverable; truncated output is not evidence of absence).
+3. `templates/rules/orchestration.md` (two lines max): claims about code cite `file:lines`; measured results cite
+   the run/gate output that was read, never a status.
+4. `reference/parallel-development.md`: before starting, inspect branches other sessions have claimed
+   (`git branch -a`, worktree list); one branch, one owner.
+5. `templates/rules/orchestration.md` (same two lines): a wait/notification is a signal, not the source of truth;
+   re-read state on every wake.
+Not adopted: OpenResearch's SQLite experiment store (a database) and its autonomous-loop default.
