@@ -124,10 +124,10 @@ without leaving the conversation:
 | Agent | What you get |
 |---|---|
 | **Claude Code** | full enforcement: memory injected every session, compaction blocked until state is saved, test edits guarded |
-| **Cursor** | memory injected at session start, all 8 skills ([verified](docs/specs/cursor.md)) |
+| **Cursor** | memory injected at session start, all 10 skills ([probed](docs/specs/cursor.md) at v6's eight) |
 | **OpenCode** | memory injected into EVERY model call via the shipped plugin ([verified](docs/specs/opencode.md)) |
-| **Codex** | all 8 skills, the memory discipline via an `AGENTS.md` protocol block ([verified](docs/specs/codex.md)) |
-| **GitHub Copilot CLI** | all 8 skills, the `AGENTS.md` protocol block ([verified](docs/specs/copilot.md)) |
+| **Codex** | all 10 skills, the memory discipline via an `AGENTS.md` protocol block ([probed](docs/specs/codex.md) at v6's eight) |
+| **GitHub Copilot CLI** | all 10 skills, the `AGENTS.md` protocol block ([probed](docs/specs/copilot.md) at v6's eight) |
 | **Claude Cowork** (desktop) | skills only: Cowork does not run plugin hooks yet, so memory is not injected there ([documented](docs/specs/cowork.md)) |
 | **Anything else, incl. CI** | the memory is plain text in your folder: readable, greppable, git-versioned |
 
@@ -175,6 +175,17 @@ changelog entry, release note or postmortem from the actual `git diff`, never fr
 model remembers building; `/code-sync` walks the specs after a merge and reconciles their
 status with what the code now shows, surgically. All lazy-loaded skills, they cost nothing
 until invoked.
+
+**v7 adds the lifecycle layer that makes those two mean something.** A spec's acceptance rows
+carry `AC-n` ids, so a test, a QA finding and a `Verified` cell can all point at the same
+promise. A spec also carries a `Value sources` table naming where every value it asks for comes
+from, and an executor runs an input-coverage gate before its first file: a value with no named
+source is an owed decision and the build STOPS rather than inventing one. Each project declares
+a workflow tier — `prototype · alpha · beta · ga` — which sets how much evidence a `done` owes,
+so a throwaway prototype is not held to a GA standard and a GA change cannot pass on a green
+test alone. When an executor must override the spec to proceed, it writes an *assumed* spec:
+a recorded override that session start surfaces as owed ratification, and that no skill may flip
+on its own.
 
 ![](.github/assets/07-orchestrated-work-spec.png)
 ![](.github/assets/09-agent-qa-projects.png)

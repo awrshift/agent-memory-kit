@@ -2,9 +2,9 @@
 
 All notable changes to Memory Kit are documented here. Breaking changes marked **BREAKING**.
 
-<a id="v700dev"></a>
+<a id="v700"></a>
 
-## [7.0.0-dev] — 2026-09-17 — The development lifecycle layer
+## [7.0.0] — 2026-09-20 — The development lifecycle layer
 
 **BREAKING: none.** Every change here is additive and backward compatible. A spec written under
 v6 — no `AC-n` ids, no `Value sources` table, no tier line — still parses, still delegates, and

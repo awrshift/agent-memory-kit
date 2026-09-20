@@ -1,4 +1,4 @@
-# Memory Kit v6 — Architecture
+# Memory Kit v7 — Architecture
 
 > Full architecture with rationale. Read after the plugin's `context/identity.md` for depth.
 
@@ -512,7 +512,7 @@ every host is equal:
 | **T3 — plain files** | anything else, including CI | the memory files themselves need no runtime: markdown, git-versioned, one `grep` away. |
 
 Codex empirics (see `specs/codex.md` for the probes): it installs the kit from the NATIVE
-manifests — the nested `plugins/memory-kit` marketplace source resolves, all 8 skills appear in
+manifests — the nested `plugins/memory-kit` marketplace source resolves, all 10 skills appear in
 a live session namespaced `memory-kit:<name>` — and it parses `hooks.json` but does NOT execute
 SessionStart. "Wakes up already knowing" does not exist there; the protocol block is the honest
 replacement. Per-host truth, every claim labeled `verified` / `documented-only` /
