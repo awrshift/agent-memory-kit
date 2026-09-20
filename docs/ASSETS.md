@@ -18,7 +18,7 @@ five regenerated, four kept)
 | `03-where-memory-lives.png` | verified 2026-08-31: already host-neutral ("Agent writes all of them") — kept |
 | `04-promotion-agent.png` | **regenerated 2026-08-31 for v6.4.0** (was `04-promotion.png`): "Claude proposes" → "the agent proposes" in the YOUR YES caption |
 | `05-multi-project-layer.png` | **regenerated 2026-08-27 for v6.2.0** (was `05-multi-client.png`): the project tree now shows what a project folder actually holds — `README.md ← the map`, `BACKLOG.md`, `plans/`, `research/`, `decisions-log.md`, `qa/`, `materials/` — and the footer states the 6.2.0 line, «Per-project = the work's own documents. Shared = the memory.» |
-| `06-hooks-skills.png` | **STALE since 2026-09-20 (v7.0.0), regeneration owed**: the sub-line reads «Four silent guards. Eight skills you can type.» and the panel lists eight — `document` and `code-sync` are missing, so the picture understates the plugin by two skills. Opened and read 2026-09-20, not inferred. Previously verified 2026-08-31: four hooks + eight skills still exact, no host-specific copy — kept |
+| `06-hooks-skills-ten.png` | **regenerated 2026-09-20 for v7.0.0** (was `06-hooks-skills.png`): the sub-line reads «Four silent guards. Ten skills you can type.» and the grid lists all ten — `/memory-kit:document` and `/memory-kit:code-sync` added as the fifth row, the two highlight chips unchanged. Generated WITH the previous asset as style ref (content GREW — lesson 3 applies to shrinking, not growing), clean on the first try, every string and the spelling list read back before committing. Renamed, per this file's own camo-cache rule. Previously verified 2026-08-31 at eight skills |
 | `07-orchestrated-work-spec.png` | **incomplete for v7 (2026-09-20), not false**: the spec card still reads «goal · non-goals · acceptance pre-registered · the gate commands» and says nothing of v7's `AC-n` ids, the `Value sources` table, the workflow tier or the executor's input-coverage gate. Opened and read 2026-09-20. Earlier: **regenerated 2026-08-27 for v6.2.0** (was `07-orchestrated-work.png`): a new second row — «THE SPEC — a file, written before anyone fans out», `projects/<name>/plans/YYYY-MM-DD-<slug>.md`, goal · non-goals · acceptance pre-registered · the gate commands — and the three agents now fan out FROM the spec, not from the integrator. |
 | `08-one-operator-five-hosts.png` | **regenerated 2026-09-02** (was `08-one-operator-any-agent.png`): the sub-line dropped "1000+ sessions · 12 months in production" (the page no longer makes that claim), "repo" → "folder" throughout, and the footer names all five hosts. Generated WITHOUT a style ref (a string was removed — lesson 3), clean on the first try. History: 2026-08-31 for v6.4.0 the footer went from "three lines in Claude Code" to "one install — Claude Code, Cursor or Codex" |
 | `09-agent-qa-projects.png` | **regenerated 2026-08-31** (was `09-agent-qa.png`): footer path was still `docs/qa/README.md` — drifted since v6.2.0 moved the QA protocol to `projects/<name>/qa/README.md`; caught by looking, exactly as this file's own rule demands |
@@ -60,7 +60,7 @@ matches the set, and give the prompt the **complete text spec**, every string ve
 
 ```bash
 # GOOGLE_API_KEY from your environment; model default is gemini-3-pro-image
-python3 tools/genimg.py .github/assets/06-hooks-skills.png prompt.txt out.png
+python3 tools/genimg.py .github/assets/06-hooks-skills-ten.png prompt.txt out.png
 sips -Z 2000 out.png          # keep the set under control
 ```
 

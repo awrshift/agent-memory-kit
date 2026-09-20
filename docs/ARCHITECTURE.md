@@ -468,7 +468,7 @@ before writing a plan. Defaults are a default; a working layout outranks them.
 
 ## Hooks (automatic, no user action)
 
-![](../.github/assets/06-hooks-skills.png)
+![](../.github/assets/06-hooks-skills-ten.png)
 
 Four hooks, declared in the plugin's `hooks/hooks.json` — nothing to wire in your settings:
 
