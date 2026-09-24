@@ -18,8 +18,9 @@ description: >
 Read `projects/<name>/qa/README.md` FIRST (the protocol SSOT: environment rules · the five lens briefs ·
 findings format · triage) — the lens briefs in agent prompts come verbatim from there, and the
 account/mutation policy it sets is a hard rail, not advice. A project that predates this layout
-may keep its protocol elsewhere — `docs/qa/README.md`, `.claude/rules/qa-sweep.md`, or a
-project-local `qa-sweep` skill. Look there before scaffolding: an existing protocol is the SSOT
+may keep its protocol elsewhere — wherever its `CLAUDE.md` points, or at `docs/qa/README.md`,
+`context/qa/PROTOCOL.md`, `.claude/rules/qa-sweep.md`, or in a project-local `qa-sweep` skill.
+Look there before scaffolding: an existing protocol is the SSOT
 wherever it lives, its run records go next to it, and a second protocol must never be created
 beside it. Only when no protocol exists anywhere,
 create one from the layer's protocol template (`${CLAUDE_PLUGIN_ROOT}/reference/qa-PROTOCOL-TEMPLATE.md` in

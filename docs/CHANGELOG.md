@@ -32,8 +32,8 @@ kit so the personal copies can be deleted without any project losing them.
 ### Changed
 
 - **`qa-sweep` finds an existing protocol before scaffolding one.** A project that keeps its QA
-  protocol in `docs/qa/README.md`, `.claude/rules/qa-sweep.md` or a project-local `qa-sweep`
-  skill uses it as the SSOT; a second protocol under `projects/<name>/qa/` is never created
+  protocol where its `CLAUDE.md` points, in `docs/qa/README.md`, `context/qa/PROTOCOL.md`,
+  `.claude/rules/qa-sweep.md` or a project-local `qa-sweep` skill uses it as the SSOT; a second protocol under `projects/<name>/qa/` is never created
   beside it.
 - **`qa-sweep` rails that hold even when the protocol is silent:** cross-channel evidence, a
   clean bill names its oracle and commit, no real credentials in a QA agent's hands, coverage
