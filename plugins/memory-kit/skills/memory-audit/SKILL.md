@@ -19,6 +19,8 @@ becomes a ritual people skip.
 - `knowledge/concepts/*.md` — filenames + first 5 lines, for duplicate detection (the directory
   may not exist yet; the first move creates it).
 - `context/handoffs/` — to confirm a session narrative already lives there → **drop**, not move.
+- The newest `context/audits/memory-audit-deferred-*.md`, if one exists — the candidates the
+  previous audit left; start from them.
 
 ## Step 1 — classify every section
 
@@ -60,13 +62,15 @@ Print the plan and ask for approval. Wait for an explicit yes or edits. No write
 
 Replace the MEMORY.md current-state header (≤3 lines, dated). Report before/after line and byte
 counts, every file touched, and save declined candidates to
-`context/handoffs/memory-audit-deferred-YYYY-MM-DD.md` so the next audit starts from them.
+`context/audits/memory-audit-deferred-YYYY-MM-DD.md` (create the dir if absent) so the next audit
+starts from them. Not in `context/handoffs/`: the SessionStart hook injects the newest file there
+as the session handoff, so a deferred list saved there replaces the real handoff at the next start.
 
 ## Refuse when
 
 - No cap is tripped AND no settled-pattern candidate exists → say "no audit needed" and stop.
   A SINGLE tripped cap is reason enough to proceed (one 3000-char line qualifies).
-- The user declines the plan → save it next to the handoffs and stop.
+- The user declines the plan → save it to `context/audits/` as above and stop.
 
 ## Anti-patterns
 

@@ -30,9 +30,15 @@ An unverified observation is labelled `hypothesis` and never counted in the verd
 ## Step 1 — The deterministic collector (before any reasoning)
 
 ```bash
-# from the repo being audited; pass a path as $1 to audit a different repo
-bash "${CLAUDE_PLUGIN_ROOT}/skills/system-audit/scripts/collect.sh" > /tmp/system-audit-facts.md
+# from the repo being audited; pass a path as $1 to audit a different repo.
+# The output path carries the repo name and date: a fixed /tmp name gets overwritten by a
+# parallel session auditing another repo, and the first read is then of the wrong repo.
+bash "${CLAUDE_PLUGIN_ROOT}/skills/system-audit/scripts/collect.sh" "$PWD" \
+  > "/tmp/system-audit-facts-$(basename "$PWD")-$(date +%F).md"
 ```
+
+Check the first three lines of the output: the `repo:` line must name the repo you are auditing.
+If it does not, another session wrote the file — re-run the collector rather than reason over it.
 
 (If this skill lives somewhere else on your machine, run `scripts/collect.sh` from this skill's
 own directory — it's read-only and never writes into the audited repo.)

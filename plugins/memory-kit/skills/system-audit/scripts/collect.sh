@@ -93,7 +93,8 @@ echo "citing file's dir; bare filenames and \`YYYY\`-style templates are exclude
 find_src -type f -name '*.md' | while IFS= read -r f; do
   grep -o -E '`[A-Za-z0-9_./-]+/[A-Za-z0-9_.-]+\.(md|py|sh|js|ts|json|yml|yaml|toml|txt)`' "$f" 2>/dev/null \
   | tr -d '`' | grep -v -E 'YYYY|MM|DD|<|\*' | sort -u | while IFS= read -r p; do
-      [ -e "$p" ] || [ -e "$(dirname "$f")/$p" ] || echo "- \`$f\` → \`$p\`"
+      # "${p#/}": a leading "/" means repo-root-relative in memory-kit docs, not an absolute path
+      [ -e "$p" ] || [ -e "${p#/}" ] || [ -e "$(dirname "$f")/$p" ] || echo "- \`$f\` → \`$p\`"
     done
 done | sort -u | head -25
 echo
@@ -187,7 +188,13 @@ if [ -f requirements.txt ]; then
   tot=$(grep -c -v '^\s*#\|^\s*$' requirements.txt); pin=$(grep -c '==' requirements.txt)
   echo "- requirements.txt: $pin/$tot pinned"
 fi
-echo "- TODO/FIXME/HACK/XXX in tracked files: $(grep -rn -E 'TODO|FIXME|HACK|XXX' --exclude-dir=.git --exclude-dir=node_modules . 2>/dev/null | wc -l | tr -d ' ')"
+# tracked files only: a plain recursive grep sweeps .venv/, dist/ and data dumps (1958 hits for a repo with 8)
+if git rev-parse --git-dir >/dev/null 2>&1; then
+  todo_n=$(git ls-files -z | xargs -0 grep -n -E 'TODO|FIXME|HACK|XXX' 2>/dev/null | wc -l | tr -d ' ')
+else
+  todo_n=$(grep -rn -E 'TODO|FIXME|HACK|XXX' --exclude-dir=.git --exclude-dir=node_modules --exclude-dir=.venv --exclude-dir=venv --exclude-dir=data . 2>/dev/null | wc -l | tr -d ' ')
+fi
+echo "- TODO/FIXME/HACK/XXX in tracked files: $todo_n"
 echo "- executable scripts: $(find_src -type f \( -name '*.sh' -o -name '*.py' \) | wc -l | tr -d ' ')"
 echo
 echo "_End of collected facts. Everything above is measured; interpretation is the auditor's job._"

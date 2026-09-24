@@ -348,7 +348,12 @@ def build_stats(session_num: int | None, content: str | None) -> str:
 def newest_handoff() -> Path | None:
     if not HANDOFFS_DIR.exists():
         return None
-    files = [p for p in HANDOFFS_DIR.glob("*.md") if p.name != "HANDOFF-TEMPLATE.md"]
+    # memory-audit wrote its deferred list here before 7.0.1; it is not a session handoff.
+    files = [
+        p
+        for p in HANDOFFS_DIR.glob("*.md")
+        if p.name != "HANDOFF-TEMPLATE.md" and not p.name.startswith("memory-audit-deferred-")
+    ]
     if not files:
         return None
     return max(files, key=lambda p: p.stat().st_mtime)

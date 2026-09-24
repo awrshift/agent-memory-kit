@@ -2,6 +2,43 @@
 
 All notable changes to Memory Kit are documented here. Breaking changes marked **BREAKING**.
 
+<a id="v701"></a>
+
+## [7.0.1] — 2026-09-24 — Fixes carried back from a user-level fork
+
+**BREAKING: none.** Skill text, one collector script and one line of the SessionStart hook.
+These fixes lived in a personal copy of two kit skills (`~/.claude/skills/`); they move into the
+kit so the personal copies can be deleted without any project losing them.
+
+### Fixed
+
+- **The session handoff was replaced by the memory-audit's deferred list.** `memory-audit` saved
+  declined candidates to `context/handoffs/memory-audit-deferred-YYYY-MM-DD.md`, and the
+  SessionStart hook injects the newest file in that directory as the session handoff — so the
+  next session started from the deferred list instead of the real handoff. The skill now writes
+  to `context/audits/`, reads the newest deferred list back as an input, and the hook
+  (`newest_handoff`) skips `memory-audit-deferred-*` files already sitting in `context/handoffs/`.
+- **`system-audit` read another repo's facts.** The collector wrote to a fixed
+  `/tmp/system-audit-facts.md`; a parallel session auditing a different repo overwrote it. The
+  output path now carries the repo name and date, and the skill checks the `repo:` line before
+  reasoning over the file.
+- **`system-audit` broken-reference false positives.** A path written repo-root-relative with a
+  leading `/` (the kit's own doc convention) was reported as broken; the collector now also tries
+  it without the leading `/`.
+- **`system-audit` TODO count swept vendored code.** The count now greps tracked files only
+  (`git ls-files`), falling back to a recursive grep with `.venv`/`venv`/`data` excluded outside
+  git — a plain recursive grep reported 1958 for a repo with 8.
+
+### Changed
+
+- **`qa-sweep` finds an existing protocol before scaffolding one.** A project that keeps its QA
+  protocol in `docs/qa/README.md`, `.claude/rules/qa-sweep.md` or a project-local `qa-sweep`
+  skill uses it as the SSOT; a second protocol under `projects/<name>/qa/` is never created
+  beside it.
+- **`qa-sweep` rails that hold even when the protocol is silent:** cross-channel evidence, a
+  clean bill names its oracle and commit, no real credentials in a QA agent's hands, coverage
+  as a queue with archetype rotation, and codifying twice-clean golden paths as e2e specs.
+
 <a id="v700"></a>
 
 ## [7.0.0] — 2026-09-20 — The development lifecycle layer

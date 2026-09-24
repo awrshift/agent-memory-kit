@@ -17,8 +17,12 @@ description: >
 
 Read `projects/<name>/qa/README.md` FIRST (the protocol SSOT: environment rules · the five lens briefs ·
 findings format · triage) — the lens briefs in agent prompts come verbatim from there, and the
-account/mutation policy it sets is a hard rail, not advice. If that file doesn't exist yet,
-create it from the layer's protocol template (`${CLAUDE_PLUGIN_ROOT}/reference/qa-PROTOCOL-TEMPLATE.md` in
+account/mutation policy it sets is a hard rail, not advice. A project that predates this layout
+may keep its protocol elsewhere — `docs/qa/README.md`, `.claude/rules/qa-sweep.md`, or a
+project-local `qa-sweep` skill. Look there before scaffolding: an existing protocol is the SSOT
+wherever it lives, its run records go next to it, and a second protocol must never be created
+beside it. Only when no protocol exists anywhere,
+create one from the layer's protocol template (`${CLAUDE_PLUGIN_ROOT}/reference/qa-PROTOCOL-TEMPLATE.md` in
 the kit repo — copy it from there if this project only adopted the layer's `.claude/` files)
 and fill the placeholders before sweeping.
 
@@ -52,3 +56,16 @@ and fill the placeholders before sweeping.
    AC that passed — the date + `qa/qa-run-YYYYMMDD.md`.
 6. **Cleanup:** stop dev servers, remove stray screenshots from the repo root, re-seed the
    sacrificial account if a mutation run dirtied it.
+
+## Rails that hold even when the protocol is silent
+- **Cross-channel evidence:** an action's evidence comes from a different channel than the action
+  — after a click, read the network response, the DOM or the store, never «the click looked fine».
+- **A clean bill is a claim:** it names the oracle it ran and the commit it ran against. A clean
+  bill without an oracle is recorded as «not reached», never as clean.
+- **No real credentials in a QA agent's hands** — seeded storage state or a sacrificial login only;
+  a report can leak whatever the agent was given.
+- **Coverage is a queue:** seed the next brief from the previous run's «not reached» list and name
+  the data archetype; a third consecutive run on the same archetype changes archetype.
+- **Solve once, write it down:** a verified finding becomes a permanent regression test; a golden
+  path that two consecutive runs walk clean is codified as an e2e spec and dropped from later
+  briefs unless its surface changed — the lens explores, the spec remembers.
