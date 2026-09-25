@@ -83,6 +83,15 @@ SPEC_STALE_DAYS = int(os.environ.get("CMK_SPEC_STALE_DAYS", 14))
 SPEC_HEAD_LINES = 30  # the status/created header lives at the top; never read a whole spec
 SPEC_STATUS_RE = re.compile(r"\*\*Status:?\*\*:?\s*([A-Za-z][A-Za-z-]*)")
 SPEC_CREATED_RE = re.compile(r"\*\*Created:?\*\*:?\s*(\d{4}-\d{2}-\d{2})")
+# 7.0.3: repos that keep specs in their own shape — a plain `Status: done (…) · Tier: …` line, no
+# `Created:` — are read too. Plain labels count only at a line start or after a `·`, so prose in
+# the first 30 lines ("the status: unclear") never parses as a header; the date then comes from
+# the kit's `YYYY-MM-DD-<slug>.md` file name.
+PLAIN_STATUS_RE = re.compile(r"(?:^|·)[ \t]*Status:[ \t]*([A-Za-z][A-Za-z-]*)", re.MULTILINE)
+PLAIN_CREATED_RE = re.compile(r"(?:^|·)[ \t]*Created:[ \t]*(\d{4}-\d{2}-\d{2})", re.MULTILINE)
+FILENAME_DATE_RE = re.compile(r"^(\d{4}-\d{2}-\d{2})-")
+# A repo-level spec folder, read beside projects/*/plans/ (a repo without the kit's projects/ layer).
+ROOT_PLANS_DIR = PROJECT_DIR / "docs" / "plans"
 
 # Stale-ref auto-check scope = the always-loaded layer only.
 HOT_MEMORY_TARGETS = ["CLAUDE.md", ".claude/memory/MEMORY.md"]
@@ -296,15 +305,15 @@ def list_dirs(base: Path) -> list[Path]:
     )
 
 
-def spec_flags(project: Path) -> tuple[int, int]:
-    """(assumed specs, `building` specs older than SPEC_STALE_DAYS) in <project>/plans/.
+def spec_flags(plans_dir: Path) -> tuple[int, int]:
+    """(assumed specs, `building` specs older than SPEC_STALE_DAYS) in one plans folder.
 
     Non-recursive, stdlib only, header lines only — the stats block must stay cheap. Any
     unreadable or unparsable file is skipped: a malformed spec must never break the hook.
     """
     assumed = stale = 0
     try:
-        paths = sorted((project / "plans").glob("*.md"))
+        paths = sorted(plans_dir.glob("*.md"))
     except OSError:
         return 0, 0
     for path in paths:
@@ -313,14 +322,18 @@ def spec_flags(project: Path) -> tuple[int, int]:
                 head = "".join(line for _, line in zip(range(SPEC_HEAD_LINES), handle))
         except OSError:
             continue
-        status_match = SPEC_STATUS_RE.search(head)
+        status_match = SPEC_STATUS_RE.search(head) or PLAIN_STATUS_RE.search(head)
         if not status_match:
             continue
         status = status_match.group(1).lower()
         if status == "assumed":
             assumed += 1
         elif status == "building":
-            created_match = SPEC_CREATED_RE.search(head)
+            created_match = (
+                SPEC_CREATED_RE.search(head)
+                or PLAIN_CREATED_RE.search(head)
+                or FILENAME_DATE_RE.match(path.name)
+            )
             if not created_match:
                 continue
             try:
@@ -332,15 +345,23 @@ def spec_flags(project: Path) -> tuple[int, int]:
     return assumed, stale
 
 
+def spec_flag_text(plans_dir: Path) -> str:
+    """` · N specs assumed … · M building > 14 d`, or "" — a zero count prints nothing."""
+    assumed, stale = spec_flags(plans_dir)
+    text = ""
+    if assumed:
+        text += f" · {assumed} spec{'s' if assumed != 1 else ''} assumed (owed ratification)"
+    if stale:
+        text += f" · {stale} building > {SPEC_STALE_DAYS} d"
+    return text
+
+
 def project_line(project: Path) -> str:
     """One stats row. A zero count prints nothing — the line stays quiet until it matters."""
-    line = f"- projects/{project.name}/ — touched {human_age(age_days(project))}"
-    assumed, stale = spec_flags(project)
-    if assumed:
-        line += f" · {assumed} spec{'s' if assumed != 1 else ''} assumed (owed ratification)"
-    if stale:
-        line += f" · {stale} building > {SPEC_STALE_DAYS} d"
-    return line
+    return (
+        f"- projects/{project.name}/ — touched {human_age(age_days(project))}"
+        + spec_flag_text(project / "plans")
+    )
 
 
 def build_stats(session_num: int | None, content: str | None) -> str:
@@ -369,6 +390,10 @@ def build_stats(session_num: int | None, content: str | None) -> str:
         lines.append("## Projects")
         lines += [project_line(p) for p in projects[:6]]
         lines.append("")
+
+    root_flags = spec_flag_text(ROOT_PLANS_DIR) if ROOT_PLANS_DIR.is_dir() else ""
+    if root_flags:
+        lines += ["## Plans", f"- docs/plans/ — {root_flags[len(' · '):]}", ""]
 
     experiments = list_dirs(EXPERIMENTS_DIR)
     if experiments:

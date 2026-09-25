@@ -16,6 +16,11 @@ This repo is a **Claude Code plugin marketplace**, not a memory workspace. The p
   the working agreement is `plugins/memory-kit/context/identity.md`, injected at SessionStart.
 - **Always-loaded vs on-invoke.** A skill body loads only when invoked; a rule without `paths:`
   loads every session forever. Put weight in skills and `reference/`, never in rules.
+- **This checkout is live on the maintainer's machine.** The marketplace is registered as a local
+  DIRECTORY, so every kit project loads `plugins/memory-kit/` IN PLACE from here at session start —
+  not from `~/.claude/plugins/cache/`, whatever `installed_plugins.json` records (verified
+  2026-09-25 in a debug log). A branch checkout or `reset` here changes all of them at once:
+  experiment in a separate worktree with `claude --plugin-dir <worktree>/plugins/memory-kit`.
 - **Verify injection by looking at the context, not the code.** v5 claimed for a year that the
   hot cache was always loaded while the hook only measured it. Run the hook and read its output.
 

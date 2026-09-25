@@ -2,6 +2,33 @@
 
 All notable changes to Memory Kit are documented here. Breaking changes marked **BREAKING**.
 
+<a id="v703"></a>
+
+## [7.0.3] — 2026-09-25 — Spec flags see repos in their own shape; the shim's handoff fix
+
+**BREAKING: none.** Found by a system audit of the v7 testbed project the same day: its 18 specs
+live in `docs/plans/` with a plain `Status: done (…) · Tier: …` line and no `Created:`, so the v7
+spec flags had never seen a single one of them.
+
+### Fixed
+
+- **SessionStart spec flags read a repo-level `docs/plans/`** (a `## Plans` stats row beside the
+  per-project rows) and a plain `Status:` header — at a line start or after a `·`, so prose such as
+  «the old status: building» never parses — with the date taken from a `YYYY-MM-DD-<slug>.md` file
+  name when no `Created:` line exists. The bold `**Created:** · **Status:**` header reads as
+  before. Run over the 23 kit projects on the maintainer's machine: no flag fires (no false alarm).
+  `code-sync` reads the same shapes and lists a spec with no status line as `no status`.
+- **The OpenCode shim injected a memory-audit deferred list as the session handoff.** 7.0.1 fixed
+  this in `session-start.py` only; the shim now skips `memory-audit-deferred-*` too.
+
+### Changed
+
+- The repo's own `CLAUDE.md` states that a DIRECTORY marketplace loads the plugin in place from
+  this checkout (verified in a debug log), so a branch checkout here reaches every kit project on
+  the machine; experiments go to a worktree with `--plugin-dir`.
+- CI: a `docs/plans/` fixture with plain headers and a decoy sentence, and a shim run where a newer
+  deferred list must not replace the real handoff.
+
 <a id="v702"></a>
 
 ## [7.0.2] — 2026-09-25 — Lessons from a memory audit

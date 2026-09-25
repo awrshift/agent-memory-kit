@@ -66,6 +66,19 @@ jobs:
           ! grep 'projects/nospecs/' /tmp/specs.txt | grep -qE 'specs? assumed|building >' \
             || { echo "a project without plans/ printed a spec fragment"; cat /tmp/specs.txt; exit 1; }
           rm -rf /tmp/probe/projects
+          # 7.0.3: a repo-level docs/plans/ with plain `Status:` headers and dates from file names;
+          # prose that mentions a status must not parse as one.
+          mkdir -p /tmp/probe/docs/plans
+          printf '# c\n\nStatus: assumed · Tier: prototype\n' > /tmp/probe/docs/plans/2026-01-01-c.md
+          printf '# d\n\nStatus: building (slice 2)\n' > /tmp/probe/docs/plans/2026-01-02-d.md
+          printf '# g\n\nThe old status: building was dropped.\n' > /tmp/probe/docs/plans/2026-01-03-g.md
+          printf '{"session_id":"ci","source":"startup"}' \
+            | python3 "$CLAUDE_PLUGIN_ROOT/hooks/session-start.py" \
+            | python3 -c "import json,sys; print(json.load(sys.stdin)['hookSpecificOutput']['additionalContext'])" \
+            > /tmp/specs.txt
+          grep -q 'docs/plans/ — 1 spec assumed (owed ratification) · 1 building > 14 d' /tmp/specs.txt \
+            || { echo "docs/plans flags wrong"; grep -A2 '## Plans' /tmp/specs.txt; exit 1; }
+          rm -rf /tmp/probe/docs
           echo "  ok"
 
       - name: Never scaffold into a repo that did not ask
@@ -119,6 +132,16 @@ jobs:
             const v = { system: [] };
             await virgin['experimental.chat.system.transform']({}, v);
             if (!v.system.join('').includes('not set up in this repository')) throw new Error('virgin repo pointer missing');
+            // 7.0.3: a newer memory-audit deferred list is not the session handoff.
+            const fs = await import('node:fs');
+            fs.writeFileSync('/tmp/probe/context/handoffs/real-2026-01-01.md', 'REAL-HANDOFF');
+            fs.writeFileSync('/tmp/probe/context/handoffs/memory-audit-deferred-2026-01-02.md', 'DEFERRED');
+            fs.utimesSync('/tmp/probe/context/handoffs/memory-audit-deferred-2026-01-02.md', new Date(), new Date(Date.now() + 60000));
+            const h = { system: [] };
+            await hooks['experimental.chat.system.transform']({}, h);
+            if (!h.system.join('').includes('REAL-HANDOFF')) throw new Error('deferred list injected as the handoff');
+            fs.rmSync('/tmp/probe/context/handoffs/real-2026-01-01.md');
+            fs.rmSync('/tmp/probe/context/handoffs/memory-audit-deferred-2026-01-02.md');
             console.log('  ok');
           "
 

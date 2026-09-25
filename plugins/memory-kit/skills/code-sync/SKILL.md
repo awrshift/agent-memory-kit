@@ -41,7 +41,9 @@ line, a map row, `Last verified:`, and a BACKLOG Done line. Everything else keep
 ## Step 1 — inventory the specs
 
 Read the header of every `plans/*.md` (`**Created:** YYYY-MM-DD · **Status:** …`; one grep over
-the folder is enough). Statuses are `draft · decided · building · done · superseded · assumed ·
+the folder is enough). A plain `Status: …` line counts too, and a spec with no `Created:` takes its
+date from a `YYYY-MM-DD-<slug>.md` file name — the SessionStart spec flags read them the same way.
+A spec with no status line at all is counted as `no status` in the table, never guessed. Statuses are `draft · decided · building · done · superseded · assumed ·
 stale`. Build the working table: spec · status · created · age in days.
 
 `building` goes to step 2, `assumed` to step 3. `draft`, `decided`, `done`, `superseded` and

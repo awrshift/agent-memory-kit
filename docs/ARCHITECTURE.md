@@ -183,7 +183,9 @@ two of the writers are now skills:
 
 `hooks/session-start.py` adds, per project row in the stats block, `N specs assumed (owed
 ratification) · M building > 14 d`. It reads only the header lines of `projects/*/plans/*.md`,
-stdlib only, zero LLM; a count of zero prints nothing, an unparsable spec is skipped rather than
+and of a repo-level `docs/plans/*.md` (a `## Plans` row, since 7.0.3) — the bold
+`**Created:** · **Status:**` header or a plain `Status:` at a line start or after a `·`, with the
+date taken from a `YYYY-MM-DD-<slug>.md` file name when no `Created:` exists — stdlib only, zero LLM; a count of zero prints nothing, an unparsable spec is skipped rather than
 breaking the hook, and the threshold is `CMK_SPEC_STALE_DAYS` (default 14). A spec left
 `building` for a fortnight is either done-but-unmarked or abandoned — both are a lie in the
 project's own folder, and both are surfaced, never auto-corrected.
