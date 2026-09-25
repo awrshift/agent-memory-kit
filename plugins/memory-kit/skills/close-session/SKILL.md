@@ -13,6 +13,14 @@ announce briefly; anything promoted to rules/concepts needs the user's verbal "y
 Scan this session for observations worth keeping. Append each to `.claude/memory/MEMORY.md`
 as a ONE-LINE `[YYYY-MM-DD]`-prefixed entry. Short, scannable, no essays (long rationale
 belongs in a concept article, step 2).
+- **File each line under a TOPIC heading** of the patterns section (engineering, process,
+  infra, the domain…) — create the topic if none fits. Never open a heading named after the
+  session or the date (`### s66 (2026-09-25)`, `## Session 65 wrap`): the date lives in each
+  line's prefix, the session narrative lives in the handoff (step 4). The SessionStart hook
+  flags such headings.
+- **Don't capture what the always-loaded layer already says** (`CLAUDE.md`, rules without
+  `paths:`) or a number whose source of truth lives elsewhere (a price table, a config) —
+  point at the source instead of copying the value.
 
 ## Step 2 — Audit & promote (the valuable part)
 Read the date-tagged entries in MEMORY.md. Look for repetition: **did this pattern appear on
@@ -54,4 +62,5 @@ opening note). The SessionStart hook injects the newest handoff next time — th
 ## What NOT to do
 - Don't promote without the user's yes. Repetition makes a CANDIDATE, not a rule.
 - Don't stack "Prior session" paragraphs in the MEMORY header — replace it.
+- Don't group today's lines under a session heading — see Step 1.
 - Don't write a handoff longer than ~1 screen. It's a note, not a transcript.

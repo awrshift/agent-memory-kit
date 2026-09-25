@@ -42,6 +42,36 @@ const capBreaches = (content) => {
   return reasons
 }
 
+// Same session-block detector as hooks/session-start.py. JS `\b` is ASCII-only, hence the
+// explicit Unicode classes around the Cyrillic alternatives.
+const SESSION_TAG_RES = [
+  /\bs\d{1,3}\b/,
+  /\bsession[ -]?#?\d+/i,
+  /(?<![\p{L}\p{N}_])сесси[яиюей]\s?#?\d+/iu,
+]
+const DATED_HEADING_RE =
+  /^(?:(?:findings|notes|log|updates?|wrap(?:-?up)?|итоги|заметки)(?![\p{L}\p{N}_]))?[^\p{L}\p{N}_]*\d{4}-\d{2}-\d{2}/iu
+const CURRENT_STATE_RE = /^(?:current state|текущее состояние)(?![\p{L}\p{N}_])/iu
+
+const sessionBlockHeadings = (content) => {
+  const found = []
+  let inFence = false
+  content.split("\n").forEach((line, i) => {
+    if (line.trimStart().startsWith("```")) {
+      inFence = !inFence
+      return
+    }
+    const m = !inFence && line.match(/^#{2,4}\s+(.*)/)
+    if (!m) return
+    const text = m[1].trim()
+    if (CURRENT_STATE_RE.test(text)) return
+    const unbracketed = text.replace(/\([^)]*\)|\[[^\]]*\]/g, " ")
+    if (SESSION_TAG_RES.some((re) => re.test(unbracketed)) || DATED_HEADING_RE.test(text))
+      found.push(`L${i + 1}: ${line.trim().slice(0, 100)}`)
+  })
+  return found
+}
+
 const newestHandoff = (dir) => {
   let files
   try {
@@ -79,6 +109,14 @@ export const MemoryKitPlugin = async ({ directory }) => {
           `## ⚠ MEMORY DISCIPLINE TRIGGER\nMEMORY.md tripped ${breaches.length} of 3 caps:\n` +
             breaches.map((r) => `  - ${r}`).join("\n") +
             "\nRun the memory-audit skill BEFORE other work.",
+        )
+      const blocks = sessionBlockHeadings(memory)
+      if (blocks.length)
+        parts.push(
+          `## ⚠ Session-headed blocks in MEMORY.md\n${blocks.length} heading(s) name a session or a date instead of a topic:\n` +
+            blocks.slice(0, 5).map((b) => `  - ${b}`).join("\n") +
+            "\nDissolve them by topic at the next close-session (or memory-audit, mark `session-block`): " +
+            "a settled lesson → one line under its topic heading or a concept; the narrative → drop.",
         )
       let body = memory
       if (body.length > MEMORY_INJECT_CAP)

@@ -23,7 +23,8 @@ documented at `code.claude.com/docs`.
 ║  ──────────────────────────────────────────────────────────  ║
 ║  1. context/identity.md — the working agreement (plugin)     ║
 ║  2. Memory-discipline nudges — ONLY when they fire           ║
-║       (the three MEMORY.md caps + stale file references)     ║
+║       (the three MEMORY.md caps, session-headed blocks,      ║
+║        stale file references)                                ║
 ║  3. Session stats — MEMORY.md size vs caps,                  ║
 ║       projects/experiments overview, git state               ║
 ║  4. .claude/memory/MEMORY.md — THE HOT CACHE ITSELF          ║
@@ -324,6 +325,26 @@ The top of `MEMORY.md` (everything above the first `---`) is «current state of 
 sentences, **REPLACED** at every `/close-session`, never a stack of "previous session" paragraphs.
 Per-session detail belongs in the handoff, not the header. A header that accretes history is how a
 "current state" file silently becomes a chronicle nobody trusts.
+
+### Session-headed blocks, and the cap as a fill line (7.0.2)
+
+The same chronicle also grows BELOW the header, as blocks headed by a session or a date
+(`### s66 (2026-09-25) — …`, `## Session 65 wrap`, `## Findings [2026-05-04] — …`). The rule
+«never a chronicle» was in the close ritual all along; a count across 23 kit projects
+(2026-09-25) found such blocks in two of them, and a third had carried them until its audit
+that day. The SessionStart hook now flags them —
+a nudge, never a block: `##`–`####` headings whose session tag stands outside parentheses, or
+that open with a date. A tag in parentheses is provenance on a topic heading
+(`Engine track (s37, …)`), and the current-state header may name its session; both are left
+alone. Measured on those 23 files: 7 blocks flagged, 0 false flags. What stays unflagged is
+handoff-shaped content under a topic-like heading (`## Open for next session`) — the audit's
+`drop` mark, not the hook's business.
+
+The same count showed the byte cap acting as a fill line: one cache sat above 32 KB and five
+more within 10 % of it. An audit that stops «just under» is undone within days, so
+`/memory-kit:memory-audit` now plans to at most ~60 % of the byte cap and marks two more kinds
+of dead weight: an entry that restates the always-loaded layer (`restates-rule`) and a number
+copied from its source of truth (`point to SSOT`).
 
 ## The promotion flow (pattern → law)
 

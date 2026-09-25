@@ -1,4 +1,4 @@
-<!-- memory-kit protocol v7.0.1 — managed block; a newer kit version REPLACES everything down to the end marker -->
+<!-- memory-kit protocol v7.0.2 — managed block; a newer kit version REPLACES everything down to the end marker -->
 # Memory protocol (for any agent working in this repository)
 
 This repository keeps agent memory in plain files. Follow this protocol every session.
@@ -37,7 +37,8 @@ not create this session without asking the user.
 
 ## At session close
 
-1. Capture today's durable observations as dated lines in MEMORY.md.
+1. Capture durable observations as dated lines in MEMORY.md under topic headings
+   (never a session heading).
 2. A pattern on 3+ distinct dates is a promotion CANDIDATE — propose, ask.
 3. REPLACE the MEMORY.md header with current state (2–3 sentences; never stack history).
 4. Write `context/handoffs/<topic>-YYYY-MM-DD.md`: done · open · next · where things live.

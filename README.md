@@ -210,7 +210,8 @@ flowchart LR
 Four files, each answering a different question. The agent writes all of them, you only talk.
 Three size caps on the hot cache (180 lines / 32 KB / 3000 chars per line), checked every
 session, because line count alone lies while content densifies. A stale-reference detector
-checks that paths mentioned in memory still exist on disk.
+checks that paths mentioned in memory still exist on disk, and a heading named after a session
+or a date gets flagged — the chronicle belongs in the handoff, the lesson under its topic.
 
 ```
 .claude-plugin/marketplace.json   ← THE catalog: Claude Code, Codex and Copilot install from it

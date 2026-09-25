@@ -122,6 +122,45 @@ jobs:
             console.log('  ok');
           "
 
+      # 7.0.2: a heading named after a session or a date is flagged; provenance in parentheses,
+      # the current-state header, a "verified <date>" topic and a fenced `##` line are not.
+      # Python hook and OpenCode shim must agree line for line.
+      - name: Session-headed blocks flagged, look-alikes left alone (hook + shim)
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          open('/tmp/probe/.claude/memory/MEMORY.md', 'w').write(
+              '# Hot cache\n\n'
+              '## Current state (2026-01-01, end of session 4)\n'   # L3  header
+              '## Patterns\n'                                        # L4
+              '### s66 (2026-01-01) — a session block\n'             # L5  flagged
+              '### Engine track (s37, 2026-01-01)\n'                 # L6  provenance
+              '## Findings [2026-01-01] — a dated block\n'           # L7  flagged
+              '## Pricing (verified 2026-01-01)\n'                   # L8  topic
+              '```bash\n## s12 inside a fence\n```\n'                # L9-11
+              '- [2026-01-01] CANARY-CI\n'
+          )
+          PY
+          export CLAUDE_PROJECT_DIR=/tmp/probe
+          export CLAUDE_PLUGIN_ROOT="$PWD/plugins/memory-kit"
+          printf '{"session_id":"ci","source":"startup"}' \
+            | python3 "$CLAUDE_PLUGIN_ROOT/hooks/session-start.py" \
+            | python3 -c "import json,sys; print(json.load(sys.stdin)['hookSpecificOutput']['additionalContext'])" \
+            > /tmp/blocks.txt
+          [ "$(grep -oE '^  - L[0-9]+' /tmp/blocks.txt | tr -d ' -' | paste -sd, -)" = "L5,L7" ] \
+            || { echo "hook flagged the wrong headings"; grep -A8 'Session-headed' /tmp/blocks.txt; exit 1; }
+          node --input-type=module -e "
+            import path from 'node:path';
+            const mod = await import(path.resolve('.opencode/plugins/memory-kit.js'));
+            const hooks = await mod.default({ directory: '/tmp/probe' });
+            const out = { system: [] };
+            await hooks['experimental.chat.system.transform']({}, out);
+            const got = [...out.system.join('\n').matchAll(/^  - (L\d+):/gm)].map(m => m[1]).join(',');
+            if (got !== 'L5,L7') throw new Error('shim flagged ' + got);
+          "
+          printf '# Hot cache\n\n- [2026-01-01] CANARY-CI\n' > /tmp/probe/.claude/memory/MEMORY.md
+          echo "  ok"
+
       - name: Test guard still asks, and never blocks the TDD loop
         run: |
           set -euo pipefail

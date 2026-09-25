@@ -1,6 +1,6 @@
 ---
 created: 2026-07-17
-last-reviewed: 2026-07-17
+last-reviewed: 2026-09-25
 ---
 
 # Orchestrator fact-check — «a report is INPUT, never a source of record»
@@ -29,6 +29,18 @@ response. Proportional to stake.
 | «External state» (PRs, deploys) | A live CLI/API call; anything >7 days old is a hypothesis |
 | «Gate passed» | Re-run it yourself |
 | «Model/library still works like X» | Official source or one live probe — never model memory |
+| «The system does N / fails with X» from history | See the history-window rule below |
+
+## The history-window rule
+
+Accumulated history — a DB, logs, past runs, a ledger — mixes many builds and many days.
+
+- A number or an error pulled from it is stated **with its time window and the build/version
+  that produced it**: «41 of 120 articles failed (2026-09-20..25, engine builds 1.4.0–1.4.12)».
+- A present-tense claim about the CURRENT system («the engine fails on X», «billing is broken»)
+  is checked on current data only — filter to the latest build or reproduce it now.
+- **Date an error before describing it.** A three-day-old failure reported as live sends
+  everyone after a bug that may already be fixed.
 
 ## Adjudication (when reviewers/agents disagree)
 

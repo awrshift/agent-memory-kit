@@ -2,6 +2,55 @@
 
 All notable changes to Memory Kit are documented here. Breaking changes marked **BREAKING**.
 
+<a id="v702"></a>
+
+## [7.0.2] — 2026-09-25 — Lessons from a memory audit
+
+**BREAKING: none.** One new SessionStart nudge (never a block), skill text, one reference rule.
+Carried back from a memory audit of a long-running kit project (MEMORY.md 119 → 61 lines,
+30 → 10 KB) and a count over the 23 kit projects on the maintainer's machine (2026-09-25).
+
+### Added
+
+- **SessionStart flags session-headed blocks in MEMORY.md** — `hooks/session-start.py`, mirrored
+  in the OpenCode shim. The close ritual always said «never a chronicle»; two of 23 caches carried
+  blocks headed `### s66 (2026-09-25) — …`, `## Session 65 wrap`, `## Findings [date] — …` anyway.
+  A `##`–`####` heading is flagged when a session tag stands outside `( )`/`[ ]` or the heading
+  opens with a date; a tag in parentheses is provenance on a topic heading and the current-state
+  header may name its session. The nudge lists up to five headings with line numbers and runs on
+  `startup`/`clear`/`fork`/`resume`, like the cap nudge. Measured on the same files, against the
+  regex first proposed (`^#{2,4} .*(\bs[0-9]{1,3}\b|[Ss]ession[ -]?#?[0-9]+|сесси[яи] ?[0-9]+)`):
+
+  | File (2026-09-25) | Session blocks | Proposed regex | Shipped detector |
+  |---|---|---|---|
+  | 23 current caches | 7 (in two projects: 6 + 1) | 6 found · 1 missed (`## Findings [2026-05-04] — <topic>`) · 1 false (`## Current state (…, end of session 4)`) | 7 found · 0 missed · 0 false |
+  | a third project's cache before its audit (git history) | 3 (`### s64…s66`) | 3 found · 2 false (`### <topic> track (s37, …)`; `s48` inside a file name in a heading) | 3 found · 0 false |
+  | the same cache, an earlier version | 4 (`### s62…s65`) | 4 found · 2 false (same two) | 4 found · 0 false |
+
+  Left unflagged by design: handoff-shaped content under a topic-like heading
+  (`## Open for next session`, `## P2 next-session priorities`) — that is the audit's `drop`.
+- **`memory-audit` marks:** `session-block` (dissolve by topic: a settled lesson → a line under its
+  topic or a concept; the rest → drop), `restates-rule` (the entry repeats `CLAUDE.md`, an
+  always-loaded rule or a `reference/` file → drop, or one pointer line) and `point to SSOT`
+  (a price, count or version copied from its source of truth → pointer; `doc-governance` R1 said
+  so, the skill never applied it). In the audited project ~20 of 119 lines restated always-loaded
+  rules, and a copied model price outlived the model.
+- **`reference/orchestrator-fact-check.md` — the history-window rule:** a number or an error
+  pulled from accumulated history (a DB, logs, past runs) carries its time window and the build
+  that produced it; a present-tense claim is checked on current data; an error is dated before it
+  is described. The audit that prompted this read counts from a stand spanning five days and 13
+  engine builds as the current state, and reported a three-day-old billing error as live.
+
+### Changed
+
+- **`memory-audit` plans to ~60 % of the byte cap**, not to «just under». One cache sat above
+  32 KB and five more within 10 % of it: audits that stop at the line are undone within days.
+  A flagged session block alone is now reason enough to run the audit.
+- **`close-session` files each captured line under a topic heading,** never a session or date
+  heading, and does not capture what the always-loaded layer already says or a number whose source
+  of truth lives elsewhere. The T2 protocol block (`AGENTS-MEMORY-PROTOCOL.md`, still < 2.1 KB)
+  carries the topic-heading line for hosts without hooks.
+
 <a id="v701"></a>
 
 ## [7.0.1] — 2026-09-24 — Fixes carried back from a user-level fork

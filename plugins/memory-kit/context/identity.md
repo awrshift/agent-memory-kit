@@ -64,7 +64,8 @@ postmortem, written from the diff) · `code-sync` (specs reconciled against the 
 `tour`.
 
 **Depth, read on demand** from the plugin's `reference/` directory — free until you open it:
-`orchestrator-fact-check` (a report is INPUT, never a fact) · `review-loop` (the diff gate + the
+`orchestrator-fact-check` (a report is INPUT, never a fact; a number from history carries its
+time window and build) · `review-loop` (the diff gate + the
 findings-class registry) · `parallel-development` (fan-out, worktree isolation, one integrator) ·
 `doc-governance` (one SSOT per fact, the anti-drift rules) · `decisions-log` (the lean ledger) ·
 `capability-map-sweep` (the "the library already does this" defect class) ·

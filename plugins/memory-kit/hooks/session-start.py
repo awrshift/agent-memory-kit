@@ -57,6 +57,22 @@ MEMORY_LINE_CAP = int(os.environ.get("CMK_MEMORY_LINE_CAP", 180))
 MEMORY_BYTE_CAP = int(os.environ.get("CMK_MEMORY_BYTE_CAP", 32_768))  # 32 KiB
 MEMORY_MAX_LINE_CHARS = int(os.environ.get("CMK_MEMORY_MAXLINE_CAP", 3_000))
 
+# Session-headed blocks: a heading named after a session or a date is a chronicle stacking up in
+# the hot cache — the narrative belongs to the handoff, the lesson under a topic heading. A tag
+# inside ( ) or [ ] is provenance on a topic heading ("Engine track (s37, 2026-08-17)"), not a
+# session block; the current-state header may name its session. Measured 2026-09-25 over 23
+# kit projects: 7 blocks flagged, 0 false flags (the 7.0.2 changelog carries the table).
+SESSION_TAG_RE = re.compile(
+    r"(?-i:\bs\d{1,3}\b)|\bsession[ -]?#?\d+|(?<!\w)сесси[яиюей]\s?#?\d+", re.IGNORECASE
+)
+DATED_HEADING_RE = re.compile(
+    r"^(?:(?:findings|notes|log|updates?|wrap(?:-?up)?|итоги|заметки)\b)?\W*\d{4}-\d{2}-\d{2}",
+    re.IGNORECASE,
+)
+CURRENT_STATE_RE = re.compile(r"^(?:current state|текущее состояние)\b", re.IGNORECASE)
+BRACKETED_RE = re.compile(r"\([^)]*\)|\[[^\]]*\]")
+SESSION_BLOCK_LIST_MAX = 5
+
 MEMORY_INJECT_CAP = 40_000  # a cache at its 32 KB cap fits whole; a bloated one truncates loudly
 HANDOFF_INJECT_CAP = 6_000
 STATE_TTL_DAYS = 30
@@ -175,6 +191,49 @@ def maybe_caps_prompt(content: str | None) -> str:
         "Run `/memory-kit:memory-audit` BEFORE other work: it classifies every section, proposes a "
         "move plan for approval, promotes settled patterns to `knowledge/concepts/`, drops what "
         "already lives in a handoff, and replaces the header with fresh current-state lines.\n"
+    )
+
+
+def session_block_headings(content: str) -> list[tuple[int, str]]:
+    """(line number, heading) for every `##`–`####` heading named after a session or a date.
+
+    Fenced code is skipped — a `## ` line inside a shell block is not a heading.
+    """
+    found: list[tuple[int, str]] = []
+    in_fence = False
+    for num, line in enumerate(content.splitlines(), start=1):
+        if line.lstrip().startswith("```"):
+            in_fence = not in_fence
+            continue
+        heading = re.match(r"#{2,4}\s+(.*)", line)
+        if in_fence or not heading:
+            continue
+        text = heading.group(1).strip()
+        if CURRENT_STATE_RE.match(text):
+            continue
+        if SESSION_TAG_RE.search(BRACKETED_RE.sub(" ", text)) or DATED_HEADING_RE.match(text):
+            found.append((num, line.strip()))
+    return found
+
+
+def maybe_session_block_hint(content: str | None) -> str:
+    """Nudge, never block: close-session says «never a chronicle», and the files grew them anyway."""
+    if content is None:
+        return ""
+    found = session_block_headings(content)
+    if not found:
+        return ""
+    shown = "\n".join(
+        f"  - L{num}: `{text[:100]}{'…' if len(text) > 100 else ''}`"
+        for num, text in found[:SESSION_BLOCK_LIST_MAX]
+    )
+    more = f"\n  - …and {len(found) - SESSION_BLOCK_LIST_MAX} more" if len(found) > SESSION_BLOCK_LIST_MAX else ""
+    return (
+        "## ⚠ Session-headed blocks in MEMORY.md\n\n"
+        f"{len(found)} heading(s) name a session or a date instead of a topic:\n{shown}{more}\n\n"
+        "Dissolve them by topic at the next `/memory-kit:close-session` (or `/memory-kit:memory-audit`, "
+        "mark `session-block`): a settled lesson → one line under its topic heading or a concept "
+        "article; the session narrative → drop, the handoff already has it.\n"
     )
 
 
@@ -401,7 +460,11 @@ def build_context(source: str) -> str:
 
     # 2. Discipline nudges — the agent must see them before it starts working.
     if not restore:
-        for hint in (maybe_caps_prompt(content), maybe_stale_refs_hint()):
+        for hint in (
+            maybe_caps_prompt(content),
+            maybe_session_block_hint(content),
+            maybe_stale_refs_hint(),
+        ):
             add_raw(hint)
 
     # 3. Stats. The session counter counts sessions, not hook runs.
