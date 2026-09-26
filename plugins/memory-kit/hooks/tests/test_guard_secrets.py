@@ -44,6 +44,9 @@ for _var in ("CMK_SECRETS_GUARD", "CMK_GIT_GUARD", "CMK_ALLOW_TEST_EDITS"):
 
 # The spec's list first, then the neighbours of each mechanism.
 BLOCKED = [
+    "grep -rn foo .env",
+    "rg SECRET -- .env.local",
+    "grep -e x .env",
     "cat .env",
     "head -c 0 .env.local",
     "grep x .env",
@@ -90,6 +93,10 @@ ALLOWED = [
     "cat .env.example",
     "cd code/backend && ls",
     "grep -rn foo src",
+    "grep -rn '.env' src",
+    "rg -n --hidden .env.local docs",
+    "grep -rn -e .env src",
+    "find . -name .env -maxdepth 2",
     # the other exempt commands
     "ln -s ../.env .env",
     "mv .env .env.bak",

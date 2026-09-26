@@ -64,6 +64,8 @@ All notable changes to Memory Kit are documented here. Breaking changes marked *
 
 <a id="v711"></a>
 
+- The secrets guard skips SEARCH PATTERNS: the pattern word of grep/egrep/fgrep/rg/ag/ack (`grep -rn '.env' src`) and find's `-name/-path/-regex` value read nothing; the file operand (`grep x .env`) is still blocked.
+
 ## [7.1.1] — 2026-09-26 — rails nudge: exact-script allows are not broad
 
 **BREAKING: none.**

@@ -26,8 +26,8 @@ Opt-out: CMK_SECRETS_GUARD=off in the environment.
 Failure policy: fail OPEN on a parse error (an unbalanced quote is also a command the shell refuses).
 Known gaps: globs (`cat .e*`), heredoc bodies fed to an interpreter (`python3 - <<EOF`), script
 files, a copy read afterwards (`cp .env x && cat x`), tools outside the matcher (Grep, NotebookEdit).
-Known false positives: a secret NAME used as a non-path argument (`grep -rn '.env' src`,
-`find . -name .env`) — the word cannot be told from a path.
+Search patterns are not paths: the pattern word of grep/egrep/fgrep/rg/ag/ack (`grep -rn '.env' src`, `-e .env`) and
+the value of find's -name/-path/-regex are skipped. `grep x .env` (the FILE operand) is still blocked.
 Python 3.9+, stdlib only; never spawns a process.
 """
 
@@ -60,6 +60,38 @@ def _script_word(prev):
     return len(prev) > 1 and prev[0] == "-" and prev[1] != "-" and prev[-1] in "ce"
 
 
+SEARCHERS = {"grep", "egrep", "fgrep", "rg", "ag", "ack", "git-grep"}
+FIND_PATTERN_OPTS = {"-name", "-iname", "-path", "-ipath", "-wholename", "-iwholename", "-regex", "-iregex"}
+
+
+def _pattern_words(name, argv):
+    """Indices of words that are search PATTERNS, not paths: `grep -rn '.env' src` searches FOR the text,
+    `find . -name .env` matches names. A secret name there reads nothing (7.2.0: these were false positives)."""
+    skip = set()
+    if name in SEARCHERS:
+        pattern_given = False
+        k = 1
+        while k < len(argv):
+            w = argv[k]
+            if w in ("-e", "--regexp", "-f", "--file"):
+                if w in ("-e", "--regexp"):
+                    skip.add(k + 1)
+                    pattern_given = True
+                k += 2
+                continue
+            if w.startswith("--regexp="):
+                pattern_given = True
+            elif not w.startswith("-") and not pattern_given:
+                skip.add(k)
+                pattern_given = True
+            k += 1
+    elif name == "find":
+        for k, w in enumerate(argv[:-1]):
+            if w in FIND_PATTERN_OPTS:
+                skip.add(k + 1)
+    return skip
+
+
 def secret_in_command(command, cwd):
     """(command name, secret word) for the first blocked use, or None."""
     sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "lib"))
@@ -74,7 +106,10 @@ def secret_in_command(command, cwd):
             continue
         argv = [str(w) for w in call["argv"]]
         interpreter = bool(INTERPRETER_RE.match(name))
+        skip = _pattern_words(name, argv)
         for k, word in enumerate(argv):
+            if k in skip:
+                continue
             if is_secret(word):
                 return name, word
             if interpreter or (k > 0 and _script_word(argv[k - 1])):
