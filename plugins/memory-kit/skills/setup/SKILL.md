@@ -1,6 +1,6 @@
 ---
 name: setup
-description: Adopt the Memory Kit in THIS repository — scaffold the memory layers, decide how the kit coexists with Claude Code's native auto memory, and install safe permission rails. Use when the user says "/memory-kit:setup", "set up the memory kit", "adopt the kit here", "настрой кит", or when a session starts in a repo where the kit plugin is installed but no .claude/memory/MEMORY.md exists.
+description: Adopt the Memory Kit in THIS repository — scaffold the memory layers, decide how the kit coexists with Claude Code's native auto memory, and install safe permission rails (`/memory-kit:setup rails` re-runs only the rails step on an adopted repo). Use when the user says "/memory-kit:setup", "/memory-kit:setup rails", "set up the memory kit", "adopt the kit here", "настрой кит", or when a session starts in a repo where the kit plugin is installed but no .claude/memory/MEMORY.md exists.
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep
 ---
 
@@ -101,37 +101,70 @@ would rewrite the kit's `MEMORY.md` in its own index format, overwriting the dat
 
 Whichever is chosen, say plainly which system now owns the file.
 
-## Step 3 — permission rails
+## Step 3 — permission rails (v2)
+
+**`/memory-kit:setup rails`** (the argument `rails`, e.g. from the SessionStart «Rails:» line) runs
+THIS step alone on an already adopted repo: skip Steps 0–2 and 4–6, build the proposal below, show
+the diff of `.claude/settings.json`, merge on a yes and write `.claude/state/rails-v2`; on a no,
+write `.claude/state/rails-declined`. Either file silences the nudge. A full setup writes the same
+marker after this step. Headless: write nothing, report the proposal.
 
 The plugin cannot ship permissions (Claude Code only honours `agent` and `subagentStatusLine`
-from a plugin's `settings.json`), so propose this merge into the project's
-`.claude/settings.json` — and never widen an existing allowlist without saying so:
+from a plugin's `settings.json`) — the destructive git operations are already guarded by the
+kit's git-guard hook (force push, `reset --hard`, `clean -f`, `branch -D`, `checkout .`,
+`restore .`, `push --mirror`; opt-out `CMK_GIT_GUARD=off`). The rails cover the rest. Build the
+proposal from what is actually in this repo:
+
+1. **Env files that exist.** List the repo root: `.env`, `.env.local`, `.env.*.local`,
+   `.env.development`, `.env.production`, `.env.test`, `*.pem`. For each one PRESENT, a
+   `Read(./<name>)` and an `Edit(./<name>)` deny. Never `.env.example` / `.env.sample` — those
+   are meant to be read.
+2. **Ask before acting outside the repo:**
 
 ```json
 {
   "permissions": {
-    "deny": [
-      "Bash(git push --force:*)",
-      "Bash(git push -f:*)",
-      "Read(./.env)",
-      "Read(./.env.*)",
-      "Read(./**/*.pem)"
-    ],
+    "deny": ["Read(./.env)", "Edit(./.env)"],
     "ask": [
-      "Bash(git reset --hard:*)",
-      "Bash(git clean:*)",
-      "Bash(rm -rf:*)"
+      "Bash(gh pr create *)", "Bash(gh pr merge *)", "Bash(gh pr comment *)",
+      "Bash(gh pr edit *)", "Bash(gh pr close *)", "Bash(gh pr review *)",
+      "Bash(gh api -X *)", "Bash(gh api * -X *)", "Bash(gh api --method *)", "Bash(gh api * --method *)",
+      "Bash(docker * down *)", "Bash(docker * down)", "Bash(docker rm *)", "Bash(docker * rm *)",
+      "Bash(docker stop *)", "Bash(docker * stop *)", "Bash(docker kill *)", "Bash(docker * kill *)",
+      "Bash(docker * prune*)"
     ]
   }
 }
 ```
 
-State the rule out loud while you do it: **a permission entry is a speed bump for the agent,
-never a guard on a script.** Anything that must not happen belongs inside the script itself.
+   (the `deny` pair shown is for a repo whose root holds `.env`; one pair per file found.)
+3. **Drop the v1 prefix denies** `Bash(git push --force:*)` / `Bash(git push -f:*)` if present:
+   a prefix cannot express «this flag anywhere», and the hook covers them. Say so in the diff.
 
-Do NOT reproduce the v5 allowlist (`Bash(git *)`, `Bash(npm *)`, `Bash(node *)`,
-`Bash(python3 *)`). It read as a safety feature while auto-approving force-pushes, hard resets
-and arbitrary code execution through `node -e`.
+State the rules out loud while you do it:
+
+1. **A permission entry is a speed bump for the agent, never a guard on a script.** Anything that
+   must not happen belongs inside the script or a hook. And **no broad allow** for git, gh,
+   docker, curl or an interpreter (`Bash(git *)`, `Bash(node *)`, `Bash(python3 *)`, `Bash(*)`):
+   in auto mode NARROW allow rules resolve BEFORE the classifier (Claude Code docs,
+   auto-mode-config), so a broad one lets a destructive argument through unseen. The v5
+   allowlist did exactly that — force pushes, hard resets, `node -e` — while reading as safety.
+   A narrow allow names the EXACT script — `Bash(node scripts/foo.mjs *)`, never
+   `Bash(node scripts/*)` / `Bash(python3 scripts/*)`: a path wildcard lets the agent write a new
+   file into that folder and run it before the classifier sees it. The same for a runner whose
+   subcommand executes arbitrary code: not `Bash(npx wp-env run *)`, only `Bash(npx wp-env run cli wp *)`.
+   Point out broad allows already there; never remove the user's rules without a yes.
+2. **An env file that a stand or script needs is loaded INTO a process, never read by the agent.**
+   Preferred: a project launch script that loads it itself (`scripts/stand.sh`:
+   `set -a; . ./.env; set +a; exec node …`) plus ONE narrow allow `Bash(bash scripts/stand.sh *)` —
+   a narrow allow resolves before the classifier AND before Claude Code's built-in static check,
+   which blocks an inline `set -a` whatever the settings say. Fallback only: one `autoMode.allow`
+   sentence naming the file and the purpose.
+3. **Env backups live outside the repo** (a `.env.bak` at the root is one more file to deny).
+4. **Before adding `ask` rules, list the scripts that call `claude -p`** with gh or docker:
+   headless mode turns an `ask` into a deny, so those scripts would start failing.
+
+How to prove the rails afterwards: `${CLAUDE_PLUGIN_ROOT}/reference/harness-measurement.md` (M1).
 
 ## Step 4 — .gitignore
 

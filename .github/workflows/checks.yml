@@ -184,14 +184,13 @@ jobs:
           printf '# Hot cache\n\n- [2026-01-01] CANARY-CI\n' > /tmp/probe/.claude/memory/MEMORY.md
           echo "  ok"
 
-      - name: Test guard still asks, and never blocks the TDD loop
+      # 7.1: the hook suites run each hook through its EXACT hooks.json command string — the
+      # test guard (v2: asks only on a weakening edit), the git guard, the rails nudge, and the
+      # permission-probe runner (every `claude -p` must read </dev/null).
+      - name: Hook suites through the exact wiring
         run: |
           set -euo pipefail
-          probe() { printf '%s' "$1" | python3 plugins/memory-kit/hooks/protect-tests.py \
-                    | python3 -c "import json,sys; print(json.load(sys.stdin)['hookSpecificOutput']['permissionDecision'])"; }
-          mkdir -p /tmp/guard/tests && echo "x" > /tmp/guard/tests/test_existing.py
-          export CLAUDE_PROJECT_DIR=/tmp/guard
-          [ "$(probe '{"session_id":"ci","tool_name":"Edit","tool_input":{"file_path":"/tmp/guard/tests/test_existing.py"}}')" = ask ]
-          [ "$(probe '{"session_id":"ci","tool_name":"Write","tool_input":{"file_path":"/tmp/guard/tests/test_new.py"}}')" = allow ]
-          [ "$(probe '{"session_id":"ci","tool_name":"Edit","tool_input":{"file_path":"/tmp/guard/src/app.py"}}')" = allow ]
-          echo "  ok"
+          unset CMK_ALLOW_TEST_EDITS CMK_GIT_GUARD
+          for t in plugins/memory-kit/hooks/tests/test_*.py plugins/memory-kit/scripts/tests/test_*.py; do
+            echo "== $t"; python3 "$t"
+          done

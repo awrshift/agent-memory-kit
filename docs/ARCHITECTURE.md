@@ -493,15 +493,24 @@ before writing a plan. Defaults are a default; a working layout outranks them.
 
 ![](../.github/assets/06-hooks-skills-ten.png)
 
-Four hooks, declared in the plugin's `hooks/hooks.json` — nothing to wire in your settings:
+Five hooks, declared in the plugin's `hooks/hooks.json` — nothing to wire in your settings:
 
 - **session-start.py** — injects the working agreement, the nudges that fire, session stats, THE
   HOT CACHE ITSELF, the newest handoff and the knowledge index, with a profile per `source`
   (see the layer map). In a repository that never ran `/memory-kit:setup` it injects one pointer
   line and writes nothing — a plugin can be installed user-wide and must not scaffold uninvited.
-- **protect-tests.py** — PreToolUse(Edit|Write): asks before an EXISTING test file is edited
-  ("a failing test means the code is wrong"), always allows a new test and any test this session
-  created (the red→green loop), and honours `CMK_ALLOW_TEST_EDITS=1`.
+  Since 7.1 it may add one «Rails:» line (via `hooks/lib/rails.py`: three settings files read,
+  nothing spawned) when a root env file has no `Read` deny or an allow hands over a whole tool.
+- **protect-tests.py** — PreToolUse(Edit|Write): asks before an edit of an EXISTING test file that
+  can weaken it — an assertion/skip line changed or removed, a skip/only marker added, a Write whose
+  content fails the same rule against the file on disk ("a failing test means the code is wrong");
+  any hand edit of a `.snap` asks. Additions and renames pass silently; a new test and any test
+  this session created are never guarded (the red→green loop); `CMK_ALLOW_TEST_EDITS=1` opts out.
+- **guard-git.py** (7.1) — PreToolUse(Bash): blocks a real destructive git argv (force push,
+  `push --mirror`, `reset --hard`, `clean -f`, `branch -D`, `checkout .`, `restore .`), found by a
+  shell-aware parser (`hooks/lib/cmdparse.py`) so quoted text, heredocs and commit messages never
+  count. A permission rule is a prefix and cannot say «this flag anywhere»; this is why it is a hook.
+  Fails open on a parse error; opt-out `CMK_GIT_GUARD=off`.
 - **pre-compact.sh** — blocks compaction until MEMORY.md is BOTH fresh AND inside all three caps.
 - **session-end.sh** — SessionEnd timestamp logging.
 
@@ -514,6 +523,12 @@ the whole transcript each time to count exchanges — a cost that grows with the
 every turn, to re-state what PreCompact already enforces at the moment it matters.
 
 Hooks are invisible to the user. They just make sure state survives.
+
+**A gate is proven only through its exact wiring.** Each hook's tests (`hooks/tests/`) read the
+command string from `hooks.json` and run it through a shell with `CLAUDE_PLUGIN_ROOT` exported;
+`/memory-kit:system-audit` lens 5b (`scripts/gates.py`) does the same for every PreToolUse hook on
+the machine, and `reference/harness-measurement.md` holds the before/after probe set (permissions,
+context size, behaviour, hooks).
 
 **What the injection costs** (measured 2026-09-02 by running `session-start.py` and counting
 characters ÷ 4): a fresh install ~2.3k tokens, a working 6 KB cache with a handoff ~3.5k, and a

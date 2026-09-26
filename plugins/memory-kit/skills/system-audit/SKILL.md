@@ -50,7 +50,14 @@ For lens 4 (layer telemetry) also run the transcript profiler — it is the only
 python3 "${CLAUDE_PLUGIN_ROOT}/skills/system-audit/scripts/usage.py"
 ```
 
-It parses this project's session transcripts and writes `knowledge/usage-frequency.md`: which
+For lens 5b (gates actually hold) run the gate prober — it feeds a known-bad sample through every
+PreToolUse hook's exact wiring and says which tools are actually guarded:
+
+```bash
+python3 "${CLAUDE_PLUGIN_ROOT}/skills/system-audit/scripts/gates.py" "$PWD"
+```
+
+The profiler parses this project's session transcripts and writes `knowledge/usage-frequency.md`: which
 files, skills and tools were deliberately used (mechanical auto-loads and multi-edit bursts are
 filtered out), and which have zero reads in 30 days. No transcripts yet → it says so and exits.
 
@@ -74,7 +81,7 @@ Full briefs (what each lens checks, its evidence rules, its "n/a" condition):
 | 2 | **Knowledge layer** | SSOT hygiene: frontmatter, drift, the same fact restated stale in N places, contradictions between SSOTs. Standard: `reference/doc-governance.md`. |
 | 3 | **Operational layer** | Rules, agents, memory, the self-improvement loops (findings registry → promotion → drop): coherent and non-contradictory? Standards: `reference/review-loop.md`, `reference/parallel-development.md`. |
 | 4 | **Layer telemetry** | Which of those layers ever actually **fired**? Dead rules, never-invoked skills, agents defined once and never spawned. |
-| 5 | **Tools & infra** | Reproducibility (pinned deps, a documented run path), secrets, backup **and restore**, ownership of external state. |
+| 5 | **Tools & infra** | Reproducibility (pinned deps, a documented run path), secrets, backup **and restore**, ownership of external state — and **5b: gates actually hold** (every PreToolUse hook proven through its exact wiring, `scripts/gates.py`). |
 | 6 | **Domain gaps** | What a professional system *of this class* has and this one doesn't. The domain is named by the user or inferred; the lens brief lists gap-maps per common domain. |
 | 7 | **Anti-bloat (subtraction)** | What to DELETE: never-fired layers, duplicated facts, ceremony with no consumer, over-engineering for a scale that never came. |
 

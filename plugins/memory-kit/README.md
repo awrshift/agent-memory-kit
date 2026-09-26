@@ -23,10 +23,16 @@ claude plugin update memory-kit@memory-kit
   that fire, session stats and per-project spec flags (`assumed` · `building > 14 d`), **the hot
   cache itself**, the newest handoff and the knowledge index. Profile depends on `source`:
   `compact` gets back exactly what compaction dropped; `resume` gets only the nudges and stats.
+  One «Rails:» line appears while a root env file has no `Read` deny or an allow hands over a
+  whole tool (`Bash(git *)`, `Bash(*)`) — until `/memory-kit:setup rails` runs or you decline it.
 - **PreCompact** — blocks compaction until `MEMORY.md` is fresh and inside its three caps
   (180 lines / 32 KB / 3000 chars per line).
-- **PreToolUse(Edit|Write)** — asks before an existing test file is edited; never blocks the
-  red→green loop; `CMK_ALLOW_TEST_EDITS=1` opts out for a session.
+- **PreToolUse(Edit|Write)** — asks before an edit that can weaken an existing test (an assertion
+  line changed or removed, a `.skip`/`.only` added) and before any hand edit of a `.snap`; never
+  blocks the red→green loop; `CMK_ALLOW_TEST_EDITS=1` opts out for a session.
+- **PreToolUse(Bash)** — the git guard: blocks force push, `push --mirror`, `reset --hard`,
+  `clean -f`, `branch -D`, `checkout .`, `restore .` wherever the flag sits in a real git command
+  (never in quoted text or a commit message); `--force-with-lease` passes; `CMK_GIT_GUARD=off` opts out.
 - **SessionEnd** — timestamp logging.
 
 In a repository that never ran `/memory-kit:setup`, the hooks inject one pointer line and write
@@ -38,8 +44,8 @@ nothing.
 |---|---|
 | `close-session` | the end-of-session ritual: capture → audit for 3+-date repetition → promote on a yes → handoff |
 | `memory-audit` | cap-trip surgery on the hot cache, by an approved move plan |
-| `system-audit` | the periodic seven-lens sweep of the whole system, every finding evidence-backed — including the transcript profiler that answers "did this layer ever fire" |
-| `setup` · `tour` | adopt the kit here · walk through it on your own files |
+| `system-audit` | the periodic seven-lens sweep of the whole system, every finding evidence-backed — including the transcript profiler that answers "did this layer ever fire" and `gates.py`, which proves every PreToolUse hook through its exact wiring |
+| `setup` · `tour` | adopt the kit here (`setup rails`: only the permission rails, on an adopted repo) · walk through it on your own files |
 | `session-review` · `second-opinion` | adversarial review of a session · of one high-stakes decision |
 | `qa-sweep` | multi-lens agent QA of a running product (needs `projects/<name>/qa/README.md`, template in `reference/`), every finding and run record bound to the spec's `AC-n` |
 | `document` | the human record of a change — PR body · changelog entry · release note · postmortem — drafted only from `git diff` / `git log`, never from what the model remembers building |

@@ -44,6 +44,7 @@ EXPERIMENTS_DIR = PROJECT_DIR / "experiments"
 
 IDENTITY_FILE = PLUGIN_ROOT / "context" / "identity.md"
 STALE_REFS_SCRIPT = PLUGIN_ROOT / "hooks" / "lib" / "stale-refs.py"
+LIB_DIR = PLUGIN_ROOT / "hooks" / "lib"
 SESSION_FILE = STATE_DIR / "session_count"
 
 # Budget covers the whole injection. Raised 20k → 48k in v6 because the memory body now
@@ -161,7 +162,9 @@ def prune_state() -> None:
         return
     cutoff = time.time() - STATE_TTL_DAYS * 86400
     for path in STATE_DIR.iterdir():
-        if path.name in {".gitkeep", "session_count"} or not path.is_file():
+        # rails-v2 / rails-declined are decisions, not bookkeeping: pruning them would
+        # bring the rails nudge back 30 days after the user answered it.
+        if path.name in {".gitkeep", "session_count", "rails-v2", "rails-declined"} or not path.is_file():
             continue
         try:
             if path.stat().st_mtime < cutoff:
@@ -276,6 +279,20 @@ def maybe_stale_refs_hint() -> str:
         f"{detail}\n\n"
         "Verify each (renamed? moved? deleted?) and update or remove the entry.\n"
     )
+
+
+def maybe_rails_hint() -> str:
+    """One line when the permission rails look open (7.1). Read-only, no subprocess, never raises."""
+    try:
+        sys.dont_write_bytecode = True
+        if str(LIB_DIR) not in sys.path:
+            sys.path.insert(0, str(LIB_DIR))
+        import rails
+
+        line = rails.rails_line(PROJECT_DIR)
+    except Exception:  # noqa: BLE001 — a nudge must never break session start
+        return ""
+    return line + "\n" if line else ""
 
 
 def bump_session_counter() -> int:
@@ -445,7 +462,8 @@ def newest_handoff() -> Path | None:
 
 def build_context(source: str) -> str:
     if not is_adopted():
-        return adoption_pointer()
+        rails_hint = maybe_rails_hint()
+        return adoption_pointer() + (f"\n{rails_hint}" if rails_hint else "")
 
     prune_state()
     full = source in FULL_SOURCES
@@ -489,6 +507,7 @@ def build_context(source: str) -> str:
             maybe_caps_prompt(content),
             maybe_session_block_hint(content),
             maybe_stale_refs_hint(),
+            maybe_rails_hint(),
         ):
             add_raw(hint)
 

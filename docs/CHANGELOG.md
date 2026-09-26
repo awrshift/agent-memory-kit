@@ -2,6 +2,64 @@
 
 All notable changes to Memory Kit are documented here. Breaking changes marked **BREAKING**.
 
+<a id="v710"></a>
+
+## [7.1.0] — 2026-09-26 — Harness: a git guard, rails v2, gates proven through their wiring
+
+**BREAKING: none — but read «Behaviour change».** Carried over from a harness-hardening pass on a
+long-running kit project the same day, reviewed by a four-model board.
+
+### Behaviour change
+
+- **A new PreToolUse(Bash) hook sees every shell command** — `hooks/guard-git.py`. It exits 0 at
+  once unless the command text contains `git` (measured on the maintainer's Mac, 20 runs through
+  the exact wiring on a non-git command: median 33 ms on Python 3.14, 43 ms on the system 3.9),
+  and blocks (exit 2) only a real destructive git argv: force push (`--force`, `-f`, `+refspec`;
+  `--force-with-lease` / `--force-if-includes` alone pass), `push --mirror`, `reset --hard`,
+  `clean -f*`, `branch -D` / `-d -f`, `checkout .`, `restore .` on the worktree. Quoted text, heredoc
+  bodies, commit messages and `echo`/`grep` arguments never count; `timeout`, `nice`, `nohup`,
+  `sudo`, `xargs`, `env`, `bash -c`, `eval` are unwrapped; a directory the shell computes
+  (`cd "$(mktemp -d)" && git push -f`) no longer makes it fail open. Parse errors fail open.
+  **Opt-out: `CMK_GIT_GUARD=off`.** Known gaps: git aliases, shell functions, script files.
+- **SessionStart may add one «Rails:» line** when a root env file has no `Read` deny or an allow
+  rule hands over a whole tool (`Bash(*)`, `Bash(git *)`, `Bash(node *)`, …) or lets an
+  interpreter run any file of a folder (`Bash(node scripts/*)`). It reads the three
+  settings files only, spawns nothing, and goes quiet once `.claude/state/rails-v2` or
+  `rails-declined` exists (both are exempt from the 30-day state pruning).
+- **protect-tests v2 asks far less.** An existing test file asks only when an Edit's `old_string`
+  holds an assertion/skip line that `new_string` no longer has (`toBe(5)` → `toBe(6)`), when the
+  edit adds `.skip` / `.only` / `xit` / `@pytest.mark.skip` / `t.Skip` / `test.todo`, or when a
+  Write fails the same rule against the file on disk. Pure additions and renames outside
+  assertions pass silently. Any hand edit of a `.snap` asks.
+
+### Added
+
+- **`/memory-kit:setup rails`** — Step 3 rewritten (rails v2) and runnable alone on an adopted repo:
+  deny `Read`/`Edit` of the env files actually present (never `.env.example`), ask for `gh pr
+  create|merge|comment|edit|close|review`, `gh api -X/--method`, `docker … down|rm|stop|kill|prune`;
+  the v1 prefix force-push denies are dropped (a prefix cannot say «this flag anywhere»). The
+  step states why broad allows are unsafe in auto mode and how a stand loads an env file (a launch
+  script plus one narrow allow; `autoMode.allow` only as a fallback).
+- **system-audit lens 5b «gates actually hold»** + `skills/system-audit/scripts/gates.py`: every
+  PreToolUse hook in user, project, local settings and the plugin is fed a known-bad sample through
+  its exact command string (settings `env` applied); PASS only on exit 2 or `deny`/`ask`. Reports
+  python3 missing, broad allows, env files without a deny, and opt-out variables set for every session.
+- **`reference/harness-measurement.md`** — M1 permissions, M2 context size, M3 behaviour scenarios
+  with an evidence-printing grader, M4 hooks through the exact wiring; bars and fail branches
+  written before the run.
+- **`scripts/quiet.sh`** (noisy commands: full log to a file, summary on screen) and
+  **`scripts/permission-probes.sh`** (generic M1 runner over a `name|command` file; every
+  `claude -p` reads `</dev/null`, pinned by a test).
+- Tests through the exact wiring: `hooks/tests/test_guard_git.py`, `test_protect_tests.py`,
+  `test_session_start_rails.py`, `scripts/tests/test_permission_probes.py` (green on 3.9 and 3.14).
+- `identity.md`: two lines — permissions are speed bumps, hooks are gates; where `quiet.sh` is.
+
+### Changed
+
+- CI runs the four test files instead of the old inline protect-tests probe (which still expected
+  the pre-7.0.4 `allow`). `package.json`, the Cursor catalog and the AGENTS.md protocol marker,
+  left at 7.0.3 by 7.0.4, carry the version again.
+
 <a id="v704"></a>
 
 ## [7.0.4] — 2026-09-26 — protect-tests stops approving every edit

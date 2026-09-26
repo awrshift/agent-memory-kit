@@ -83,6 +83,37 @@ This is the lens that prevents an agent system from becoming an unread constitut
 
 **Output:** per tool/infra item — `what · how to run it · reproducible? · secret exposure · monitored?`.
 
+### Lens 5b — Gates actually hold (part of lens 5; the integrator runs the script)
+
+**Question:** does each guard stop what it claims to stop, through the wiring Claude Code actually runs?
+
+A permission rule is a speed bump; a hook is a gate — and a gate is proven only through its EXACT
+command string. A hook whose script is fine but whose wiring is broken (a wrong path, a missing
+`python3`, an `exit 1` instead of `exit 2`, an opt-out variable set in a settings `env` block) fails
+silently: exit 1 is a *non-blocking* error and the tool call goes through.
+
+```bash
+python3 "${CLAUDE_PLUGIN_ROOT}/skills/system-audit/scripts/gates.py" "$PWD"
+```
+
+- It pipes a known-bad sample through every PreToolUse hook in user, project and local settings and
+  the plugin's `hooks.json` (`git push --force origin x` for Bash; an Edit/Write that changes an
+  assertion line of an existing test file for Edit|Write), with `CLAUDE_PROJECT_DIR` /
+  `CLAUDE_PLUGIN_ROOT` and the settings' `env` exported. **PASS** only on exit 2 or a JSON
+  `permissionDecision` of `deny`/`ask`.
+- A per-hook FAIL can be legitimate (a hook guarding a different danger); the finding is the
+  per-tool line: `OPEN` = hooks exist and none stops the sample (🔴), no hook at all = only
+  permissions stand there (⚪ for a repo that pushes or has tests worth protecting).
+- It also reports: `python3` missing · broad allows (`Bash(git *)`, `Bash(*)` — they resolve before
+  the auto-mode classifier sees the command) · root env files with no `Read` deny · opt-out variables
+  (`CMK_ALLOW_TEST_EDITS`, `CMK_GIT_GUARD`) set for every session.
+- **Context size** is measured by you, not scripted: `claude -p --output-format json "Reply with
+  exactly: OK"` on a clean tree → input + cache-creation + cache-read tokens. Compare with the last
+  audit's number; a jump names the layer that grew.
+- The full probe set (headless permission probes, behaviour scenarios): `reference/harness-measurement.md`.
+
+**Output:** the script's table + per-tool verdicts, each 🔴/⚪ with the hook command as evidence.
+
 ---
 
 ## Lens 6 — Domain gaps (what a system of this class should have)

@@ -60,8 +60,8 @@ after you agree, with a date on every line so a stale fact looks stale.
 1. **Open.** The agent wakes up already knowing: your hot cache, the note the last session
    left, and whether memory is healthy. You just continue.
 2. **Work.** When something worth keeping comes up, the agent saves it as a dated one-liner and
-   says "saved". Before the context is compressed, it has to save state. Editing an existing
-   test needs your yes.
+   says "saved". Before the context is compressed, it has to save state. Weakening an existing
+   test needs your yes, and a force push or a hard reset is stopped before it runs.
 3. **Close.** Say you are done for the day. The close ritual audits instead of dumping logs:
    "you rejected em-dashes on four different dates, make it a rule?" You say yes, it writes,
    and leaves the note tomorrow's session opens with.
