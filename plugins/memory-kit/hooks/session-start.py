@@ -17,6 +17,12 @@ v6.0 (plugin form). What changed vs v5 and WHY:
    installed user-wide, so an unadopted repository gets a one-line pointer to
    /memory-kit:setup instead of files it never asked for.
 5. STATE IS PRUNED.  Per-session bookkeeping older than STATE_TTL_DAYS is deleted.
+6. PARTS (7.2).  Claude Code caps one hook's additionalContext at 10,000 characters; over it the
+   model gets a file path and a 2,000-char preview, so before 7.2 MEMORY.md never reached it.
+   hooks.json runs this script MAX_PARTS times with `--part N`; each run builds the same full text,
+   splits it at section boundaries into parts of <= PART_LIMIT and prints part N. Only part 1
+   writes (state pruning, the session counter); parts 2..N are read-only. No flag = the whole
+   text in one output (tests, tools, a manual look).
 
 Output: {"hookSpecificOutput": {"hookEventName": "SessionStart", "additionalContext": "..."}}
 """
@@ -46,6 +52,22 @@ IDENTITY_FILE = PLUGIN_ROOT / "context" / "identity.md"
 STALE_REFS_SCRIPT = PLUGIN_ROOT / "hooks" / "lib" / "stale-refs.py"
 LIB_DIR = PLUGIN_ROOT / "hooks" / "lib"
 SESSION_FILE = STATE_DIR / "session_count"
+# `<session_id>|<source>\t<n>`, written by part 1 BEFORE session_count: a parallel part 2..6 that reads
+# session_count first and this file second always derives the number part 1 printed.
+SESSION_LAST_FILE = STATE_DIR / "session_last"
+
+# The transport. Claude Code caps a hook's additionalContext at 10,000 chars (code.claude.com/docs/en/hooks);
+# a part is packed to PART_LIMIT, leaving room for the one-line wrapper and the overflow line.
+# MAX_PARTS must equal the number of `--part N` commands in hooks.json (a test holds them together).
+MAX_PARTS = 6
+PART_LIMIT = 9_500
+PART_HEADER = "Memory Kit context — part {n} of {k} (parts arrive in any order; together they are the whole).\n"
+OVERFLOW_LINE = (
+    "Memory Kit: context exceeds 6 parts — the rest is NOT loaded; read .claude/memory/MEMORY.md now "
+    "and run /memory-kit:memory-audit."
+)
+LINE_CUT_MARK = " […line continues in the next part]\n"
+SECTION_START_RE = re.compile(r"\n(?=##? )")
 
 # Budget covers the whole injection. Raised 20k → 48k in v6 because the memory body now
 # travels with it; the old number was sized for a stats-only payload.
@@ -164,7 +186,7 @@ def prune_state() -> None:
     for path in STATE_DIR.iterdir():
         # rails-v2 / rails-declined are decisions, not bookkeeping: pruning them would
         # bring the rails nudge back 30 days after the user answered it.
-        if path.name in {".gitkeep", "session_count", "rails-v2", "rails-declined"} or not path.is_file():
+        if path.name in {".gitkeep", "session_count", "session_last", "rails-v2", "rails-declined"} or not path.is_file():
             continue
         try:
             if path.stat().st_mtime < cutoff:
@@ -295,21 +317,48 @@ def maybe_rails_hint() -> str:
     return line + "\n" if line else ""
 
 
-def bump_session_counter() -> int:
-    """Counts real sessions only — v5 also counted resumes and post-compact restarts."""
-    STATE_DIR.mkdir(parents=True, exist_ok=True)
-    current = 0
-    if SESSION_FILE.exists():
-        try:
-            current = int(SESSION_FILE.read_text(encoding="utf-8").strip() or "0")
-        except (ValueError, OSError):
-            current = 0
-    new = current + 1
+def read_session_count() -> int:
     try:
-        SESSION_FILE.write_text(str(new), encoding="utf-8")
+        return int(SESSION_FILE.read_text(encoding="utf-8").strip() or "0")
+    except (ValueError, OSError):
+        return 0
+
+
+def write_atomic(path: Path, text: str) -> None:
+    """A parallel reader sees the old file or the new one, never a torn write."""
+    tmp = path.with_name(f".{path.name}.tmp")
+    try:
+        tmp.write_text(text, encoding="utf-8")
+        os.replace(tmp, path)
     except OSError:
         pass
+
+
+def bump_session_counter(session_key: str | None) -> int:
+    """Counts real sessions only — v5 also counted resumes and post-compact restarts. Part 1 only."""
+    STATE_DIR.mkdir(parents=True, exist_ok=True)
+    new = read_session_count() + 1
+    if session_key:
+        write_atomic(SESSION_LAST_FILE, f"{session_key}\t{new}")
+    write_atomic(SESSION_FILE, str(new))
     return new
+
+
+def peek_session_counter(session_key: str | None) -> int:
+    """The number part 1 prints, derived read-only by a part running in parallel with it.
+
+    Read order is the proof: session_count first, session_last second. Part 1 writes them in the
+    opposite order, so a session_last that is not ours yet means the count we read is the old one.
+    """
+    count = read_session_count()
+    if session_key:
+        try:
+            key, _, num = SESSION_LAST_FILE.read_text(encoding="utf-8").rpartition("\t")
+            if key == session_key:
+                return int(num)
+        except (ValueError, OSError):
+            pass
+    return count + 1
 
 
 def list_dirs(base: Path) -> list[Path]:
@@ -460,12 +509,14 @@ def newest_handoff() -> Path | None:
     return max(files, key=lambda p: p.stat().st_mtime)
 
 
-def build_context(source: str) -> str:
+def build_context(source: str, writer: bool = True, session_key: str | None = None) -> str:
+    """The whole injection. `writer=False` (parts 2..N) builds the same text without touching disk."""
     if not is_adopted():
         rails_hint = maybe_rails_hint()
         return adoption_pointer() + (f"\n{rails_hint}" if rails_hint else "")
 
-    prune_state()
+    if writer:
+        prune_state()
     full = source in FULL_SOURCES
     restore = source in RESTORE_SOURCES
 
@@ -514,7 +565,8 @@ def build_context(source: str) -> str:
 
     # 3. Stats. The session counter counts sessions, not hook runs.
     if not restore:
-        add_raw(build_stats(bump_session_counter() if full else None, content))
+        counter = bump_session_counter if writer else peek_session_counter
+        add_raw(build_stats(counter(session_key) if full else None, content))
 
     # 4. THE HOT CACHE ITSELF (the v5 bug: measured, never injected).
     if content is not None and (full or restore):
@@ -557,13 +609,109 @@ def build_context(source: str) -> str:
     return "\n---\n\n".join(parts).rstrip() + "\n"
 
 
+def units(text: str) -> int:
+    """Length as Claude Code counts it (a JS string: UTF-16 code units), not Python code points."""
+    return len(text.encode("utf-16-le")) // 2
+
+
+def split_lines(text: str) -> list[str]:
+    """Lines with their `\n` kept — only `\n` splits (str.splitlines also splits on \r, \x0c, …)."""
+    lines = text.split("\n")
+    out = [line + "\n" for line in lines[:-1]]
+    if lines[-1]:
+        out.append(lines[-1])
+    return out
+
+
+def cut_line(line: str, limit: int) -> list[str]:
+    """A single line over the limit: pieces that each end in LINE_CUT_MARK except the last."""
+    room = limit - units(LINE_CUT_MARK)
+    pieces: list[str] = []
+    start = used = 0
+    for i, ch in enumerate(line):
+        width = 2 if ord(ch) > 0xFFFF else 1
+        if used + width > room:
+            pieces.append(line[start:i] + LINE_CUT_MARK)
+            start, used = i, 0
+        used += width
+    pieces.append(line[start:])
+    return pieces
+
+
+def split_parts(text: str, limit: int = PART_LIMIT) -> list[str]:
+    """Pack the text into parts of <= limit at section boundaries (`# ` / `## ` lines).
+
+    A section over the limit breaks at line boundaries; a single line over it is cut with
+    LINE_CUT_MARK. Joined, the parts are the text (once the marks are removed).
+    """
+    bounds = [0, *(m.end() for m in SECTION_START_RE.finditer(text)), len(text)]
+    atoms: list[str] = []
+    for a, b in zip(bounds, bounds[1:]):
+        section = text[a:b]
+        if units(section) <= limit:
+            atoms.append(section)
+            continue
+        for line in split_lines(section):
+            atoms.extend([line] if units(line) <= limit else cut_line(line, limit))
+    parts: list[str] = []
+    current, size = "", 0
+    for atom in atoms:
+        width = units(atom)
+        if current and size + width > limit:
+            parts.append(current)
+            current, size = "", 0
+        current += atom
+        size += width
+    if current:
+        parts.append(current)
+    return parts
+
+
+def render_part(parts: list[str], n: int) -> str:
+    """Part n (1-based) with its wrapper line; "" past the last part or past MAX_PARTS."""
+    if n < 1 or n > len(parts) or n > MAX_PARTS:
+        return ""
+    body = parts[n - 1]
+    if n == MAX_PARTS and len(parts) > MAX_PARTS:
+        body = body.rstrip("\n") + "\n" + OVERFLOW_LINE + "\n"
+    return PART_HEADER.format(n=n, k=len(parts)) + body
+
+
+def part_arg(argv: list[str]) -> int | None:
+    """`--part N` / `--part=N`; None when absent. A malformed value is part 0 (prints nothing)."""
+    for i, arg in enumerate(argv):
+        value = None
+        if arg == "--part":
+            value = argv[i + 1] if i + 1 < len(argv) else ""
+        elif arg.startswith("--part="):
+            value = arg.split("=", 1)[1]
+        if value is not None:
+            try:
+                return int(value)
+            except ValueError:
+                return 0
+    return None
+
+
 def main() -> None:
+    part = part_arg(sys.argv[1:])
     payload = read_hook_input()
     source = str(payload.get("source") or "startup")
+    session_id = payload.get("session_id")
+    session_key = f"{session_id}|{source}" if isinstance(session_id, str) and session_id else None
+    if part is None:
+        text = build_context(source, True, session_key)
+    else:
+        if not 1 <= part <= MAX_PARTS:
+            return
+        # Only part 1 writes: the parts run in parallel, and parts 2..N must see what part 1 saw.
+        text = render_part(split_parts(build_context(source, part == 1, session_key)), part)
+        if not text:
+            return
     output = {
         "hookSpecificOutput": {
             "hookEventName": "SessionStart",
-            "additionalContext": build_context(source),
+            "additionalContext": text,
         }
     }
     json.dump(output, sys.stdout)

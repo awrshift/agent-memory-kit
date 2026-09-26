@@ -186,11 +186,12 @@ jobs:
 
       # 7.1: the hook suites run each hook through its EXACT hooks.json command string — the
       # test guard (v2: asks only on a weakening edit), the git guard, the rails nudge, and the
-      # permission-probe runner (every `claude -p` must read </dev/null).
+      # permission-probe runner (every `claude -p` must read </dev/null). 7.2: the secrets guard,
+      # and the SessionStart parts (six `--part N` runs in parallel, each under the 10,000-char cap).
       - name: Hook suites through the exact wiring
         run: |
           set -euo pipefail
-          unset CMK_ALLOW_TEST_EDITS CMK_GIT_GUARD
+          unset CMK_ALLOW_TEST_EDITS CMK_GIT_GUARD CMK_SECRETS_GUARD
           for t in plugins/memory-kit/hooks/tests/test_*.py plugins/memory-kit/scripts/tests/test_*.py; do
             echo "== $t"; python3 "$t"
           done

@@ -1,4 +1,4 @@
-"""Shell-command parser for the Memory Kit git guard (`hooks/guard-git.py`).
+"""Shell-command parser for the Memory Kit guards (`hooks/guard-git.py`, `hooks/guard-secrets.py`).
 
 Ported from a project-level guard (2026-09-26) with one policy change: a directory the shell would
 compute (`cd "$(mktemp -d)"`, `git -C $(pwd)`) resolves to None instead of raising — the dangers the
@@ -8,6 +8,11 @@ guard looks for are flag-shaped, so an unknown directory must never make it fail
     {"dir": abs dir after cd / -C, or None when computed at run time,
      "gopts": [-c/--git-dir/--work-tree opts], "env": {VAR: value},
      "sub": subcommand or None, "args": [Word, ...] after the subcommand}
+`commands(command, cwd)` (7.2) returns every simple command the shell would run, after the same
+unwrapping, as {"name": basename of argv[0], "argv": [Word, ...], "dir": ...}, plus one
+{"name": None, "argv": [], "redirects": [Word, ...]} per command that has file redirections
+(`< f`, `> f`, `2>> f`; heredoc and here-string bodies are not files). `bash -c` / `eval` yield the
+shell command itself AND the commands of its script.
 Handled: quotes (text inside quotes is never a command), `&&`/`||`/`;`/`|`/`&`/newlines, comments,
 heredocs (bodies skipped), `$(...)`/backticks/`<(...)` (recursed), redirections, `cd`/`pushd`,
 leading `VAR=x`, `command`, `env`, `exec`, `nohup`, `time`, `builtin`, `timeout`, `nice`, `sudo`,
@@ -66,9 +71,12 @@ def lex(s):
 
 
 def _parse(s, i, in_subst):
-    """Items: ('cmd', [Word]) | ('sub', items). Stops at an unmatched ')' when in_subst."""
+    """Items: ('cmd', [Word]) | ('sub', items) | ('redir', [Word]).
+
+    Stops at an unmatched ')' when in_subst.
+    """
     n = len(s)
-    items, words, subs, heredocs = [], [], [], []
+    items, words, subs, heredocs, redirs = [], [], [], [], []
     st = {"buf": [], "in_word": False, "dyn": False, "redirect": None}
     depth = 0
 
@@ -79,7 +87,10 @@ def _parse(s, i, in_subst):
         w.dynamic = st["dyn"]
         st.update(buf=[], in_word=False, dyn=False)
         red, st["redirect"] = st["redirect"], None
-        if red == "skip":
+        if red == "herestring":
+            return
+        if red == "file":
+            redirs.append(w)
             return
         if red == "heredoc":
             heredocs.append(str(w))
@@ -90,10 +101,13 @@ def _parse(s, i, in_subst):
         end_word()
         for sb in subs:
             items.append(("sub", sb))
+        if redirs:
+            items.append(("redir", list(redirs)))
         if words:
             items.append(("cmd", list(words)))
         del words[:]
         del subs[:]
+        del redirs[:]
 
     def add(text, dyn=False):
         st["buf"].append(text)
@@ -216,7 +230,7 @@ def _parse(s, i, in_subst):
                 continue
             if op == "<<" and j < n and s[j] == "-":
                 j += 1
-            st["redirect"] = "heredoc" if op == "<<" else "skip"
+            st["redirect"] = {"<<": "heredoc", "<<<": "herestring"}.get(op, "file")
             i = j
             continue
         add(c, c == "$" and is_var_start(i + 1))
@@ -253,17 +267,21 @@ def _resolve_dir(base, p):
     return os.path.normpath(os.path.join(base, p))
 
 
-def walk(items, state, out, depth=0):
+def walk(items, state, out, depth=0, everything=False):
+    """Collect git calls into `out` — or, with everything=True, every simple command (`commands`)."""
     if depth > MAX_DEPTH:
         raise ValueError("command nesting deeper than %d" % MAX_DEPTH)
     for kind, val in items:
         if kind == "sub":
-            walk(val, dict(state), out, depth + 1)
+            walk(val, dict(state), out, depth + 1, everything)
+        elif kind == "redir":
+            if everything:
+                out.append({"name": None, "argv": [], "dir": state["cwd"], "redirects": list(val)})
         else:
-            _simple(list(val), state, out, depth)
+            _simple(list(val), state, out, depth, everything)
 
 
-def _simple(words, state, out, depth):
+def _simple(words, state, out, depth, everything=False):
     env = {}
     cwd = state["cwd"]
     while words:
@@ -313,6 +331,8 @@ def _simple(words, state, out, depth):
     if not words:
         return
     base = os.path.basename(words[0])
+    if everything:
+        out.append({"name": base, "argv": list(words), "dir": cwd})
     if base in ("cd", "pushd"):
         args = [a for a in words[1:] if not (a.startswith("-") and a != "-")]
         if not args:
@@ -321,14 +341,14 @@ def _simple(words, state, out, depth):
             state["cwd"] = _resolve_dir(state["cwd"], args[0])
         return
     if base == "eval":
-        walk(lex(" ".join(words[1:])), state, out, depth + 1)
+        walk(lex(" ".join(words[1:])), state, out, depth + 1, everything)
         return
     if base in SHELLS:
         script = _shell_c_script(words[1:])
         if script is not None:
-            walk(lex(script), {"cwd": cwd}, out, depth + 1)
+            walk(lex(script), {"cwd": cwd}, out, depth + 1, everything)
         return
-    if base == "git":
+    if base == "git" and not everything:
         out.append(_git_call(words[1:], cwd, env))
 
 
@@ -385,4 +405,10 @@ def _git_call(args, cwd, env):
 def git_calls(command, cwd):
     out = []
     walk(lex(command), {"cwd": cwd}, out)
+    return out
+
+
+def commands(command, cwd):
+    out = []
+    walk(lex(command), {"cwd": cwd}, out, everything=True)
     return out
