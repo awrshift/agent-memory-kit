@@ -30,7 +30,7 @@ BROAD_ALLOW_RE = re.compile(r"^Bash(?:\((?:\*|(?:%s)(?: \*|:\*| ?\*))\))?$" % BR
 # An interpreter over a path wildcard (`Bash(node scripts/*)`, `Bash(python3 tools/*.py)`) is broad too:
 # the agent can write a new file into that folder and run it before the classifier sees it.
 INTERPRETERS = "node|python3?|bash|sh|zsh|deno|bun|ruby|perl|tsx|ts-node"
-PATH_WILDCARD_ALLOW_RE = re.compile(r"^Bash\((?:%s) +\S*/\S*\*" % INTERPRETERS)
+PATH_WILDCARD_ALLOW_RE = re.compile(r"^Bash\((?:%s) +[^\s:*]*/[^\s:]*\*" % INTERPRETERS)  # the * must sit INSIDE the path; `scripts/x.py:*` / `scripts/x.py *` are exact-script allows
 STATE_MARKERS = ("rails-v2", "rails-declined")
 
 

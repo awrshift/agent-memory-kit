@@ -105,12 +105,15 @@ class RailsNudge(unittest.TestCase):
 
     def test_interpreter_over_a_path_wildcard_is_broad(self):
         self.settings({"allow": ["Bash(node scripts/*)", "Bash(python3 tools/*.py)",
-                                 "Bash(bash scripts/stand.sh *)", "Bash(node scripts/build.mjs *)"]})
+                                 "Bash(bash scripts/stand.sh *)", "Bash(node scripts/build.mjs *)",
+                                 "Bash(python3 scripts/prod-ops.py:*)"]})
         line = self.rails()[0]
         self.assertIn("Bash(node scripts/*)", line)
         self.assertIn("Bash(python3 tools/*.py)", line)
         self.assertNotIn("stand.sh", line)
         self.assertNotIn("build.mjs", line)
+        # 7.1.1: the `:*` suffix of an exact-script allow is an argument wildcard, not a path one.
+        self.assertNotIn("prod-ops.py", line)
 
     def test_markers_silence(self):
         self.write(".env", "S=1\n")

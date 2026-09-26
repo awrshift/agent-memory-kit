@@ -2,6 +2,18 @@
 
 All notable changes to Memory Kit are documented here. Breaking changes marked **BREAKING**.
 
+<a id="v711"></a>
+
+## [7.1.1] — 2026-09-26 — rails nudge: exact-script allows are not broad
+
+**BREAKING: none.**
+
+### Fixed
+
+- The SessionStart rails nudge flagged `Bash(python3 scripts/x.py:*)` as an interpreter over a path wildcard: the
+  `:*` argument suffix matched as the path `*`. The `*` must now sit inside the path (`scripts/*`, `tools/*.py`).
+  Found on the first real repo it ran in; covered by `test_interpreter_over_a_path_wildcard_is_broad`.
+
 <a id="v710"></a>
 
 ## [7.1.0] — 2026-09-26 — Harness: a git guard, rails v2, gates proven through their wiring
