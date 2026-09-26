@@ -2,6 +2,66 @@
 
 All notable changes to Memory Kit are documented here. Breaking changes marked **BREAKING**.
 
+<a id="v720"></a>
+
+## [7.2.0] — 2026-09-26 — the hot cache actually reaches the model; a secrets guard
+
+**BREAKING: none — but read «Behaviour change».**
+
+### Fixed
+
+- **SessionStart never delivered MEMORY.md in a working repository.** Claude Code caps ONE hook's
+  `additionalContext` at 10,000 characters (code.claude.com/docs/en/hooks); over it the model gets
+  a file path and a preview of the first 2,000 characters — the start of the identity, no hot
+  cache, no handoff. The kit printed 26,183 – 34,263 characters on three working repositories.
+  Probe on one of them (`claude -p`, tools disallowed, «quote the `**Current state` line»):
+  7.1.1 answered `NOT IN CONTEXT` and reported a «32.2 KB … first ~2 KB» preview; 7.2.0 quoted
+  the line and saw all four parts (they arrived in the order 4, 2, 3, 1).
+- **The transport:** `hooks.json` now runs `session-start.py --part 1` … `--part 6` in parallel.
+  Each run builds the full text exactly as before, packs it into parts of ≤ 9,500 characters
+  (counted as UTF-16 units, as Claude Code counts) at `#` / `##` section boundaries — an
+  over-long section at line boundaries, an over-long single line cut with
+  `[…line continues in the next part]` — and prints its own part under
+  `Memory Kit context — part N of K (parts arrive in any order; together they are the whole).`
+  A part past K prints nothing. Over six parts, part 6 ends with «Memory Kit: context exceeds
+  6 parts — the rest is NOT loaded; read .claude/memory/MEMORY.md now and run
+  /memory-kit:memory-audit.» Every `source` profile keeps its content; only the transport changed.
+  Only part 1 writes (state pruning, the session counter); parts 2–6 are read-only. A new state
+  file, `.claude/state/session_last`, lets a part running in parallel with part 1 print the same
+  `session #N` (exempt from pruning). Without `--part` the script prints the whole text at once,
+  as before (CI, tests, a manual look).
+
+### Behaviour change
+
+- **Fresh sessions grow by roughly the size of MEMORY.md + the handoff + the index** — measured
+  2026-09-26: +6.5k to +8.5k tokens on three working repositories (26–34k characters, 3–4 parts;
+  `compact` 19–24k characters). Before 7.2 the model saw a 2 KB preview; the documented
+  «injection cost» numbers were what the hook printed, not what arrived.
+- **A new PreToolUse hook sees every Read, Edit, Write and Bash call** — `hooks/guard-secrets.py`
+  (median 20 ms on a non-secret command, 22 ms on a blocked one, through the exact wiring on the
+  maintainer's Mac). It blocks (exit 2) a Read/Edit/Write of a secret file and a shell command that
+  names one — in its argv, inside an inline script (`node -e`, `python3 -c`, a word after `-e`/`-c`,
+  any word of an interpreter call), or in a file redirection (`< .env`, `>> .env`); `$(…)`,
+  `bash -c`, `eval`, `sudo`, `env`, `xargs` are unwrapped by the git guard's parser. Secret names:
+  `.env`, `.env.local`, `.env.*.local`, `.env.development|production|test|staging`, `*.pem`,
+  `id_rsa*`, `*.p12` (case-insensitive); never `.env.example`, `.env.sample`, `.env.template`.
+  Commands that pass whatever their arguments: `source` / `.`, `cp` / `ln` / `mv`, `ls`,
+  `test` / `[` / `[[`, `git`, `rm`. Parse errors fail open. **Opt-out: `CMK_SECRETS_GUARD=off`.**
+  Why a hook: a `Read` deny rule on env files made Claude Code's static check ASK on `cd <dir> &&
+  ls` in a repository with nested worktrees, so that project dropped the deny. Headless probe in
+  that repository (no Read deny, kit 7.2 via `--plugin-dir`): `head -c 0 .env` → blocked by the
+  kit hook; `cd code/backend && ls src` → runs.
+  Known gaps: globs (`cat .e*`), heredoc bodies fed to an interpreter, script files, a copy read
+  afterwards (`cp .env x && cat x`), tools outside the matcher (Grep). Known false positives: a
+  secret NAME as a non-path argument (`grep -rn '.env' src`, `find . -name .env`).
+
+### Changed
+
+- `hooks/lib/cmdparse.py` gains `commands()` (every simple command, plus file-redirection targets);
+  `git_calls()` is unchanged (the git-guard suite is green on 3.9 and 3.14).
+- The kit repo's CLAUDE.md «verify injection» rule names the cap and the model-level probe; the
+  tour skill's hook count (stale since 7.1: «Four hooks») now says six.
+
 <a id="v711"></a>
 
 ## [7.1.1] — 2026-09-26 — rails nudge: exact-script allows are not broad

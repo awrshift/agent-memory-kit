@@ -493,7 +493,7 @@ before writing a plan. Defaults are a default; a working layout outranks them.
 
 ![](../.github/assets/06-hooks-skills-ten.png)
 
-Five hooks, declared in the plugin's `hooks/hooks.json` — nothing to wire in your settings:
+Six hooks, declared in the plugin's `hooks/hooks.json` — nothing to wire in your settings:
 
 - **session-start.py** — injects the working agreement, the nudges that fire, session stats, THE
   HOT CACHE ITSELF, the newest handoff and the knowledge index, with a profile per `source`
@@ -501,6 +501,17 @@ Five hooks, declared in the plugin's `hooks/hooks.json` — nothing to wire in y
   line and writes nothing — a plugin can be installed user-wide and must not scaffold uninvited.
   Since 7.1 it may add one «Rails:» line (via `hooks/lib/rails.py`: three settings files read,
   nothing spawned) when a root env file has no `Read` deny or an allow hands over a whole tool.
+  **Transport (7.2):** Claude Code caps ONE hook's `additionalContext` at 10,000 characters; over
+  it the model gets a file path and a 2,000-character preview, so before 7.2 the hot cache never
+  reached the model in a working repository (26–34k characters measured on three). `hooks.json`
+  therefore runs the script six times (`--part 1` … `--part 6`, in parallel); each run builds the
+  same full text, packs it into parts of ≤ 9,500 characters at `#`/`##` section boundaries (an
+  over-long section at line boundaries, an over-long line cut with a marker) and prints its own
+  part under a one-line «part N of K» header. Only part 1 writes (state pruning, the session
+  counter — `session_last` lets a parallel part print the same number); parts 2–6 are read-only.
+  More than six parts: part 6 ends with a line telling the agent to read MEMORY.md itself and run
+  `/memory-kit:memory-audit`. Without `--part` the script prints the whole text at once (tests, a
+  manual look).
 - **protect-tests.py** — PreToolUse(Edit|Write): asks before an edit of an EXISTING test file that
   can weaken it — an assertion/skip line changed or removed, a skip/only marker added, a Write whose
   content fails the same rule against the file on disk ("a failing test means the code is wrong");
@@ -511,6 +522,14 @@ Five hooks, declared in the plugin's `hooks/hooks.json` — nothing to wire in y
   shell-aware parser (`hooks/lib/cmdparse.py`) so quoted text, heredocs and commit messages never
   count. A permission rule is a prefix and cannot say «this flag anywhere»; this is why it is a hook.
   Fails open on a parse error; opt-out `CMK_GIT_GUARD=off`.
+- **guard-secrets.py** (7.2) — PreToolUse(Read|Edit|Write|Bash): blocks a Read/Edit/Write of a
+  secret file (`.env`, `.env.local`, `.env.*.local`, `.env.<development|production|test|staging>`,
+  `*.pem`, `id_rsa*`, `*.p12`; never `.env.example|sample|template`) and a shell command that names
+  one in its argv, an inline script (`node -e`, `python3 -c`) or a redirection — except `source` /
+  `.`, `cp` / `ln` / `mv`, `ls`, `test` / `[`, `git`, `rm`. Same parser as the git guard. Why a
+  hook: a `Read` deny rule on env files makes Claude Code's static check ASK on harmless `cd … &&
+  ls` in some repos, so projects dropped the deny; the hook gates reads without touching that
+  check. Fails open on a parse error; opt-out `CMK_SECRETS_GUARD=off`.
 - **pre-compact.sh** — blocks compaction until MEMORY.md is BOTH fresh AND inside all three caps.
 - **session-end.sh** — SessionEnd timestamp logging.
 
@@ -534,7 +553,10 @@ context size, behaviour, hooks).
 characters ÷ 4): a fresh install ~2.3k tokens, a working 6 KB cache with a handoff ~3.5k, and a
 hard ceiling of ~12k when the cache sits at all three caps and the handoff at its 6 KB inject
 cap. Skill and agent descriptions add ~1.8k on every host that loads them. The caps are what
-make the ceiling a number instead of a trend. For comparison, Claude Code's own auto memory
+make the ceiling a number instead of a trend. **Correction (7.2):** on Claude Code those numbers
+were what the hook PRINTED, not what the model received — anything over 10,000 characters arrived
+as a 2 KB preview until the 7.2 split. Measured 2026-09-26 on three working repositories: 26,183 –
+34,263 characters (≈ 6.5–8.5k tokens) now actually reach the model, in 3–4 parts. For comparison, Claude Code's own auto memory
 loads the first 200 lines or 25 KB of its index at every start (its docs, read 2026-09-02).
 
 ## Platform tiers (beyond Claude Code)

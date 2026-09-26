@@ -25,6 +25,8 @@ claude plugin update memory-kit@memory-kit
   `compact` gets back exactly what compaction dropped; `resume` gets only the nudges and stats.
   One «Rails:» line appears while a root env file has no `Read` deny or an allow hands over a
   whole tool (`Bash(git *)`, `Bash(*)`) — until `/memory-kit:setup rails` runs or you decline it.
+  Since 7.2 it runs as six parts (`--part 1..6`), each under Claude Code's 10,000-character cap on
+  one hook's context — above the cap the model saw only a 2 KB preview, i.e. no hot cache.
 - **PreCompact** — blocks compaction until `MEMORY.md` is fresh and inside its three caps
   (180 lines / 32 KB / 3000 chars per line).
 - **PreToolUse(Edit|Write)** — asks before an edit that can weaken an existing test (an assertion
@@ -33,6 +35,11 @@ claude plugin update memory-kit@memory-kit
 - **PreToolUse(Bash)** — the git guard: blocks force push, `push --mirror`, `reset --hard`,
   `clean -f`, `branch -D`, `checkout .`, `restore .` wherever the flag sits in a real git command
   (never in quoted text or a commit message); `--force-with-lease` passes; `CMK_GIT_GUARD=off` opts out.
+- **PreToolUse(Read|Edit|Write|Bash)** — the secrets guard (7.2): blocks reading or writing
+  `.env`, `.env.local`, `.env.*.local`, `.env.production` (and development/test/staging), `*.pem`,
+  `id_rsa*`, `*.p12` — by the file tools or by a shell command, inline script or redirection;
+  `source` / `.`, `cp`/`ln`/`mv`, `ls`, `test`, `git`, `rm` pass, and `.env.example` is never
+  secret; `CMK_SECRETS_GUARD=off` opts out.
 - **SessionEnd** — timestamp logging.
 
 In a repository that never ran `/memory-kit:setup`, the hooks inject one pointer line and write

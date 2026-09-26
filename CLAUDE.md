@@ -23,6 +23,11 @@ This repo is a **Claude Code plugin marketplace**, not a memory workspace. The p
   experiment in a separate worktree with `claude --plugin-dir <worktree>/plugins/memory-kit`.
 - **Verify injection by looking at the context, not the code.** v5 claimed for a year that the
   hot cache was always loaded while the hook only measured it. Run the hook and read its output.
+  And mind the transport: Claude Code caps ONE hook's `additionalContext` at 10,000 characters —
+  over it the model gets a file path and a 2,000-char preview, so a hook can print the hot cache
+  and the model still never see it (true of every kit repo until 7.2). Each `--part N` output must
+  stay ≤ 10,000; the proof is a model-level probe (`claude -p` with tools disallowed, asked to
+  quote a MEMORY.md line), not the hook's stdout.
 
 ## Before committing a change to hooks or skills
 
