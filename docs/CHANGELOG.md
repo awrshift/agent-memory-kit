@@ -2,6 +2,22 @@
 
 All notable changes to Memory Kit are documented here. Breaking changes marked **BREAKING**.
 
+<a id="v704"></a>
+
+## [7.0.4] — 2026-09-26 — protect-tests stops approving every edit
+
+**BREAKING: none — a security fix; edits prompt again where your permission mode says they should.**
+
+### Fixed
+
+- **`protect-tests.py` no longer auto-approves Edit/Write.** Since v6 the hook answered
+  `permissionDecision: "allow"` whenever it had no objection — every non-test file, every new test file,
+  and every file at all under `CMK_ALLOW_TEST_EDITS=1`. `"allow"` skips the permission prompt, so in
+  default mode the kit silently approved every edit in every repo it was enabled in. Found by a headless
+  probe (`claude -p --permission-mode default --setting-sources project`): with the plugin the edit went
+  through with 0 denials, without it the edit was denied; with this fix it is denied again. The hook now
+  exits 0 with no output when it has no opinion and still answers `"ask"` on an existing test file.
+
 <a id="v703"></a>
 
 ## [7.0.3] — 2026-09-25 — Spec flags see repos in their own shape; the shim's handoff fix

@@ -14,8 +14,8 @@ real use:
 The rule it enforces is unchanged and is the point of the hook: a failing test means the CODE
 is wrong, not the test.
 
-Output: {"hookSpecificOutput": {"hookEventName": "PreToolUse",
-                                "permissionDecision": "ask"|"allow",
+Output: nothing (no opinion — the normal permission flow decides) or {"hookSpecificOutput": {"hookEventName": "PreToolUse",
+                                "permissionDecision": "ask",
                                 "permissionDecisionReason": "..."}}
 """
 
@@ -42,7 +42,9 @@ EXEMPT_SUFFIXES = {".md", ".txt", ".json", ".yaml", ".yml", ".csv", ".snap", ".f
 
 
 def allow() -> None:
-    print(json.dumps({"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "allow"}}))
+    # No opinion = exit 0 with NO output. A `permissionDecision: "allow"` here would skip the user's
+    # permission prompt for every non-test Edit/Write (v6.0-7.0.3 did exactly that: in default mode the
+    # kit silently auto-approved all edits — found 2026-09-26 by a headless probe).
     sys.exit(0)
 
 
