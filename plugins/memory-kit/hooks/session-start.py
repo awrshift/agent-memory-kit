@@ -499,7 +499,8 @@ def build_context(source: str) -> str:
     # 1. The working agreement. A plugin cannot ship CLAUDE.md, so it travels here —
     #    and this is exactly the layer compaction drops, hence also on `compact`.
     if full or restore:
-        add_raw(read_file_safe(IDENTITY_FILE))
+        # The agent's shell does not expand ${CLAUDE_PLUGIN_ROOT}: hand it the real path.
+        add_raw(read_file_safe(IDENTITY_FILE).replace("${CLAUDE_PLUGIN_ROOT}", str(PLUGIN_ROOT)))
 
     # 2. Discipline nudges — the agent must see them before it starts working.
     if not restore:
