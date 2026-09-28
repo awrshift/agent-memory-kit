@@ -71,7 +71,7 @@ findings-class registry) · `parallel-development` (fan-out, worktree isolation,
 `capability-map-sweep` (the "the library already does this" defect class) ·
 `project-extensions` (when a repeated workflow earns a project skill / hook / agent, and what
 each costs when idle). Delegating to
-subagents? `templates/rules/orchestration.md` is the five always-loaded invariants — copy it into
+subagents? `templates/rules/orchestration.md` is the seven always-loaded invariants — copy it into
 `.claude/rules/` (a plugin cannot ship rules; `/memory-kit:setup` offers this).
 Permissions are speed bumps; hooks are gates, and a gate is proven only through its exact wiring (`reference/harness-measurement.md`).
 Noisy commands: `bash ${CLAUDE_PLUGIN_ROOT}/scripts/quiet.sh <cmd>`.

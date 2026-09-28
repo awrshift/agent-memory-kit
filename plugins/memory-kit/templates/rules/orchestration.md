@@ -19,6 +19,11 @@
 5. **A failing test means the CODE is wrong**, not the test.
 6. **Never count reviewer votes — adjudicate on merits.** One dissenter with a file:line beats
    three abstract agreements; a repo-reading reviewer outranks a brief-only one on code facts.
+7. **Resume a subagent only for a short follow-up on the same work.** Its context only grows —
+   a resumed agent carries its whole history into every step (one executor reached 288k tokens on
+   an 8-branch review round). A new task, another branch set, or any follow-up once its report
+   shows ≳ 150k tokens → a FRESH agent with a brief that points at files. Slice big jobs so one
+   run stays well under that.
 
 Deeper procedure: `orchestrator-fact-check` (acceptance layers + claim→check table),
 `parallel-development` (fan-out defaults, stop-conditions), `review-loop` (diff gate + findings

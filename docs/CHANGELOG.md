@@ -2,6 +2,27 @@
 
 All notable changes to Memory Kit are documented here. Breaking changes marked **BREAKING**.
 
+<a id="v721"></a>
+
+## [7.2.1] — 2026-09-28 — orchestration: resume vs fresh subagent
+
+**BREAKING: none.** Template text only; nothing runs differently until a repo copies the rule.
+
+### Added
+
+- **`templates/rules/orchestration.md` invariant 7 — resume a subagent only for a short follow-up
+  on the same work.** A resumed agent (`SendMessage`) carries its whole history into every step, so
+  its context only grows: on a working repository one executor reached 288k tokens on an 8-branch
+  review round and 320k after two follow-ups. A new task, another branch set, or any follow-up once
+  the agent's report shows ≳ 150k tokens goes to a fresh agent with a brief that points at files;
+  big jobs are sliced so one run stays under that. Repos that already copied the template add the
+  line by hand (`/memory-kit:setup` offers the file only on adoption).
+
+### Fixed
+
+- `context/identity.md` and the `setup` skill called the template «five invariants»; it held six
+  before this release and seven now.
+
 <a id="v720"></a>
 
 ## [7.2.0] — 2026-09-26 — the hot cache actually reaches the model; a secrets guard

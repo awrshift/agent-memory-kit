@@ -188,7 +188,7 @@ The plugin also carries a builder's toolkit. None of it costs context until invo
 already available — the only thing that needs a decision is the always-loaded rule:
 
 - **Building with subagents?** Offer to copy `${CLAUDE_PLUGIN_ROOT}/templates/rules/orchestration.md`
-  into `.claude/rules/`. Five invariants, always loaded, ~20 lines — that is the entire cost.
+  into `.claude/rules/`. Seven invariants, always loaded, ~30 lines — that is the entire cost.
   The agents (`executor`, `recon`, `idea-validator`) and `/memory-kit:session-review` +
   `/memory-kit:second-opinion` work without it; the rule is what makes the discipline binding.
 - **Other agents also work in this repo (Codex, Cursor, Copilot — anything that auto-loads
