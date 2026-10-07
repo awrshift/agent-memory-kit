@@ -531,7 +531,7 @@ Six hooks, declared in the plugin's `hooks/hooks.json` — nothing to wire in yo
   ls` in some repos, so projects dropped the deny; the hook gates reads without touching that
   check. Fails open on a parse error; opt-out `CMK_SECRETS_GUARD=off`.
 - **pre-compact.sh** — blocks compaction until MEMORY.md is BOTH fresh AND inside all three caps.
-- **session-end.sh** — SessionEnd timestamp logging.
+- **session-end.sh** — SessionEnd timestamp logging, adopted repositories only (7.2.2).
 
 Beside them sits **stale-refs.py** (`hooks/lib/`), which the session-start hook runs to check that
 file paths mentioned in CLAUDE.md + MEMORY.md still exist on disk — a stale belief that looks

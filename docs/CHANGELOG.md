@@ -2,6 +2,35 @@
 
 All notable changes to Memory Kit are documented here. Breaking changes marked **BREAKING**.
 
+<a id="v722"></a>
+
+## [7.2.2] — 2026-10-07 — SessionEnd writes nothing in an unadopted repo; directory-ready README
+
+**BREAKING: none.**
+
+### Fixed
+
+- **`session-end.sh` created `.claude/state/session-end.log` in every repository**, adopted or
+  not — the one hook that skipped the adoption test session-start and pre-compact already run.
+  With a user-wide install, every repo you opened got a `.claude/state/` folder it never asked
+  for, while the plugin README said the hooks "write nothing" there. It now exits first unless
+  `.claude/memory/MEMORY.md` or `context/handoffs/` exists.
+- `package.json` and the `AGENTS.md` protocol marker carried 7.2.0 through the 7.2.1 release
+  (CI on main was red from 62b8685 until the follow-up commit).
+
+### Changed
+
+- **Plugin README: a «What it reads, writes and sends» section** — no network calls, what
+  `system-audit` reads (`~/.claude/projects/` transcripts, settings files), what `/memory-kit:setup`
+  writes into `.claude/settings.json` and only after a yes, and where hooks run (Claude Code and
+  Cowork load them; Claude chat loads skills only). Written for Anthropic's plugin directory,
+  whose security scan looks for undisclosed behaviour; the directory shows this README as the
+  listing.
+- Plugin README images use absolute URLs: the installed plugin and the directory listing get
+  only the plugin folder, so `../../.github/assets/` never resolved there.
+- Repository: `SECURITY.md`, GitHub Actions pinned to commit SHAs, Dependabot for
+  github-actions.
+
 <a id="v721"></a>
 
 ## [7.2.1] — 2026-09-28 — orchestration: resume vs fresh subagent
