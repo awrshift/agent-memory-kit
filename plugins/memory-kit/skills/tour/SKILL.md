@@ -1,7 +1,7 @@
 ---
 name: tour
 description: Interactive walkthrough of the Memory Kit system using the user's actual project files. Use when the user says "/memory-kit:tour", "give me a tour", "покажи как это работает", or right after /memory-kit:setup.
-allowed-tools: Read, Glob, Grep, Bash
+allowed-tools: Read, Glob, Grep
 model: sonnet
 ---
 

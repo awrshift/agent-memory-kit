@@ -42,7 +42,7 @@ A skill — the body loads only when invoked, so depth is cheap here:
 name: <name>
 description: <what it does + the phrasings that should trigger it. This line is the
   ONLY part always in context — write it for a router, not for a human.>
-allowed-tools: Read, Write, Edit, Bash
+allowed-tools: Read, Write, Edit   # pre-approved, not a limit; a bare Bash pre-approves every command — scope it: Bash(python3 scripts/x.py *)
 ---
 
 # /<name> — <one line>

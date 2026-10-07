@@ -1,7 +1,7 @@
 ---
 name: close-session
 description: End-of-session ritual — audit today's patterns against accumulated memory, propose promotions, refresh MEMORY.md, and write the session handoff. Use when the user says "/memory-kit:close-session", "закрой сессию", "закрываем", "we're done for today", "wrap up".
-allowed-tools: Read, Write, Edit, Grep, Glob, Bash
+allowed-tools: Read, Write, Edit, Grep, Glob
 ---
 
 # /close-session — the end-of-session ritual

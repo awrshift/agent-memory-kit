@@ -1,7 +1,7 @@
 ---
 name: setup
 description: Adopt the Memory Kit in THIS repository — scaffold the memory layers, decide how the kit coexists with Claude Code's native auto memory, and install safe permission rails (`/memory-kit:setup rails` re-runs only the rails step on an adopted repo). Use when the user says "/memory-kit:setup", "/memory-kit:setup rails", "set up the memory kit", "adopt the kit here", "настрой кит", or when a session starts in a repo where the kit plugin is installed but no .claude/memory/MEMORY.md exists.
-allowed-tools: Read, Write, Edit, Bash, Glob, Grep
+allowed-tools: Read, Write, Edit, Glob, Grep
 ---
 
 # /memory-kit:setup — adopt the kit in an existing repository

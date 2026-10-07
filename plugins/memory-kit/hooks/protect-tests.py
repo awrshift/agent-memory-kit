@@ -60,8 +60,8 @@ SKIP_RE = re.compile(
 )
 
 
-def allow() -> None:
-    # No opinion = exit 0 with NO output. A `permissionDecision: "allow"` here would skip the user's
+def no_opinion() -> None:
+    # No opinion = exit 0 with NO output. An approving permissionDecision here would skip the user's
     # permission prompt for every non-test Edit/Write (v6.0-7.0.3 did exactly that: in default mode the
     # kit silently auto-approved all edits — found 2026-09-26 by a headless probe).
     sys.exit(0)
@@ -119,18 +119,18 @@ def weakening(old: str, new: str) -> str:
 
 def main() -> None:
     if os.environ.get("CMK_ALLOW_TEST_EDITS") == "1":
-        allow()
+        no_opinion()
 
     try:
         payload = json.loads(sys.stdin.read() or "{}")
     except (json.JSONDecodeError, ValueError):
-        allow()
+        no_opinion()
         return
 
     tool_input = payload.get("tool_input") or {}
     file_path = str(tool_input.get("file_path") or "")
     if not file_path:
-        allow()
+        no_opinion()
 
     suffix = Path(file_path).suffix.lower()
     if suffix == ".snap":
@@ -140,9 +140,9 @@ def main() -> None:
             "confirm only if this edit is deliberate. Set CMK_ALLOW_TEST_EDITS=1 for a whole session of test work."
         )
     if suffix in EXEMPT_SUFFIXES:
-        allow()
+        no_opinion()
     if not TEST_PATH_RE.search(file_path):
-        allow()
+        no_opinion()
 
     project_dir = Path(os.environ.get("CLAUDE_PROJECT_DIR", Path.cwd()))
     session_id = re.sub(r"[^A-Za-z0-9_-]", "", str(payload.get("session_id") or "unknown")) or "unknown"
@@ -150,9 +150,9 @@ def main() -> None:
     # A new test file, or one this session authored: the red→green loop, always allowed.
     if not Path(file_path).exists():
         remember_created(project_dir, session_id, file_path)
-        allow()
+        no_opinion()
     if session_created_file(project_dir, session_id, file_path):
-        allow()
+        no_opinion()
 
     # v2: an existing test file asks only when the change can weaken what it proves.
     tool = payload.get("tool_name")
@@ -167,7 +167,7 @@ def main() -> None:
     else:
         reason = weakening(str(tool_input.get("old_string") or ""), str(tool_input.get("new_string") or ""))
     if not reason:
-        allow()
+        no_opinion()
 
     ask(
         f"{file_path} is an existing test file and {reason}. A failing test usually means the CODE "

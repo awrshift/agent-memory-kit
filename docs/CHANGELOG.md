@@ -2,6 +2,33 @@
 
 All notable changes to Memory Kit are documented here. Breaking changes marked **BREAKING**.
 
+<a id="v723"></a>
+
+## [7.2.3] — 2026-10-08 — no skill pre-approves Bash; a plugin icon
+
+**BREAKING: none — but read «Behaviour change».**
+
+### Behaviour change
+
+- **Six skills no longer pre-approve `Bash`** (`close-session`, `code-sync`, `document`,
+  `memory-audit`, `setup`, `tour`). `allowed-tools` is a pre-approval, not a limit: a bare `Bash`
+  there ran ANY shell command without a prompt while the skill was active — the broad allow the
+  kit's own permission rails tell users never to keep. The skills still run their commands; each
+  one now goes through your normal permission mode (a prompt in default mode, the classifier in
+  auto mode). Anthropic's plugin directory validator holds a plugin with this grant for review.
+  The `project-extensions` skill template drops `Bash` the same way and says how to scope it.
+
+### Added
+
+- `.claude-plugin/icon.png` — the four-layer stack from the banner, 1024 px; the directory takes
+  the listing icon from it once, at the first submission.
+
+### Changed
+
+- `protect-tests.py`: the no-opinion exit is named `no_opinion()`, not `allow()`. Behaviour is
+  unchanged — the hook never returns an approving decision — but the directory's static check read
+  the old name as a hook that grants permission.
+
 <a id="v722"></a>
 
 ## [7.2.2] — 2026-10-07 — SessionEnd writes nothing in an unadopted repo; directory-ready README

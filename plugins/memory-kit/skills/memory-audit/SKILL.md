@@ -1,7 +1,7 @@
 ---
 name: memory-audit
 description: Audit MEMORY.md against the memory discipline — oversized sections, settled multi-session patterns that belong in knowledge/concepts/, session-headed chronicle blocks, restated rules, copied numbers, stale entries. Produces a move plan as a table for approval, then executes the approved moves atomically. Use when the SessionStart hook reports a tripped cap or session-headed blocks, when PreCompact blocks on an oversized cache, or when the user says "/memory-kit:memory-audit", "audit memory", "проверь память", "почисти память". Refuses only when no cap is tripped, no session block is flagged AND no settled-pattern candidate exists.
-allowed-tools: Read, Write, Edit, Grep, Glob, Bash
+allowed-tools: Read, Write, Edit, Grep, Glob
 ---
 
 # Memory audit — the surgical one-file pass
