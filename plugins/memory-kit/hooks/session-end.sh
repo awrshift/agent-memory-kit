@@ -18,6 +18,13 @@ fi
 
 PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$PWD}"
 STATE_DIR="$PROJECT_DIR/.claude/state"
+
+# Not a Memory Kit repository → write nothing (a user-wide install must not scaffold
+# .claude/state/ into a repo that never asked; same test as session-start and pre-compact).
+if [[ ! -f "$PROJECT_DIR/.claude/memory/MEMORY.md" && ! -d "$PROJECT_DIR/context/handoffs" ]]; then
+    exit 0
+fi
+
 mkdir -p "$STATE_DIR"
 LOG_FILE="$STATE_DIR/session-end.log"
 

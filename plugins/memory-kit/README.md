@@ -40,10 +40,28 @@ claude plugin update memory-kit@memory-kit
   `id_rsa*`, `*.p12` — by the file tools or by a shell command, inline script or redirection;
   `source` / `.`, `cp`/`ln`/`mv`, `ls`, `test`, `git`, `rm` pass, and `.env.example` is never
   secret; `CMK_SECRETS_GUARD=off` opts out.
-- **SessionEnd** — timestamp logging.
+- **SessionEnd** — appends one timestamp line to `.claude/state/session-end.log`.
 
 In a repository that never ran `/memory-kit:setup`, the hooks inject one pointer line and write
 nothing.
+
+## What it reads, writes and sends
+
+- **Network: none.** No server, no telemetry, no package downloads: no hook or script in this
+  folder opens a connection. Every one is readable Python or shell, standard library only.
+- **Reads** the memory files of the repository you work in (below), and the `.claude/settings.json`
+  files the rails nudge and `system-audit` inspect. `system-audit` also reads this repository's
+  Claude Code session transcripts in `~/.claude/projects/` to count which layers actually fired;
+  the report stays in the conversation.
+- **Writes** only in an adopted repository: the memory state below and `.claude/state/` (session
+  counter, logs). `/memory-kit:setup` writes into `.claude/settings.json` only after you approve
+  the diff it shows: `"autoMemoryEnabled": false` if you choose kit-owned memory, and the
+  permission rails — `Read`/`Edit` deny rules for root `.env` files and, where you agree, a
+  narrow allow naming one exact script; never a broad allow, and never removing your rules.
+- **Blocks**, through the guards above; each guard names its opt-out variable.
+- **Where hooks run:** Claude Code and Cowork load them; Cursor CLI runs the SessionStart hook;
+  OpenCode uses its own shim. Claude chat loads only the skills (no hooks, no agents), so there is
+  no automatic injection there.
 
 ## Skills
 
@@ -61,8 +79,8 @@ nothing.
 Agents: `executor` (builds to a spec file in a worktree) · `recon` (read-only facts) ·
 `idea-validator` (isolated critic) · `qa` (one adversarial lens on the running app).
 
-![](../../.github/assets/07-orchestrated-work-spec.png)
-![](../../.github/assets/09-agent-qa-projects.png)
+![Orchestrated work: a spec, executors, one integrator](https://raw.githubusercontent.com/awrshift/agent-memory-kit/main/.github/assets/07-orchestrated-work-spec.png)
+![Agent QA and per-project documents](https://raw.githubusercontent.com/awrshift/agent-memory-kit/main/.github/assets/09-agent-qa-projects.png)
 
 ## Beyond Claude Code
 
