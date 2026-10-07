@@ -7,7 +7,7 @@ description: >
   edits only. Use when the user says "/memory-kit:code-sync", "sync the docs", "sync specs with
   code", "синхронизируй доки с кодом", "что устарело в спеках", or right after merging an
   executor branch.
-allowed-tools: Read, Edit, Grep, Glob, Bash
+allowed-tools: Read, Edit, Grep, Glob
 ---
 
 # /code-sync — documents reconciled against the repository
