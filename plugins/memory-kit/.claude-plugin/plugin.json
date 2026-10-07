@@ -9,6 +9,10 @@
   },
   "homepage": "https://github.com/awrshift/agent-memory-kit",
   "repository": "https://github.com/awrshift/agent-memory-kit",
+  "documentationUrl": "https://github.com/awrshift/agent-memory-kit/blob/main/docs/ARCHITECTURE.md",
+  "supportUrl": "https://github.com/awrshift/agent-memory-kit/issues",
+  "privacyPolicyUrl": "https://github.com/awrshift/agent-memory-kit/blob/main/PRIVACY.md",
+  "termsOfServiceUrl": "https://github.com/awrshift/agent-memory-kit/blob/main/LICENSE",
   "license": "MIT",
   "keywords": [
     "memory",
