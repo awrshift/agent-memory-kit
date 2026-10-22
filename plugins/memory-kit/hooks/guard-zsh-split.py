@@ -18,8 +18,10 @@ Positive signal only (a block costs one retry):
   then uses UNQUOTED where splitting is expected:
     a `for … in` list · `set [--] …` · and, for a value with whitespace outside `$(…)`, the command
     position or any argument.
+  Assignments in one command run left to right: `x="a b" y=$(printf %s $x)` — the substitution sees x.
   Not flagged: quoted uses ("$NAME"), `${=NAME}` / `$=NAME`, arrays `NAME=(…)` and `${NAME[@]}`,
   `$NAME[…]`, variables this command does not assign (shell state does not persist between Bash calls),
+  a prefix assignment `NAME=v cmd` (it sets NAME for cmd only: `MSG="a b" git commit; ls $MSG` is not it),
   heredoc bodies, single-quoted text, arithmetic `$((…))`, the value of an assignment (`b=$a` never
   splits), a redirection target (one word in zsh; bash refuses it as an ambiguous redirect), words
   passed to echo / print / eval / [ / [[ / test (joining them changes nothing).
@@ -37,8 +39,9 @@ Runs in every repo, adopted or not (like the git guard): it protects the user's 
 
 Contract: JSON on stdin ({"tool_name", "tool_input": {"command"}}); exit 0 = no opinion; exit 2 + reason
 on stderr = block. Parser: `lib/cmdparse.py` (`lex`). Failure policy: a lexing problem (an unbalanced
-quote, nesting deeper than cmdparse.MAX_DEPTH) is no opinion — the shell refuses that command too; any
-other internal error answers `permissionDecision: "ask"` naming the guard and the error, exit 0.
+quote or substitution) is no opinion — the shell refuses that command too; nesting deeper than
+cmdparse.MAX_DEPTH (`cmdparse.NestingError`, a command the shell WOULD run) and any other internal error
+answer `permissionDecision: "ask"` naming the guard and the error, exit 0 (7.3 r2).
 Probed live on zsh 5.9 (2026-10-22): `set -- $a` → 1 argument, `${=a}` / `$=a` → 2; `$U:<l>x` eats `:<l>`
 for exactly the letters above and leaves b d f literal; `> $out` writes one file `a b.log`.
 Known gap: a scalar copied from another (`b=$a`) is not tracked. Python 3.9+, stdlib only.
@@ -144,20 +147,38 @@ def _uses(word, kinds):
             yield name, kinds[name]
 
 
-def _command(words, kinds, mods, hits):
+def _subs(pending, kinds, mods, hits, depth):
+    for kind, val in pending:
+        if kind == "sub":  # arithmetic: no word splitting, no history modifiers
+            _walk(val, kinds, mods, hits, depth + 1)
+
+
+def _command(words, kinds, mods, hits, pending, depth):
+    """One simple command; `pending` = its substitutions, in source order (the lexer emits them first)."""
     for w in words:
         _modifiers(w, mods)
     k = 0
     while k < len(words) and words[k] in LEADING and _unquoted(words[k], 0, len(words[k])):
         k += 1
+    first = k
     while k < len(words) and _assignment(words[k]):
-        name, kind = _assignment(words[k])
-        kinds[name] = kind
         k += 1
-    if k == len(words):
-        argv0 = None
-    else:
-        argv0 = words[k]
+    if k == len(words):  # assignments only: they set shell variables, left to right
+        matched = sum(words[i].count(cmdparse.SUBST) for i in range(first, k)) == len(pending)
+        if not matched:  # substitutions that cannot be matched to their words: walked first, as written
+            _subs(pending, kinds, mods, hits, depth)
+        queue = list(pending) if matched else []
+        for i in range(first, k):
+            n = words[i].count(cmdparse.SUBST) if matched else 0
+            _subs(queue[:n], kinds, mods, hits, depth)  # a `$(…)` in a value sees the assignments before it
+            del queue[:n]
+            name, kind = _assignment(words[i])
+            kinds[name] = kind
+        return
+    _subs(pending, kinds, mods, hits, depth)
+    # `NAME=v cmd`: a prefix assignment sets NAME in cmd's environment only — not for later commands, and not
+    # for this command's own words (they expand before it applies). Not tracked.
+    argv0 = words[k]
     loop_var = None
     if argv0 == "for" and len(words) > k + 2 and words[k + 2] == "in" and re.fullmatch(NAME, words[k + 1]):
         loop_var = str(words[k + 1])
@@ -191,17 +212,20 @@ def _command(words, kinds, mods, hits):
 
 def _walk(items, kinds, mods, hits, depth=0):
     if depth > cmdparse.MAX_DEPTH:
-        raise ValueError("command nesting deeper than %d" % cmdparse.MAX_DEPTH)
+        raise cmdparse.NestingError("command nesting deeper than %d" % cmdparse.MAX_DEPTH)
+    pending = []  # substitutions waiting for the command they belong to
     for kind, val in items:
-        if kind == "arith":
-            continue  # arithmetic: no word splitting, no history modifiers
-        if kind == "sub":
-            _walk(val, kinds, mods, hits, depth + 1)
+        if kind in ("sub", "arith"):
+            pending.append((kind, val))
         elif kind == "redir":
+            _subs(pending, kinds, mods, hits, depth)
+            pending = []
             for w in val:  # a redirection target is one word in zsh (bash: «ambiguous redirect»)
                 _modifiers(w, mods)
         else:
-            _command(val, kinds, mods, hits)
+            _command(val, kinds, mods, hits, pending, depth)
+            pending = []
+    _subs(pending, kinds, mods, hits, depth)
 
 
 def check(command):
@@ -265,7 +289,9 @@ def main():
             return 0
         try:
             hits = check(command)
-        except ValueError:
+        except ValueError as error:
+            if isinstance(error, cmdparse.NestingError):
+                raise  # a command the shell WOULD run, not checked: ask (below), like the other guards
             return 0  # a lexing problem: the shell would refuse this command too
     except Exception as error:  # noqa: BLE001 — a guard bug must surface, never pass silently
         return _ask(error)

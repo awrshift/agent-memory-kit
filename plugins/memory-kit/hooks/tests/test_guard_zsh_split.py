@@ -291,6 +291,34 @@ class HookTest(unittest.TestCase):
                 else:  # recursion past the limit → ask; anything else must still be an answer
                     self.assertEqual(r.returncode, 0, label)
 
+    # ------------------------------------------------------------ R2-7 / R2-8 (v7.3 r2)
+
+    def test_a_prefix_assignment_does_not_outlive_its_command(self):
+        """`NAME=v cmd` sets NAME in cmd's environment only: a later `$NAME` is not this command's value."""
+        for cmd in ('MSG="a b" git commit -q; ls $MSG',
+                    'FLAGS="--a --b" make; ./deploy.sh $FLAGS',
+                    'X="a b" Y=1 env | grep X; set -- $X'):
+            with self.subTest(cmd=cmd):
+                self.assert_silent(cmd)
+                self.assertEqual(G.check(cmd), [])
+
+    def test_a_substitution_in_an_assignment_sees_the_assignments_before_it(self):
+        """`x="a b" y=$(printf %s $x)`: zsh assigns left to right, so the substitution sees the multi-word x."""
+        for cmd in ('x="a b"; y=$(printf %s $x)',
+                    'x="a b" y=$(printf %s $x)',
+                    'x="a b" y="$(printf %s $x)" z=1'):
+            with self.subTest(cmd=cmd):
+                self.assert_blocked(cmd)
+        # the order still matters: a substitution BEFORE the assignment sees the old (unset) value
+        self.assert_silent('y=$(printf %s $x) x="a b"')
+
+    def test_nesting_past_the_parser_depth_asks(self):
+        """R2-8: nesting deeper than cmdparse.MAX_DEPTH is a command the shell WOULD run — ask, like the other
+        guards (before r2: a ValueError read as a lexing problem → silent pass)."""
+        depth = G.cmdparse.MAX_DEPTH + 2
+        cmd = 'a="x y"; echo ' + "$(echo " * depth + "$a" + ")" * depth
+        self.assert_ask(run_hook(cmd), "NestingError", "nesting")
+
     @unittest.skipUnless(WIRED, "hooks.json entry not added yet (owned by slice S1; the integrator adds it)")
     def test_wired(self):
         self.assertIn('"${CLAUDE_PLUGIN_ROOT}/hooks/guard-zsh-split.py"', WIRED)
