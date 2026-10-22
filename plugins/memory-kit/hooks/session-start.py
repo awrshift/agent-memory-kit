@@ -142,6 +142,7 @@ ROOT_PLANS_DIR = PROJECT_DIR / "docs" / "plans"
 HOT_MEMORY_TARGETS = ["CLAUDE.md", ".claude/memory/MEMORY.md"]
 
 FULL_SOURCES = {"startup", "clear", "fork"}
+LEGACY_HOOK_SOURCES = {"startup", "clear"}
 RESTORE_SOURCES = {"compact"}
 
 
@@ -349,6 +350,21 @@ def maybe_rails_hint() -> str:
     except Exception:  # noqa: BLE001 — a nudge must never break session start
         return ""
     return line + "\n" if line else ""
+
+
+def maybe_legacy_hooks_hint(source: str) -> str:
+    """Project hooks that copy the kit's (they fire twice) — startup / clear only (7.3, lib/legacy_hooks.py)."""
+    if source not in LEGACY_HOOK_SOURCES:
+        return ""
+    try:
+        sys.dont_write_bytecode = True
+        if str(LIB_DIR) not in sys.path:
+            sys.path.insert(0, str(LIB_DIR))
+        import legacy_hooks
+
+        return legacy_hooks.legacy_hooks_hint(PROJECT_DIR)
+    except Exception:  # noqa: BLE001 — a nudge must never break session start
+        return ""
 
 
 def read_session_count() -> int:
@@ -652,6 +668,7 @@ def build_context(source: str, writer: bool = True, session_key: str | None = No
             maybe_session_block_hint(content),
             maybe_stale_refs_hint(),
             maybe_rails_hint(),
+            maybe_legacy_hooks_hint(source),
         ):
             add_raw(hint)
 
