@@ -1,0 +1,16 @@
+A wide 16:9 diagram. Style: dark charcoal-navy background, neon glowing rounded boxes with soft outer glow, bold sans-serif headings, monospace for file names. Every string below must appear exactly as written, spelled exactly, and no other text may appear.
+
+Top center: big bold white title "One operator, many projects". Under it a grey sub-line: "Install the plugin per folder — memory keeps every engagement scoped."
+
+Middle row: two boxes side by side with a grey "×" between them.
+- left box, teal glow: heading "ONE OPERATOR", line "you + the working discipline"
+- right box, grey glow: heading "THE PLUGIN", monospace line "one install → new folder"
+
+Six small grey down-arrows lead to a row of six equal boxes, each with a colored heading and two monospace lines "own MEMORY.md" / "own rules":
+"MARKETING" (green), "SALES" (blue), "LEAD GEN" (indigo), "BIZ ANALYSIS" (purple), "R&D" (pink), "DEV TEAM" (orange).
+
+Below them a wide pink-outlined box: pink bold line "Same discipline everywhere — separate memory per project", white line "each folder accumulates its own patterns, knowledge and rules · nothing leaks between clients".
+
+Footer, small grey: "Built for operators & consultants running many clients. New client = one install in Claude Code."
+
+Spelling check: operator, engagement, discipline, ANALYSIS, accumulates, consultants, Claude Code.

@@ -1,6 +1,6 @@
 # Privacy
 
-Memory Kit collects nothing. It has no server, no account, no analytics and no telemetry, and no
+Claude Memory Kit collects nothing. It has no server, no account, no analytics and no telemetry, and no
 hook or script in the plugin opens a network connection.
 
 - **What it stores:** the memory you approve — `MEMORY.md`, handoffs, knowledge articles, rules —

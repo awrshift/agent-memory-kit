@@ -1,7 +1,7 @@
-# memory-kit (plugin)
+# Claude Memory Kit (`memory-kit` plugin)
 
-Built-in memory decides what to remember. This one asks. Persistent memory for your agent as
-plain files in a folder you already have.
+Built-in memory decides what to remember. This one asks. Persistent memory for Claude Code as
+plain files in a folder you already have. An independent project, not made or endorsed by Anthropic.
 
 ```shell
 /plugin marketplace add awrshift/agent-memory-kit
@@ -66,9 +66,6 @@ nothing.
   permission rails — `Read`/`Edit` deny rules for root `.env` files and, where you agree, a
   narrow allow naming one exact script; never a broad allow, and never removing your rules.
 - **Blocks**, through the guards above; each guard names its opt-out variable.
-- **Where hooks run:** Claude Code and Cowork load them; Cursor CLI runs the SessionStart hook;
-  OpenCode uses its own shim. Claude chat loads only the skills (no hooks, no agents), so there is
-  no automatic injection there.
 
 ## Skills
 
@@ -88,30 +85,6 @@ Agents: `executor` (builds to a spec file in a worktree) · `recon` (read-only f
 
 ![Orchestrated work: a spec, executors, one integrator](https://raw.githubusercontent.com/awrshift/agent-memory-kit/main/.github/assets/07-orchestrated-work-v73.png)
 ![Agent QA and per-project documents](https://raw.githubusercontent.com/awrshift/agent-memory-kit/main/.github/assets/09-agent-qa-projects.png)
-
-## Beyond Claude Code
-
-The memory state is plain markdown, so any agent can follow it — with less enforcement.
-Verified on Codex CLI (0.151.0): the same manifests install directly —
-
-```shell
-codex plugin marketplace add awrshift/agent-memory-kit
-codex plugin add memory-kit@memory-kit
-```
-
-— and all 10 skills appear as `memory-kit:<name>`. GitHub Copilot CLI installs the same way
-(`copilot plugin marketplace add` + `copilot plugin install memory-kit@memory-kit` — all 10
-skills load). On Cursor,
-`cursor-agent plugin marketplace add <git-url>` indexes the same manifests, `--plugin-dir`
-loads all 10 skills, and the CLI executes the SessionStart hook — injection works there.
-Hosts that don't run the hooks lose the automatic injection and the PreCompact block;
-`/memory-kit:setup` offers the replacement — an `AGENTS.md` protocol block
-(`templates/workspace/AGENTS-MEMORY-PROTOCOL.md`) that hands them the same discipline as an
-always-loaded instruction. **OpenCode** goes further: the repo ships a real plugin for it
-(`.opencode/plugins/memory-kit.js`, one `opencode.json` line) that injects memory into every
-model call, compaction-proof. What each host honours, probe by probe: the kit repository's
-[`docs/specs/`](https://github.com/awrshift/agent-memory-kit/tree/main/docs/specs) (not part
-of the installed plugin).
 
 ## State it owns in your repository
 

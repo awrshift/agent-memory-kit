@@ -21,8 +21,8 @@ leave this board.
 | D5 | `system-audit` also lives as a personal global skill outside this repo. Which copy is canonical? | **The plugin copy.** Delete the global one after the plugin is installed, or the two drift and the drift is invisible. | Low, but it grows with time. |
 | D6 | Should the orchestration invariants ship as an always-loaded rule by default rather than an offer? | **Keep it an offer.** Always-loaded context is the one thing the kit charges its users for on every single session; making a builder's rule mandatory for a memory-only user contradicts the whole cost model. | Low. |
 | D11 | The `qa` agent declares `tools: "*"` while its mandate is observe-only — the only agent whose safety rail is purely instructional. Pin a tool list? | **Not yet.** The lens needs whichever Playwright MCP servers the project's `.mcp.json` names, and their tool ids are project-specific — a pinned list would silently disable the agent in exactly the repos that use it. Revisit when Claude Code's agent frontmatter accepts an MCP-server glob; until then the protocol's two-account rule is the guard. | Medium in a repo with a real account in the QA env — which the protocol template forbids for mutation anyway. |
-| D13 | Claude Cowork loads the kit's skills but runs no plugin hooks (`specs/cowork.md`), and it is the app the kit's primary persona is most likely to hold. Ship a Cowork path — `/memory-kit:setup` detecting "no hook ran" and offering the protocol block into `CLAUDE.md` — or wait for Anthropic (issue #47993)? | **Offer the `CLAUDE.md` block now, probe Cowork once with a seat.** One paragraph in setup, no new layer; the T2 mechanism already exists for `AGENTS.md`. Do not build a Cowork-specific runtime. | Medium — a Cowork user who installs from the community marketplace and gets silence is a lost first impression. |
-| D14 | Claude Code (2.1.258) treats `.claude/memory/MEMORY.md` as a sensitive file: the first edit per session asks, regardless of allow rules (`specs/claude-code.md`). Keep the path, or move the hot cache out of `.claude/` (e.g. `context/MEMORY.md`) in a major version? | **Keep the path for now; say it out loud.** One prompt per session, with a "for this session" option, is a small price and it is Claude Code's own guard, not the kit's. Moving the file breaks every existing install and the OpenCode shim's path; do it only if the prompt starts firing on every edit. `/memory-kit:tour` and the README's "A day with it" should mention the one-time prompt. | Low today; Medium if Anthropic tightens the guard. |
+| D13 | ~~Cowork path~~ — **Closed 2026-10-22 by 8.0** (Claude Code only; no Cowork-specific work). Original question: Claude Cowork loads the kit's skills but runs no plugin hooks (`specs/cowork.md`), and it is the app the kit's primary persona is most likely to hold. Ship a Cowork path — `/memory-kit:setup` detecting "no hook ran" and offering the protocol block into `CLAUDE.md` — or wait for Anthropic (issue #47993)? | **Offer the `CLAUDE.md` block now, probe Cowork once with a seat.** One paragraph in setup, no new layer; the T2 mechanism already exists for `AGENTS.md`. Do not build a Cowork-specific runtime. | Medium — a Cowork user who installs from the community marketplace and gets silence is a lost first impression. |
+| D14 | Claude Code (2.1.258) treats `.claude/memory/MEMORY.md` as a sensitive file: the first edit per session asks, regardless of allow rules (`specs/claude-code.md`). Keep the path, or move the hot cache out of `.claude/` (e.g. `context/MEMORY.md`) in a major version? | **Keep the path for now; say it out loud.** One prompt per session, with a "for this session" option, is a small price and it is Claude Code's own guard, not the kit's. Moving the file breaks every existing install; do it only if the prompt starts firing on every edit. `/memory-kit:tour` and the README's "A day with it" should mention the one-time prompt. | Low today; Medium if Anthropic tightens the guard. |
 | D12 | Nothing measures whether `/memory-kit:close-session` actually runs. The ritual is where the kit's value lives, and the only telemetry is a SessionEnd timestamp. Count sessions opened vs closed and show the ratio in the session stats? | **Yes, as a hook-side counter, no LLM involved** — SessionStart already bumps `session_count`; `close-session` can touch a `last_close` marker and the stats line can read "12 sessions, 4 closed". Cheap, honest, and the first number a solo operator can act on. | Low — one more line in the stats block. |
 
 ## Marketing
@@ -35,18 +35,14 @@ leave this board.
 
 ## Recently settled
 
+- 8.0.0 (2026-10-22): **Claude Code only.** The Cursor catalog, the OpenCode shim and its `package.json`,
+  the `AGENTS.md` protocol block and the per-host specs are gone; the 6.3 tier model is history. The product
+  is called Claude Memory Kit in prose; the plugin id (`memory-kit`), `displayName` and the GitHub repository
+  (`awrshift/agent-memory-kit`, which the directory submission is bound to) are unchanged on purpose.
+
 - 7.3.0 (2026-10-22): the kit's `second-opinion` / `idea-validator` stay (most users have no board of their own) and
   defer to a user-level review setup when one exists — the 2026-09-28 duplicate-skills inbox item, option (a).
-  D13 is half-moved: Anthropic's docs say Cowork loads plugin hooks, the old issues are closed without a fix note,
-  and no probe has run — `docs/specs/cowork.md` says so.
 
-- Multi-platform (v6.3.0, 2026-08-31): the **tier model** — T1 hook enforcement on Claude Code,
-  T2 `AGENTS.md` protocol elsewhere, T3 plain files. Canonical source stays the Claude Code
-  plugin format in the **nested** layout: Codex and Cursor both verifiably read it natively
-  (skills visible, nested marketplace source resolves; Cursor CLI even runs the SessionStart
-  hook). A converter pipeline and a root-native layout migration
-  were deliberately NOT adopted — either waits until a real host demands it. Per-host truth
-  lives in `docs/specs/`.
 - One plugin instead of three (v6.0.0) — skill bodies load on invoke, so the split bought nothing.
 - `/close-day` and the daily chronicle: retired, not re-parked in an opt-in folder.
 - `periodic-save.sh`: removed rather than optimised — PreCompact already covers the moment that matters.

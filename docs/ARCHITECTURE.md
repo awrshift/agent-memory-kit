@@ -1,4 +1,4 @@
-# Memory Kit v7 — Architecture
+# Claude Memory Kit — Architecture
 
 > Full architecture with rationale. Read after the plugin's `context/identity.md` for depth.
 
@@ -455,7 +455,7 @@ Key property: **user never opens a file during the entire ritual.** They talk, a
 
 ![](../.github/assets/05-multi-project-layer.png)
 
-![](../.github/assets/08-one-operator-five-hosts.png)
+![](../.github/assets/08-one-operator-claude-code.png)
 
 One agent, many projects. The split is not "big things vs small things" — it is **memory vs
 paperwork**. What the agent LEARNED is shared across every project; what the work PRODUCED
@@ -565,37 +565,20 @@ context size, behaviour, hooks).
 **What the injection costs** (measured 2026-09-02 by running `session-start.py` and counting
 characters ÷ 4): a fresh install ~2.3k tokens, a working 6 KB cache with a handoff ~3.5k, and a
 hard ceiling of ~12k when the cache sits at all three caps and the handoff at its 6 KB inject
-cap (7.3: an over-cap handoff delivers its opening-note section first, capped). Skill and agent descriptions add ~1.8k on every host that loads them. The caps are what
+cap (7.3: an over-cap handoff delivers its opening-note section first, capped). Skill and agent descriptions add ~1.8k. The caps are what
 make the ceiling a number instead of a trend. **Correction (7.2):** on Claude Code those numbers
 were what the hook PRINTED, not what the model received — anything over 10,000 characters arrived
 as a 2 KB preview until the 7.2 split. Measured 2026-09-26 on three working repositories: 26,183 –
 34,263 characters (≈ 6.5–8.5k tokens) now actually reach the model, in 3–4 parts. For comparison, Claude Code's own auto memory
 loads the first 200 lines or 25 KB of its index at every start (its docs, read 2026-09-02).
 
-## Platform tiers (beyond Claude Code)
+## One host: Claude Code
 
-The kit is authored as a Claude Code plugin, but the STATE it manages is plain markdown in your
-repository — readable by any agent. v6.3.0 names the three delivery tiers instead of pretending
-every host is equal:
-
-| Tier | Hosts | What runs |
-|---|---|---|
-| **T1 — enforcement** | Claude Code · OpenCode (via the shipped `.opencode/plugins/memory-kit.js` shim, verified 2026-08-31) | Guarantees, not requests — but not the same three on both hosts. **Claude Code:** injection at session start, the PreCompact block, the test guard. **OpenCode:** memory rides `experimental.chat.system.transform` into EVERY model call, so compaction cannot drop it (the block is unnecessary rather than missing); no test guard yet; `experimental.session.compacting` appends a save-state instruction. |
-| **T2 — protocol** | Codex and GitHub Copilot CLI (both verified 2026-08-31), Cursor (verified 2026-08-31 — its CLI even executes the SessionStart hook, giving T1-grade wake-up; the other three hooks unprobed), Claude Cowork (documented-only 2026-09-02: skills load, plugin hooks do not fire — `specs/cowork.md`) — anything that auto-loads `AGENTS.md` or `CLAUDE.md` | `/memory-kit:setup` appends a marker-fenced block (`templates/workspace/AGENTS-MEMORY-PROTOCOL.md`, <2.1 KB) telling the agent to do by hand what the hooks do mechanically: read memory first, respect the caps, save before compaction, close with the ritual. Advisory — an agent can forget an instruction; it cannot ignore a hook. |
-| **T3 — plain files** | anything else, including CI | the memory files themselves need no runtime: markdown, git-versioned, one `grep` away. |
-
-Codex empirics (see `specs/codex.md` for the probes): it installs the kit from the NATIVE
-manifests — the nested `plugins/memory-kit` marketplace source resolves, all 10 skills appear in
-a live session namespaced `memory-kit:<name>` — and it parses `hooks.json` but does NOT execute
-SessionStart. "Wakes up already knowing" does not exist there; the protocol block is the honest
-replacement. Per-host truth, every claim labeled `verified` / `documented-only` /
-`manual-check-needed`, lives in `docs/specs/`.
-
-Deliberately NOT adopted from the compound-engineering-plugin pattern (the repo that runs 33
-skills on 14 hosts, studied 2026-08-31): a converter pipeline and a root-native layout
-migration — either waits until a real host demonstrably needs it. `context/identity.md` remains
-the SSOT the protocol block is distilled from; a change to one touches the other in the same
-commit.
+The kit is a Claude Code plugin and nothing else. Every guarantee it makes — injection at session
+start, the PreCompact block, the guards — is a Claude Code hook, and the skills, agents and
+`${CLAUDE_PLUGIN_ROOT}` paths follow the Claude Code plugin format. The memory STATE is still
+plain markdown in your repository, so any tool can read it; the kit simply makes no promise about
+a tool it does not run in. What Claude Code honours, probe by probe: `docs/specs/claude-code.md`.
 
 ## Naming discipline
 
@@ -626,6 +609,10 @@ Per-project folders can use any naming: `projects/client-nestle/`, `projects/nac
 - **Custom trigger keyword tables in CLAUDE.md** — Claude auto-invokes skills from their `description`; no hand-maintained routing.
 - **`wisdom/`**, **`lessons/`** — synonyms of existing layers, kept out.
 - **Automatic rule generation** — rules are user-approved only, never auto-written.
+- **Other hosts** — 6.3–7.3 shipped manifests and a shim for Cursor, Codex, Copilot CLI and
+  OpenCode plus an `AGENTS.md` protocol block for hosts without hooks. Removed in 8.0: each host
+  enforced a different subset, every claim needed its own probe, and the maintainer works only in
+  Claude Code. Still in git history (tag `v7.3.0`).
 
 ### Adding role-guidance yourself (advanced)
 
@@ -638,6 +625,6 @@ If you want the role-guidance pattern back for your project, create skills under
 - `plugins/memory-kit/skills/close-session/SKILL.md` — the full end-of-session ritual
 - `plugins/memory-kit/reference/` — depth: fact-check, parallel development, doc governance,
   decisions log, review loop, the QA protocol template
-- `docs/specs/` — per-host capability specs (what each agent platform honours, empirically)
+- `docs/specs/claude-code.md` — what Claude Code honours, empirically (probes with dates)
 - `docs/CHANGELOG.md` — version history including the v6.0 plugin pivot
 - Anthropic docs: `code.claude.com/docs/en/skills`, `code.claude.com/docs/en/memory`, `code.claude.com/docs/en/best-practices`

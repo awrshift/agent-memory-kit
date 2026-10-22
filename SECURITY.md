@@ -9,7 +9,7 @@ Only the latest release is supported; fixes ship as a new version.
 
 ## What the plugin runs on your machine
 
-Memory Kit has no server, no telemetry and makes no network calls. Its hooks are local Python and
+Claude Memory Kit has no server, no telemetry and makes no network calls. Its hooks are local Python and
 shell scripts in [`plugins/memory-kit/hooks/`](plugins/memory-kit/hooks/), wired in
 [`hooks.json`](plugins/memory-kit/hooks/hooks.json):
 

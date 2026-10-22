@@ -1,4 +1,4 @@
-# Working on Memory Kit
+# Working on Claude Memory Kit
 
 This repo is a **Claude Code plugin marketplace**, not a memory workspace. The plugin lives in
 `plugins/memory-kit/`; `.claude-plugin/marketplace.json` is the catalog. Users install it into

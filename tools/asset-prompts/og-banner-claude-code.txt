@@ -1,0 +1,10 @@
+A wide 16:9 social banner. Style: very dark navy background with a faint starfield and faint circuit-board traces, subtle depth. Every string below must appear exactly as written, spelled exactly, and no other text may appear.
+
+Left half, left-aligned text block:
+- small grey monospace line: "Claude Memory Kit"
+- huge bold white headline on four lines: "Built-in memory" / "decides what to" / "remember. This" / "one asks."
+- grey sub-line on two lines: "A Claude Code plugin —" / "plain files in your folder"
+
+Right half: an isometric stack of four glowing translucent glass slabs, a soft vertical beam of light passing through them. Top to bottom, each slab carries a monospace label on its front-left edge: cyan slab "MEMORY.md", green slab "handoffs/", blue slab "concepts/", purple slab "rules/".
+
+Spelling check: Claude Memory Kit, memory, decides, remember, Claude Code, plugin, handoffs, concepts.

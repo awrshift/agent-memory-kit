@@ -28,38 +28,10 @@ Claude Code on this machine: 2.1.308.
   file, or a single-file `cat`/`head` (fixed in 2.1.293).
 - Native auto memory: "The first 200 lines of `MEMORY.md`, or the first 25KB, whichever comes first, are loaded".
 
-## Codex (`https://learn.chatgpt.com/docs/hooks`, redirected from developers.openai.com/codex/hooks)
-
-- "Installed plugins can also bundle lifecycle config through their plugin manifest or a default `hooks/hooks.json` file."
-- "Installing or enabling a plugin doesn't automatically trust its hooks." (review in `/hooks` first)
-- "Hooks are enabled by default." Events include SessionStart, PreCompact, PostCompact, PreToolUse, SessionEnd.
-- SessionStart `hookSpecificOutput.additionalContext` "is added as extra developer context"; cap about 2,500 tokens per
-  model-visible hook output by default, adjustable with `additionalContextLimit`.
-- "Codex also sets `CLAUDE_PLUGIN_ROOT` and `CLAUDE_PLUGIN_DATA` for compatibility with existing plugin hooks."
-
-## GitHub Copilot CLI (`https://docs.github.com/en/copilot/reference/hooks-configuration`)
-
-- Events: agentStop, errorOccurred, notification, permissionRequest, postToolUse, postToolUseFailure, preCompact,
-  preToolUse, sessionEnd, sessionStart, subagentStart, subagentStop, userPromptSubmitted, userPromptTransformed.
-- "Only `additionalContext` is consumed for `sessionStart`."
-- Plugin hooks are "declared by each plugin in its own `hooks.json` (or under `hooks/hooks.json`)".
-- "Cross-tool `.claude/settings.json` and `.claude/settings.local.json` files in the repository are also read"; PascalCase
-  event names get Claude matching rules.
-
-## Cursor (`https://cursor.com/docs/hooks`, `/docs/plugins`) — via recon, not re-fetched by the integrator
-
-- Native `sessionStart` returns `additional_context`; the agent loop does not wait for it (fire-and-forget); not run in
-  cloud agents. Plugins can bundle hooks, skills, agents, rules, commands and MCP. UNVERIFIED by the integrator.
-
-## OpenCode — via recon, not re-fetched
-
-- `@opencode-ai/plugin` latest 1.19.3 (the kit pins 1.18.25). `experimental.session.compacting`: `output.prompt` replaces
-  the default compaction prompt and `output.context` is ignored when it is set. `tool.execute.before` and `permission.ask`
-  exist (a test guard is possible). UNVERIFIED by the integrator.
+(Sections on Codex, Copilot CLI, Cursor and OpenCode removed in 8.0 — the kit is Claude Code only; see tag `v7.3.0`.)
 
 ## Gaps docs cannot close
 
-- Whether Codex / Copilot actually run THIS plugin's hooks on v7 — no CLI on this machine; unprobed.
 - Whether an older Claude Code (< 2.1.295) accepts `onFailure` — probed by the 7.3 build (see CHANGELOG 7.3.0).
 
 ## README practice — six popular Claude Code plugin READMEs (recon, 2026-10-22)

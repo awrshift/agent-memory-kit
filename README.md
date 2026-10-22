@@ -1,28 +1,29 @@
-![Memory Kit](.github/assets/og-banner-this-one-asks.png)
+![Claude Memory Kit](.github/assets/og-banner-claude-code.png)
 
-# Memory Kit
+# Claude Memory Kit
 
 **Built-in memory decides what to remember. This one asks.**
 
-Memory Kit is a Claude Code plugin that gives your coding agent a memory made of plain text files in your own
+Claude Memory Kit is a Claude Code plugin that gives your coding agent a memory made of plain text files in your own
 folder. Session two opens with *"you were on Nestlé, the client hates em-dashes, next step: the Q3 brief"* — without
 you explaining anything again. The agent notes small facts as dated lines and tells you; nothing becomes a rule or a
 knowledge article until you say yes. No database, no service, no API key.
+An independent project, not made or endorsed by Anthropic.
 
 **Optional second half, for people who delegate to subagents:** a method that ships with it — specs written as files
 before work starts, a subagent's report treated as a claim until checked, review findings that turn into checks.
 
 [![Version](https://img.shields.io/github/v/release/awrshift/agent-memory-kit?label=version&color=CFEF4A&cacheSeconds=1800)](https://github.com/awrshift/agent-memory-kit/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-55503E?labelColor=55503E&color=55503E)](LICENSE)
-[![Works with](https://img.shields.io/badge/works_with-Claude_Code_·_Cursor_·_Codex_·_Copilot_·_OpenCode-CFEF4A)](#works-with-other-agents)
+[![Claude Code plugin](https://img.shields.io/badge/Claude_Code-plugin-CFEF4A)](#install)
 
 **On this page:** [How it works](#how-it-works) · [Install](#install) · [What is inside the plugin](#what-is-inside-the-plugin) ·
 [What it creates in your folder](#what-it-creates-in-your-folder) · [The method](#the-method-for-work-with-subagents) ·
-[Why not built-in memory](#why-not-the-built-in-memory) · [Other agents](#works-with-other-agents) · [Privacy and cost](#privacy-and-cost)
+[Why not built-in memory](#why-not-the-built-in-memory) · [Privacy and cost](#privacy-and-cost)
 
 ## How it works
 
-![How Memory Kit works: you talk, the agent writes plain files in your folder, hooks load them at the next start](.github/assets/01-system-map-v73.png)
+![How Claude Memory Kit works: you talk, the agent writes plain files in your folder, hooks load them at the next start](.github/assets/01-system-map-claude-code.png)
 
 1. **You talk.** "We're working on Nestlé." "The client hates em-dashes." You never open a memory file.
 2. **The agent writes.** Something worth keeping becomes one dated line in `MEMORY.md`, and the agent tells you
@@ -131,8 +132,7 @@ A plugin cannot install rules, so `setup` offers these and copies them only on y
 - **Per project:** `templates/workspace/project/README-TEMPLATE.md` (the project's map and workflow tier),
   `BACKLOG-TEMPLATE.md`, `SPEC-TEMPLATE.md` (the contract an executor builds to), `ASSUMED-SPEC-TEMPLATE.md` (an
   executor's recorded override, owed your ratification).
-- **Other:** `templates/workspace/AGENTS-MEMORY-PROTOCOL.md` (the same discipline for agents that cannot run hooks),
-  `EXPERIMENT-TEMPLATE.md` and `experiments-README.md` (a sandbox for throwaway work), `ONBOARDING-BACKLOG.md` (a first
+- **Other:** `EXPERIMENT-TEMPLATE.md` and `experiments-README.md` (a sandbox for throwaway work), `ONBOARDING-BACKLOG.md` (a first
   day in five tasks), and the four `document` templates (`pr.md`, `changelog.md`, `release-note.md`, `postmortem.md`).
 - **Scripts:** `scripts/quiet.sh` (runs a noisy command, keeps the full log in a file, prints a summary),
   `scripts/permission-probes.sh` (checks that your permission rules stop what they should); `system-audit` carries
@@ -207,41 +207,24 @@ the run, and success is judged by what reaches the user, not by a counter.
 
 ## Why not the built-in memory?
 
-Claude Code, Cursor and Copilot all ship memory now, on by default. It is effortless, and it is the vendor's silo.
+Claude Code ships its own auto memory, on by default. It is effortless, and it lives outside your folder.
 
-| | Built-in auto memory | Memory Kit |
+| | Claude Code auto memory | Claude Memory Kit |
 |---|---|---|
 | Who decides what is remembered | the agent, silently | the agent proposes, **you approve** |
-| Where it lives | the vendor's directory, outside your folder | **plain files in your folder** |
+| Where it lives | `~/.claude/projects/`, on this machine only | **plain files in your folder** |
 | Can you read it, diff it, fix a wrong belief | partly | **yes, it is text** |
 | One memory per client | no | **yes**, `projects/<client>/` |
-| Read by other agents | no | **yes** |
+| Shared with a teammate or a second machine | no | **yes**, it is in the repo |
 | How staleness shows | it doesn't | **every line is dated**; caps force a prune |
 | Cost at session start | up to 200 lines / 25 KB (Claude Code docs) | about 6.5–8.5k tokens on three working repositories (measured 2026-09-26), bounded by the caps, plus ~2k of skill and agent descriptions |
 
 Running both means two writers and two truths, so `setup` asks you to pick one.
 
-## Works with other agents
-
-| Agent | What you get | Evidence |
-|---|---|---|
-| **Claude Code** | everything on this page | the primary host |
-| **OpenCode** | memory in every model call through the shipped plugin; skills | [probed](docs/specs/opencode.md) 2026-08-31 |
-| **Cursor** | memory loaded at session start (Cursor does not wait for it), skills | [probed](docs/specs/cursor.md) 2026-08-31 |
-| **Codex** | skills and the `AGENTS.md` protocol; its docs now say it runs plugin hooks after you review them in `/hooks` | [probed](docs/specs/codex.md) 2026-08-31, docs 2026-10-22 |
-| **GitHub Copilot CLI** | skills and the `AGENTS.md` protocol; its docs now say it runs plugin hooks | [probed](docs/specs/copilot.md) 2026-08-31, docs 2026-10-22 |
-| **Claude Cowork** | skills; hooks per Anthropic's docs, not yet probed by us | [documented](docs/specs/cowork.md) |
-
-Install for the others: `codex plugin marketplace add awrshift/agent-memory-kit && codex plugin add memory-kit@memory-kit` ·
-`cursor-agent plugin marketplace add https://github.com/awrshift/agent-memory-kit` ·
-`copilot plugin marketplace add awrshift/agent-memory-kit && copilot plugin install memory-kit@memory-kit` · OpenCode:
-`"plugin": ["memory-kit@git+https://github.com/awrshift/agent-memory-kit.git"]` in `opencode.json`. An agent that runs
-no hooks gets the same discipline as a short block `setup` offers for your `AGENTS.md`.
-
 ## Privacy and cost
 
 - **The kit itself sends nothing.** No hook or script opens a network connection; all are readable Python or shell.
-  Your agent sends what it reads, memory included, to its model provider, as with any file in the conversation.
+  Claude Code sends what it reads, memory included, to the model, as with any file in the conversation.
 - **Private by default.** The hot cache and handoffs are gitignored, so they stay local even if you push. The
   knowledge base and rules are tracked: keep the repository private or prune before publishing. Working from two
   machines or with a teammate? Say so at `setup` and the hot cache gets committed instead.
@@ -258,5 +241,5 @@ lists every part of the plugin.
 A 68-second recording of a real session: [demo video](.github/assets/demo-full-session.mp4).
 **Tell me how your first week went:** [open a note](https://github.com/awrshift/agent-memory-kit/issues/new?template=first-week.md).
 
-[Architecture](docs/ARCHITECTURE.md) · [Per-host specs](docs/specs/README.md) · [Changelog](docs/CHANGELOG.md) ·
+[Architecture](docs/ARCHITECTURE.md) · [Claude Code facts](docs/specs/claude-code.md) · [Changelog](docs/CHANGELOG.md) ·
 [Contributing](docs/CONTRIBUTING.md) · [Open decisions](docs/DECISIONS.md) · MIT, see [LICENSE](LICENSE).

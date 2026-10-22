@@ -1,6 +1,43 @@
 # Changelog
 
-All notable changes to Memory Kit are documented here. Breaking changes marked **BREAKING**.
+All notable changes to Claude Memory Kit are documented here. Breaking changes marked **BREAKING**.
+
+<a id="v800"></a>
+
+## [8.0.0] — 2026-10-22 — Claude Code only
+
+**BREAKING for anyone running the kit outside Claude Code; nothing changes inside Claude Code.** The plugin id
+(`memory-kit@memory-kit`), every skill, agent and hook, and the files the kit owns in your repository are unchanged.
+
+### Removed
+
+- **Every host other than Claude Code.** The Cursor catalog (`.cursor-plugin/marketplace.json`,
+  `plugins/memory-kit/.cursor-plugin/plugin.json`), the OpenCode shim (`.opencode/plugins/memory-kit.js`) and the
+  root `package.json` that existed only to install it, and the `AGENTS.md` protocol block
+  (`templates/workspace/AGENTS-MEMORY-PROTOCOL.md`) for hosts without hooks. Each host enforced a different subset
+  and every claim needed its own probe; the kit now makes promises only where it runs.
+- `/memory-kit:setup` no longer offers the `AGENTS.md` block and no longer carries the "running under another
+  host" fallback.
+- The per-host specs (`docs/specs/{codex,cursor,copilot,opencode,cowork,agents-md}.md`), the tier model in
+  `docs/ARCHITECTURE.md`, the "Works with other agents" README section, the OpenCode CI step and the Cursor /
+  OpenCode / protocol-marker checks in `tools/check-repo.py`. All of it stays in git history at tag `v7.3.0`.
+
+### Changed
+
+- The product is called **Claude Memory Kit** in prose; both READMEs say it is an independent project, not made or
+  endorsed by Anthropic. The plugin `name`, `displayName` and the GitHub repository stay as they were — the
+  directory submission is bound to the repository, and its rules hold a `displayName` that matches a known brand.
+- Three diagrams redrawn without the host list: `01-system-map-claude-code.png`, `08-one-operator-claude-code.png`,
+  `og-banner-claude-code.png` (prompts kept in `tools/asset-prompts/`).
+- The README comparison is against Claude Code's own auto memory specifically (machine-local, in
+  `~/.claude/projects/<project>/memory/` — code.claude.com/docs/en/memory, read 2026-10-22).
+
+### Migration
+
+- In Claude Code: nothing. `claude plugin marketplace update memory-kit`, then `claude plugin update memory-kit@memory-kit`.
+- A repository that appended the protocol block to `AGENTS.md`: the block is no longer maintained; delete it
+  (between the `<!-- memory-kit protocol … -->` markers) or keep it as a static note.
+- OpenCode users: remove `memory-kit@git+…` from `opencode.json`; the install would now fail without `package.json`.
 
 <a id="v730"></a>
 

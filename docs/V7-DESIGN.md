@@ -73,7 +73,7 @@ A `done` that cannot be traced to a `Verified` cell is `IN PROGRESS`. This is th
 
 - **No `scope` skill.** `BACKLOG.md` + tier + spec pointer already answer "what, in what
   order, how heavy". A second planning artifact would drift from the first.
-- **No thin `CLAUDE.md → AGENTS.md` pointer by default.** Stays a `setup` offer (T2 hosts).
+- **No thin `CLAUDE.md → AGENTS.md` pointer by default.** (The `AGENTS.md` protocol offer itself was removed in 8.0.)
 - **No `verify` skill separate from `qa-sweep`.** The lenses stay; the AC binding is the change.
 - **No Haiku agents.** `scout`/`researcher` are not adopted; `recon` on Sonnet covers both.
 - **No "suggestions only".** See gates above.

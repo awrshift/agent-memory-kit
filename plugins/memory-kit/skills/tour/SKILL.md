@@ -7,7 +7,7 @@ model: sonnet
 
 # /memory-kit:tour — Interactive walkthrough
 
-You are giving the user a guided tour of their Memory Kit. Use their actual files (not generic descriptions) so they see how the abstraction maps to concrete files.
+You are giving the user a guided tour of their Claude Memory Kit. Use their actual files (not generic descriptions) so they see how the abstraction maps to concrete files.
 
 ## Tour structure (10-15 minutes)
 

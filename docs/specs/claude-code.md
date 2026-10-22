@@ -1,7 +1,7 @@
-# Claude Code — the baseline host (Tier 1)
+# Claude Code — the host
 
 Last verified: 2026-09-02, against the kit's own CI (`.github/workflows/checks.yml`, Ubuntu)
-and live sessions on macOS. Claude Code is the canonical host: the plugin is authored in its
+and live sessions on macOS. Claude Code is the only host: the plugin is authored in its
 format, and every mechanism below is exercised by CI on each push — the whole file is
 `verified`. Platform note: until 6.5.2 the PreCompact hook had only ever run on macOS, and on
 Linux it blocked every compaction (a `stat` flag that means something else on GNU). "Verified"
@@ -24,9 +24,7 @@ here now means both platforms; Windows remains `manual-check-needed`.
 A Claude Code plugin cannot ship `CLAUDE.md`, `.claude/rules/`, or any `settings.json` key
 other than `agent`/`subagentStatusLine`. The working agreement therefore travels as
 `context/identity.md`, injected by the SessionStart hook — this constraint is the origin of
-the kit's whole content-vs-delivery split, and the reason the T2 protocol file
-(`templates/workspace/AGENTS-MEMORY-PROTOCOL.md`) could be distilled at all: the content was
-already separated from the mechanism.
+the kit's whole content-vs-delivery split.
 
 ## The sensitive-file prompt (`verified` 2026-09-02, Claude Code 2.1.258)
 
@@ -39,11 +37,10 @@ project" when the write goes through a shell command) covers the rest of the ses
 project. Consequence for the kit: "the agent writes MEMORY.md freely" costs one keystroke per
 session on this host; `context/handoffs/` and `knowledge/` are not affected. Recorded as D14.
 
-## Guarantees unique to this tier
+## Guarantees
 
 - Memory is **injected**, not fetched — the agent wakes up already knowing (no instruction to
   forget to follow).
 - Compaction **cannot** proceed over a stale cache (PreCompact block).
 - Test-file edits are **intercepted**, not merely discouraged.
 
-Every other host degrades some or all of these — see that host's spec.

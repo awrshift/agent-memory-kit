@@ -1,11 +1,11 @@
 ---
 name: How did your first week go?
 about: Five questions, two minutes. This is the kit's only feedback channel.
-title: "First week: <your agent> / <what you use it for>"
+title: "First week: <what you use it for>"
 labels: feedback
 ---
 
-**Which agent(s)?** (Claude Code / Cursor / Codex / Copilot / OpenCode / Cowork)
+**Claude Code version?** (`claude --version`)
 
 **What do you use the agent for?** (code / marketing / research / several clients / other)
 

@@ -112,48 +112,9 @@ jobs:
           rm -f /tmp/probe/.claude/state/compact-unsaved /tmp/probe/.claude/state/compact-unsaved-seen
           echo "  ok"
 
-      # The OpenCode shim is JavaScript and CI has no other reason to load Node — so load it:
-      # syntax, module resolution from package.json, and the injection itself with a canary.
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: "20"
-      - name: OpenCode shim loads and injects
-        run: |
-          set -euo pipefail
-          node --check .opencode/plugins/memory-kit.js
-          node --input-type=module -e "
-            import path from 'node:path';
-            const pkg = JSON.parse((await import('node:fs')).readFileSync('package.json','utf8'));
-            const mod = await import(path.resolve(pkg.main));
-            const hooks = await mod.default({ directory: '/tmp/probe' });
-            const cfg = {}; await hooks.config(cfg);
-            if (!cfg.skills.paths.some(p => p.endsWith('plugins/memory-kit/skills'))) throw new Error('skills path not registered');
-            const out = { system: [] };
-            await hooks['experimental.chat.system.transform']({}, out);
-            const text = out.system.join('\n');
-            if (!text.includes('CANARY-CI')) throw new Error('hot cache not injected');
-            if (!text.includes('The user talks. You write.')) throw new Error('identity.md not injected');
-            const virgin = await mod.default({ directory: '/tmp/virgin' });
-            const v = { system: [] };
-            await virgin['experimental.chat.system.transform']({}, v);
-            if (!v.system.join('').includes('not set up in this repository')) throw new Error('virgin repo pointer missing');
-            // 7.0.3: a newer memory-audit deferred list is not the session handoff.
-            const fs = await import('node:fs');
-            fs.writeFileSync('/tmp/probe/context/handoffs/real-2026-01-01.md', 'REAL-HANDOFF');
-            fs.writeFileSync('/tmp/probe/context/handoffs/memory-audit-deferred-2026-01-02.md', 'DEFERRED');
-            fs.utimesSync('/tmp/probe/context/handoffs/memory-audit-deferred-2026-01-02.md', new Date(), new Date(Date.now() + 60000));
-            const h = { system: [] };
-            await hooks['experimental.chat.system.transform']({}, h);
-            if (!h.system.join('').includes('REAL-HANDOFF')) throw new Error('deferred list injected as the handoff');
-            fs.rmSync('/tmp/probe/context/handoffs/real-2026-01-01.md');
-            fs.rmSync('/tmp/probe/context/handoffs/memory-audit-deferred-2026-01-02.md');
-            console.log('  ok');
-          "
-
       # 7.0.2: a heading named after a session or a date is flagged; provenance in parentheses,
       # the current-state header, a "verified <date>" topic and a fenced `##` line are not.
-      # Python hook and OpenCode shim must agree line for line.
-      - name: Session-headed blocks flagged, look-alikes left alone (hook + shim)
+      - name: Session-headed blocks flagged, look-alikes left alone
         run: |
           set -euo pipefail
           python3 - <<'PY'
@@ -177,15 +138,6 @@ jobs:
             > /tmp/blocks.txt
           [ "$(grep -oE '^  - L[0-9]+' /tmp/blocks.txt | tr -d ' -' | paste -sd, -)" = "L5,L7" ] \
             || { echo "hook flagged the wrong headings"; grep -A8 'Session-headed' /tmp/blocks.txt; exit 1; }
-          node --input-type=module -e "
-            import path from 'node:path';
-            const mod = await import(path.resolve('.opencode/plugins/memory-kit.js'));
-            const hooks = await mod.default({ directory: '/tmp/probe' });
-            const out = { system: [] };
-            await hooks['experimental.chat.system.transform']({}, out);
-            const got = [...out.system.join('\n').matchAll(/^  - (L\d+):/gm)].map(m => m[1]).join(',');
-            if (got !== 'L5,L7') throw new Error('shim flagged ' + got);
-          "
           printf '# Hot cache\n\n- [2026-01-01] CANARY-CI\n' > /tmp/probe/.claude/memory/MEMORY.md
           echo "  ok"
 

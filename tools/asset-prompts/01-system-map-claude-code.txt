@@ -1,0 +1,22 @@
+A wide 16:9 technical diagram. Style: dark navy background (#0f1424), neon glowing rounded panels with soft outer glow, clean sans-serif for labels and a monospace font for file names, generous spacing, no clutter. Every string below must appear exactly as written, spelled exactly, and no other text may appear.
+
+Left: two white speech bubbles: "we're working on Nestlé" and "client hates em-dashes"; under them the small grey caption "YOU — you only talk". A glowing cyan arrow points right.
+
+Center-left: a tall blue-outlined glowing panel titled "CLAUDE CODE", subtitle "writes every memory file". Inside it, three stacked blue pill buttons in monospace: "hooks", "skills", "agents". Caption at the bottom of the panel: "one plugin, installed per folder". A double-headed glowing cyan arrow connects this panel to the right panel.
+
+Center-right: a large orange-outlined glowing panel titled "YOUR FOLDER — plain markdown files" containing four stacked boxes:
+1. green box: "MEMORY.md — hot cache" with the line "· dated one-liners   · capped"
+2. orange box: "handoffs/ — one note per session"
+3. purple box: "knowledge/ —" with the line "· wiki, written after your yes"
+4. pink box: "rules/ — always / never"
+A vertical gradient arrow (teal to pink) to the right of the four boxes, with the rotated text "repeats on 3+ dates → promoted".
+Below the four boxes two green folder tabs: "projects/nestle/" and "projects/ikea/", caption "the work's own documents — loaded when named".
+
+Far right: a circular purple-cyan loop of two curved arrows with curved text on top "session opens — memory injected" and at the bottom "session closes — handoff written"; in the center "tomorrow starts already knowing".
+
+Bottom: a wide yellow-outlined glowing bar. Title line: "HOOKS — run silently". Second line, monospace, exactly:
+"load memory at start · save before compaction · ask before a test is weakened · stop destructive git · keep secrets out"
+
+Footer text under the bar, small grey: "No database. No service. Plain files Claude Code reads and writes."
+
+Spelling check — these words must be spelled exactly: Nestlé, em-dashes, CLAUDE CODE, knowledge, promoted, compaction, weakened, destructive, secrets, installed.

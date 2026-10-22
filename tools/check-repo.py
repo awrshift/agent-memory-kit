@@ -4,7 +4,6 @@
 Deterministic, stdlib-only, no auth: runs in CI and on your machine identically.
 
   1. manifests parse, and VERSION / plugin.json / marketplace.json agree
-     (both catalog families: .claude-plugin/ and .cursor-plugin/)
   2. every marketplace `source` exists and holds a plugin manifest
   3. every hook command referenced in hooks.json exists and is executable; a hook with
      `onFailure: block` first proves its interpreter RUNS
@@ -66,38 +65,6 @@ for entry in market.get("plugins", []):
               f"{manifest}: version {plugin.get('version')} != VERSION {version}")
         check(entry.get("version") == version,
               f"marketplace entry {entry['name']}: version {entry.get('version')} != VERSION {version}")
-
-# 1 + 2 for the Cursor catalog — same shape, its own manifest filename
-cursor_market_path = ROOT / ".cursor-plugin" / "marketplace.json"
-if cursor_market_path.exists():
-    cursor_market = load(cursor_market_path) or {}
-    for entry in cursor_market.get("plugins", []):
-        src = ROOT / entry["source"]
-        manifest = src / ".cursor-plugin" / "plugin.json"
-        check(manifest.exists(), f"cursor marketplace entry {entry['name']}: no manifest at {manifest}")
-        if manifest.exists():
-            plugin = load(manifest) or {}
-            check(plugin.get("version") == version,
-                  f"{manifest}: version {plugin.get('version')} != VERSION {version}")
-            check(entry.get("version") == version,
-                  f"cursor marketplace entry {entry['name']}: version {entry.get('version')} != VERSION {version}")
-
-# 1 for the OpenCode entry package — same version, one more manifest family
-pkg_path = ROOT / "package.json"
-if pkg_path.exists():
-    pkg = load(pkg_path) or {}
-    check(pkg.get("version") == version,
-          f"{pkg_path}: version {pkg.get('version')} != VERSION {version}")
-    entry = pkg.get("main", "")
-    check((ROOT / entry).exists(), f"package.json main -> missing file {entry}")
-
-# 1 for the AGENTS.md protocol block — its version marker is what "replace on upgrade" keys on
-proto_path = ROOT / "plugins" / "memory-kit" / "templates" / "workspace" / "AGENTS-MEMORY-PROTOCOL.md"
-if proto_path.exists():
-    first = proto_path.read_text(encoding="utf-8").splitlines()[0]
-    m = re.search(r"memory-kit protocol v(\S+)", first)
-    check(bool(m) and m.group(1) == version,
-          f"{proto_path}: protocol marker {m.group(1) if m else '(missing)'} != VERSION {version}")
 
 # 3 — hooks -------------------------------------------------------------------------
 RUNS_CHECK_RE = re.compile(
