@@ -24,7 +24,8 @@ Failure policy (7.3): fail OPEN on a lexing error (an unbalanced quote is also a
 refuses to run) and on a payload that is not a tool call. A directory computed at run time is NOT a
 parse error — it resolves to None. Any OTHER exception — a bug, a missing `lib/cmdparse.py`, nesting
 past the parser's depth (a command the shell would run) — prints `permissionDecision: "ask"` naming the
-guard and the error, exit 0. hooks.json sets `"onFailure": "block"` and checks `python3` exists first.
+guard and the error, exit 0. hooks.json sets `"onFailure": "block"` and first proves `python3` RUNS
+(3.9+; the macOS stub that exists and exits 1 is a no-op, not a block).
 Known gaps: git aliases, shell functions, commands inside script files.
 """
 

@@ -7,7 +7,9 @@ Deterministic, stdlib-only, no auth: runs in CI and on your machine identically.
      (both catalog families: .claude-plugin/ and .cursor-plugin/)
   2. every marketplace `source` exists and holds a plugin manifest
   3. every hook command referenced in hooks.json exists and is executable; a hook with
-     `onFailure: block` checks its interpreter exists first (`command -v X ... || exit 0; X ...`)
+     `onFailure: block` first proves its interpreter RUNS
+     (`X -c 'import sys; sys.exit(sys.version_info < (3,9))' >/dev/null 2>&1 || exit 0; X ...`), and no hook
+     uses the `command -v` form (it passes the macOS python3 stub, which exists and exits 1)
   4. every skill has frontmatter with a description; every agent has a name
   5. every relative link and every image embed in the markdown resolves
   6. no asset in .github/assets is orphaned (nothing embeds or links it)
@@ -98,6 +100,10 @@ if proto_path.exists():
           f"{proto_path}: protocol marker {m.group(1) if m else '(missing)'} != VERSION {version}")
 
 # 3 — hooks -------------------------------------------------------------------------
+RUNS_CHECK_RE = re.compile(
+    r"(\S+) -c " + re.escape("'import sys; sys.exit(sys.version_info < (3,9))' >/dev/null 2>&1 || exit 0; ")
+    + r"(\S+) "
+)
 for hooks_json in ROOT.glob("plugins/*/hooks/hooks.json"):
     plugin_root = hooks_json.parent.parent
     cfg = load(hooks_json) or {}
@@ -105,17 +111,23 @@ for hooks_json in ROOT.glob("plugins/*/hooks/hooks.json"):
         for group in groups:
             for hook in group.get("hooks", []):
                 cmd = hook.get("command", "")
-                for token in re.findall(r'\$\{CLAUDE_PLUGIN_ROOT\}[^"\s]*', cmd):
+                tokens = re.findall(r'\$\{CLAUDE_PLUGIN_ROOT\}[^"\s]*', cmd)
+                shown = ", ".join(Path(t).name for t in tokens) or cmd[:80]
+                for token in tokens:
                     target = plugin_root / token.replace("${CLAUDE_PLUGIN_ROOT}/", "")
                     check(target.exists(), f"{hooks_json} [{event}]: missing {target}")
                     check(target.exists() and os.access(target, os.X_OK),
                           f"{hooks_json} [{event}]: {target.name} is not executable")
-                # 7.3: a hook whose failure BLOCKS the action must not fail because its interpreter is absent —
-                # that would block every matching tool call. Its command checks the interpreter first.
+                # 7.3: a hook whose failure BLOCKS the action must not fail because its interpreter cannot run —
+                # that would block every matching tool call. Its command first proves the interpreter RUNS: the
+                # macOS /usr/bin/python3 is a stub that exists and exits 1, so `command -v` is not enough (7.3 r2).
                 if hook.get("onFailure") == "block":
-                    m = re.match(r"command -v (\S+) >/dev/null 2>&1 \|\| exit 0; (\S+) ", cmd)
+                    m = RUNS_CHECK_RE.match(cmd)
                     check(bool(m) and m.group(1) == m.group(2),
-                          f"{hooks_json} [{event}]: onFailure block without an interpreter check: {cmd[:80]}")
+                          f"{hooks_json} [{event}]: onFailure block without the interpreter-runs check: {shown}")
+                check("command -v" not in cmd,
+                      f"{hooks_json} [{event}]: `command -v` passes an interpreter stub that cannot run — use the "
+                      f"interpreter-runs check: {shown}")
 
 # 4 — skills and agents -------------------------------------------------------------
 for skill in ROOT.glob("plugins/*/skills/*/SKILL.md"):

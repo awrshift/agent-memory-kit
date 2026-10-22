@@ -36,7 +36,8 @@ and on a payload that is not a tool call (not JSON, `tool_input` not an object).
 a bug, a missing `lib/cmdparse.py`, nesting past the parser's depth (a command the shell would run) —
 prints `permissionDecision: "ask"` naming the guard and the error, exit 0: the user decides, nothing
 passes silently. hooks.json sets `"onFailure": "block"` (a crash, timeout or invalid output blocks the
-call) and checks `python3` exists first, so a machine without it is an explicit no-op, not a blocked session.
+call) and first proves `python3` RUNS (`python3 -c '…version check…' || exit 0`), so a machine without a working
+python3 3.9+ (none on PATH, or the macOS stub that exits 1) is an explicit no-op, not a blocked session.
 Known gaps: globs (`cat .e*`), heredoc bodies fed to an interpreter (`python3 - <<EOF`), script
 files, a copy read afterwards (`cp .env x && cat x`), tools outside the matcher (Grep, NotebookEdit).
 Tests: hooks/tests/test_guard_secrets.py (APPEND_* lists: the exempt form and every shape refused),

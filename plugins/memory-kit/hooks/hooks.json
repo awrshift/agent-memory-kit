@@ -53,13 +53,13 @@
         "hooks": [
           {
             "type": "command",
-            "command": "command -v python3 >/dev/null 2>&1 || exit 0; python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/guard-git.py\"",
+            "command": "python3 -c 'import sys; sys.exit(sys.version_info < (3,9))' >/dev/null 2>&1 || exit 0; python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/guard-git.py\"",
             "timeout": 10,
             "onFailure": "block"
           },
           {
             "type": "command",
-            "command": "command -v python3 >/dev/null 2>&1 || exit 0; python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/guard-zsh-split.py\"",
+            "command": "python3 -c 'import sys; sys.exit(sys.version_info < (3,9))' >/dev/null 2>&1 || exit 0; python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/guard-zsh-split.py\"",
             "timeout": 10
           }
         ]
@@ -69,7 +69,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "command -v python3 >/dev/null 2>&1 || exit 0; python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/guard-secrets.py\"",
+            "command": "python3 -c 'import sys; sys.exit(sys.version_info < (3,9))' >/dev/null 2>&1 || exit 0; python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/guard-secrets.py\"",
             "timeout": 10,
             "onFailure": "block"
           }
