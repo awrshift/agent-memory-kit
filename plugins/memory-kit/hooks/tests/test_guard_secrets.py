@@ -328,5 +328,32 @@ class SecretsGuardTest(unittest.TestCase):
                 self.assertEqual(r.returncode, 0)
 
 
+class LiteralAppendIsLazy(unittest.TestCase):
+    """R2-9 (v7.3 r2), in-process: the literal-append exemption is evaluated only when a call has a secret
+    redirection target. What this proves: when `literal_append` runs. Verdicts are the hook-level tests above."""
+
+    def test_literal_append_only_on_a_secret_redirect(self):
+        import importlib.util
+        from unittest import mock
+
+        sys.dont_write_bytecode = True
+        spec = importlib.util.spec_from_file_location("guard_secrets_r2", os.path.join(PLUGIN_ROOT, "hooks",
+                                                                                     "guard-secrets.py"))
+        guard = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(guard)
+        for cmd, called, verdict in (
+            ("cat .env.example && grep -rn x src", False, False),
+            ("cat .env", False, True),
+            ("echo x > notes.txt; ls .env", False, False),
+            ("echo 'K=v' >> .env", True, False),
+            ("cat x >> .env", True, True),
+        ):
+            with self.subTest(cmd=cmd), mock.patch.object(guard, "literal_append",
+                                                          wraps=guard.literal_append) as spy:
+                found = guard.secret_in_command(cmd, "/tmp")
+                self.assertEqual(spy.called, called)
+                self.assertEqual(bool(found), verdict)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=1)

@@ -147,11 +147,15 @@ def secret_in_command(command, cwd):
     calls = cmdparse.commands(command, cwd)
     # `echo 'K=v' >> .env` appends: nothing of the file comes back into the transcript (owner 2026-10-20, the
     # agent keeps the project's env up to date). Every other redirection to or from a secret file is blocked.
-    exempt = literal_append(command, cmdparse)
+    # The exemption is decided only once a secret redirection target is found (7.3 r2), at most once per command.
+    exempt = None
     for call in calls:
         for target in call.get("redirects", ()):
-            if is_secret(target) and not exempt:
-                return "redirection `%s`" % getattr(target, "op", ""), str(target)
+            if is_secret(target):
+                if exempt is None:
+                    exempt = literal_append(command, cmdparse)
+                if not exempt:
+                    return "redirection `%s`" % getattr(target, "op", ""), str(target)
         name = call["name"]
         if name is None or name in EXEMPT:
             continue
