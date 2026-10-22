@@ -4,12 +4,13 @@
 
 **Built-in memory decides what to remember. This one asks.**
 
-Memory Kit gives your coding agent a memory you can read, and a way of working you can trust. The agent proposes
-what to remember, you say yes, and it writes a dated line into plain text files in your own folder. Next session it
-opens already knowing where you left off. On top of that it carries a tested method for running work through
-subagents: specs as files, facts checked before they are believed, reviews that compound.
+Memory Kit is a Claude Code plugin that gives your coding agent a memory made of plain text files in your own
+folder. Session two opens with *"you were on Nestlé, the client hates em-dashes, next step: the Q3 brief"* — without
+you explaining anything again. The agent notes small facts as dated lines and tells you; nothing becomes a rule or a
+knowledge article until you say yes. No database, no service, no API key.
 
-It is one Claude Code plugin. No database, no service, no API key, nothing leaves your machine.
+**Optional second half, for people who delegate to subagents:** a method that ships with it — specs written as files
+before work starts, a subagent's report treated as a claim until checked, review findings that turn into checks.
 
 [![Version](https://img.shields.io/github/v/release/awrshift/agent-memory-kit?label=version&color=CFEF4A&cacheSeconds=1800)](https://github.com/awrshift/agent-memory-kit/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-55503E?labelColor=55503E&color=55503E)](LICENSE)
@@ -24,12 +25,13 @@ It is one Claude Code plugin. No database, no service, no API key, nothing leave
 ![How Memory Kit works: you talk, the agent writes plain files in your folder, hooks load them at the next start](.github/assets/01-system-map-v73.png)
 
 1. **You talk.** "We're working on Nestlé." "The client hates em-dashes." You never open a memory file.
-2. **The agent writes.** Something worth keeping becomes one dated line in `MEMORY.md`, and the agent says "saved".
+2. **The agent writes.** Something worth keeping becomes one dated line in `MEMORY.md`, and the agent tells you
+   ("saved", with the line).
    The work itself (backlog, specs, research, decisions) goes into that client's own folder, `projects/<client>/`.
 3. **You close the day.** Say "we're done for today". The agent looks for patterns across dates ("you rejected
    em-dashes on four different days, make it a rule?"), writes what you approve, and leaves a handoff note.
 4. **Tomorrow starts already knowing.** At the next session start a hook loads the memory, the newest handoff and the
-   knowledge index. Nothing is remembered without your yes, and every line carries its date, so a stale fact looks stale.
+   knowledge index. Nothing becomes a rule without your yes, and every line carries its date, so a stale fact looks stale.
 
 ## Install
 
@@ -71,7 +73,8 @@ settings facts), `hooks/lib/stale-refs.py` (finds paths in memory that no longer
 
 ### Skills — you call them, or just say what you want
 
-All are named `/memory-kit:<name>`, and each one also triggers from plain words. A skill costs nothing until it runs.
+All are named `/memory-kit:<name>`, and each one also triggers from plain words. Until a skill runs, only its one-line
+description sits in the context.
 
 | Skill | What it does |
 |---|---|
@@ -132,7 +135,7 @@ A plugin cannot install rules, so `setup` offers these and copies them only on y
   `scripts/permission-probes.sh` (checks that your permission rules stop what they should); `system-audit` carries
   `collect.sh`, `gates.py` and `usage.py`.
 - **The working agreement:** `context/identity.md`, injected at every session start. It is the kit's only always-on
-  text, about 2k tokens.
+  instruction text, about 1.6k tokens.
 
 ```
 plugins/memory-kit/
@@ -141,7 +144,7 @@ plugins/memory-kit/
 ├── skills/       close-session · memory-audit · system-audit · setup · tour · session-review
 │                 second-opinion · qa-sweep · document · code-sync
 ├── agents/       executor · recon · idea-validator · qa
-├── reference/    the eleven depth docs above
+├── reference/    the depth docs above
 ├── templates/    memory · rules · workspace · project
 ├── scripts/      quiet.sh · permission-probes.sh
 └── context/      identity.md
@@ -170,7 +173,8 @@ flowchart LR
     H -->|"loaded in full"| S
 ```
 
-A pattern's path is observation, candidate, rule, and you approve every step. **Memory vs paperwork:** what the agent
+A pattern's path: a dated line, then (seen on 3+ dates, with your yes) a knowledge article, then (stable and
+mechanical) a rule. **Memory vs paperwork:** what the agent
 learned is shared across your work; what the work produced belongs to one client's folder. Say "now IKEA" and the
 agent reads that folder only.
 
@@ -210,7 +214,7 @@ Claude Code, Cursor and Copilot all ship memory now, on by default. It is effort
 | One memory per client | no | **yes**, `projects/<client>/` |
 | Read by other agents | no | **yes** |
 | How staleness shows | it doesn't | **every line is dated**; caps force a prune |
-| Cost at session start | up to 200 lines / 25 KB (Claude Code docs) | 2–4k tokens on a working memory, ~12k at the caps, plus ~2k of skill descriptions (measured 2026-09-02) |
+| Cost at session start | up to 200 lines / 25 KB (Claude Code docs) | about 6.5–8.5k tokens on three working repositories (measured 2026-09-26), bounded by the caps, plus ~2k of skill and agent descriptions |
 
 Running both means two writers and two truths, so `setup` asks you to pick one.
 
@@ -233,7 +237,8 @@ no hooks gets the same discipline as a short block `setup` offers for your `AGEN
 
 ## Privacy and cost
 
-- **Nothing leaves your machine.** No hook or script opens a network connection; all are readable Python or shell.
+- **The kit itself sends nothing.** No hook or script opens a network connection; all are readable Python or shell.
+  Your agent sends what it reads, memory included, to its model provider, as with any file in the conversation.
 - **Private by default.** The hot cache and handoffs are gitignored, so they stay local even if you push. The
   knowledge base and rules are tracked: keep the repository private or prune before publishing. Working from two
   machines or with a teammate? Say so at `setup` and the hot cache gets committed instead.

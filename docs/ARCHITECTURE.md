@@ -495,7 +495,8 @@ before writing a plan. Defaults are a default; a working layout outranks them.
 
 ![](../.github/assets/06-whats-inside.png)
 
-Six hooks, declared in the plugin's `hooks/hooks.json` — nothing to wire in your settings:
+Seven hooks, declared in the plugin's `hooks/hooks.json` — nothing to wire in your settings, and nothing you should
+wire again: since 7.3 session start flags a project whose own settings run a COPY of a kit hook (it would fire twice).
 
 - **session-start.py** — injects the working agreement, the nudges that fire, session stats, THE
   HOT CACHE ITSELF, the newest handoff and the knowledge index, with a profile per `source`
@@ -523,7 +524,8 @@ Six hooks, declared in the plugin's `hooks/hooks.json` — nothing to wire in yo
   `push --mirror`, `reset --hard`, `clean -f`, `branch -D`, `checkout .`, `restore .`), found by a
   shell-aware parser (`hooks/lib/cmdparse.py`) so quoted text, heredocs and commit messages never
   count. A permission rule is a prefix and cannot say «this flag anywhere»; this is why it is a hook.
-  Fails open on a parse error; opt-out `CMK_GIT_GUARD=off`.
+  Since 7.3 an internal error becomes an explicit `ask`, and `"onFailure": "block"` blocks the call when the hook
+  crashes or times out (a missing `python3` stays a no-op); opt-out `CMK_GIT_GUARD=off`.
 - **guard-secrets.py** (7.2) — PreToolUse(Read|Edit|Write|Bash): blocks a Read/Edit/Write of a
   secret file (`.env`, `.env.local`, `.env.*.local`, `.env.<development|production|test|staging>`,
   `*.pem`, `id_rsa*`, `*.p12`; never `.env.example|sample|template`) and a shell command that names
@@ -531,9 +533,17 @@ Six hooks, declared in the plugin's `hooks/hooks.json` — nothing to wire in yo
   `.`, `cp` / `ln` / `mv`, `ls`, `test` / `[`, `git`, `rm`. Same parser as the git guard. Why a
   hook: a `Read` deny rule on env files makes Claude Code's static check ASK on harmless `cd … &&
   ls` in some repos, so projects dropped the deny; the hook gates reads without touching that
-  check. Fails open on a parse error; opt-out `CMK_SECRETS_GUARD=off`.
-- **pre-compact.sh** — blocks compaction until MEMORY.md is BOTH fresh AND inside all three caps.
-- **session-end.sh** — SessionEnd timestamp logging, adopted repositories only (7.2.2).
+  check. A plain stdout append (`>> .env`) passes since 7.3; an fd-numbered append or an fd path in the same command
+  (`/proc/self/fd/N`, `/dev/stdout`) stays blocked — on Linux reopening the fd reads the file back. Internal error →
+  `ask`; `onFailure: block` as above; opt-out `CMK_SECRETS_GUARD=off`.
+- **guard-zsh-split.py** (7.3) — PreToolUse(Bash), zsh only: zsh does not word-split an unquoted `$var` the way bash
+  does, so `for f in $list` loops once and `cmd $args` gets one argument. The guard catches that before it runs.
+- **pre-compact.sh** — a MANUAL `/compact` waits until MEMORY.md is BOTH fresh AND inside all three caps. An AUTOMATIC
+  compaction is never blocked (7.3): Claude Code would skip a proactive one, and on a context-limit recovery blocking
+  FAILS the user's request. Over unsaved memory it writes `.claude/state/compact-unsaved`, and session start
+  (`source: compact`) opens the new context with a loud "save memory now".
+- **session-end.sh** — SessionEnd timestamp logging, adopted repositories only (7.2.2). Plugin SessionEnd hooks share a
+  1.5-second budget that a plugin's `timeout` cannot raise, so the script stays well inside it.
 
 Beside them sits **stale-refs.py** (`hooks/lib/`), which the session-start hook runs to check that
 file paths mentioned in CLAUDE.md + MEMORY.md still exist on disk — a stale belief that looks
@@ -554,7 +564,7 @@ context size, behaviour, hooks).
 **What the injection costs** (measured 2026-09-02 by running `session-start.py` and counting
 characters ÷ 4): a fresh install ~2.3k tokens, a working 6 KB cache with a handoff ~3.5k, and a
 hard ceiling of ~12k when the cache sits at all three caps and the handoff at its 6 KB inject
-cap. Skill and agent descriptions add ~1.8k on every host that loads them. The caps are what
+cap (7.3: an over-cap handoff still delivers its opening-note section whole). Skill and agent descriptions add ~1.8k on every host that loads them. The caps are what
 make the ceiling a number instead of a trend. **Correction (7.2):** on Claude Code those numbers
 were what the hook PRINTED, not what the model received — anything over 10,000 characters arrived
 as a 2 KB preview until the 7.2 split. Measured 2026-09-26 on three working repositories: 26,183 –
