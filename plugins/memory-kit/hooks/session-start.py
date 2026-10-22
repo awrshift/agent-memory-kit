@@ -122,9 +122,7 @@ HANDOFF_INJECT_CAP = 6_000
 # `## 6. [Opening contract]` in adopters' handoffs) is written LAST, so a plain cut drops exactly it (7.3).
 # 7.3 r2: a heading of level >= 2 whose text STARTS with "opening" once numbering, `[` and punctuation are skipped
 # (a title "# Handoff — reopening the billing work" is not one), never a line inside fenced code.
-ATX_HEADING_RE = re.compile(r"^ {0,3}(#{1,6})(?:[ \t]+(.*?))?[ \t]*$")
-FENCE_RE = re.compile(r"^ {0,3}(`{3,}|~{3,})(.*)$")
-OPENING_TITLE_RE = re.compile(r"^(?:[^\w\n]|[\d_])*opening", re.IGNORECASE)
+FENCE_RE = re.compile(r" {0,3}(`{3,}|~{3,})")
 STATE_TTL_DAYS = 30
 
 # A spec left in `building` for this long is either done-but-unmarked or abandoned; both are
@@ -598,25 +596,45 @@ def newest_handoff() -> Path | None:
     return max(files, key=lambda p: p.stat().st_mtime)
 
 
+def atx_heading(line: str) -> tuple[int, str] | None:
+    """(level, title) when `line` is an ATX heading (up to 3 spaces, 1-6 `#`, then a space or the end), else None.
+    String operations only: no regex backtracking over a long line."""
+    indent = len(line) - len(line.lstrip(" "))
+    if indent > 3:
+        return None
+    rest = line[indent:]
+    level = len(rest) - len(rest.lstrip("#"))
+    after = rest[level:]
+    if not 1 <= level <= 6 or (after and after[0] not in " \t"):
+        return None
+    return level, after.strip(" \t")
+
+
+def is_opening_title(title: str) -> bool:
+    """The title STARTS with "opening" once numbering, `[` and punctuation (every non-letter) are skipped."""
+    first = next((k for k, ch in enumerate(title) if ch.isalpha()), len(title))
+    return title[first:first + 7].lower() == "opening"
+
+
 def markdown_headings(text: str) -> list[tuple[int, int, str]]:
     """(offset, level, title) of every ATX heading outside fenced code (``` / ~~~, closed by the same character
-    at least as long; an unclosed fence runs to the end of the text)."""
+    at least as long with nothing after it; an unclosed fence runs to the end of the text)."""
     out: list[tuple[int, int, str]] = []
     fence: str | None = None
     offset = 0
     for line in text.splitlines(keepends=True):
         bare = line.rstrip("\r\n")
         opener = FENCE_RE.match(bare)
+        info = bare[opener.end():] if opener else ""
         if fence is not None:
-            if opener and opener.group(1)[0] == fence[0] and len(opener.group(1)) >= len(fence) \
-                    and not opener.group(2).strip():
+            if opener and opener.group(1)[0] == fence[0] and len(opener.group(1)) >= len(fence) and not info.strip():
                 fence = None
-        elif opener and not (opener.group(1)[0] == "`" and "`" in opener.group(2)):
+        elif opener and not (opener.group(1)[0] == "`" and "`" in info):
             fence = opener.group(1)
         else:
-            heading = ATX_HEADING_RE.match(bare)
+            heading = atx_heading(bare)
             if heading:
-                out.append((offset, len(heading.group(1)), heading.group(2) or ""))
+                out.append((offset, heading[0], heading[1]))
         offset += len(line)
     return out
 
@@ -637,7 +655,7 @@ def handoff_body(text: str) -> str:
         return text
     headings = markdown_headings(text)
     pick = next((k for k, (_, level, title) in enumerate(headings)
-                 if level >= 2 and OPENING_TITLE_RE.match(title)), None)
+                 if level >= 2 and is_opening_title(title)), None)
     if pick is None:
         return cut_to(text, HANDOFF_INJECT_CAP, cut_note)
     start, level, _ = headings[pick]

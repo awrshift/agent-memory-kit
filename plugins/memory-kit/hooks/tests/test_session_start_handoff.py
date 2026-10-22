@@ -191,6 +191,25 @@ class HandoffOpening(unittest.TestCase):
         self.assertLess(body.index(opening), body.index("## 1. What was done"))
         self.assertLessEqual(len(body), HANDOFF_CAP)
 
+    def test_worst_case_heading_lines_under_two_seconds(self):
+        """The picker reads every line of a file the kit did not write: long adversarial lines stay linear (a regex
+        heading parser took 124 s on the `ws-run` line — scratchpad evidence handoff-worst-case-before.txt)."""
+        import time
+        cases = {
+            "ws-run heading": "## a" + " \t" * 100000 + "b\n",
+            "spaces then text": "# " + " " * 200000 + "x\n",
+            "punctuation title": "## " + "[1." * 100000 + "x\n",
+            "fence lines": "```\n" * 100000,
+            "opening headings": "## opening\n" * 50000,
+        }
+        for label, head in cases.items():
+            with self.subTest(case=label):
+                self.write("context/handoffs/worst-2026-10-22.md", head + "y" * 7000 + "\n")
+                t0 = time.monotonic()
+                block = self.injected()
+                self.assertLess(time.monotonic() - t0, 2.0, label)
+                self.assertLessEqual(len(self.body(block)), HANDOFF_CAP)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=1)
