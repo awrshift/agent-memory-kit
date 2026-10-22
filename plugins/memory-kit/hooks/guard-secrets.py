@@ -15,14 +15,14 @@ Blocked (exit 2 + reason on stderr):
   Bash                  a command (found by `lib/cmdparse.py`: `&&`, pipes, `$(…)`, `bash -c`,
                         `eval`, `sudo`/`env`/`xargs`… unwrapped) with an argv word whose basename is
                         a secret name, or a file redirection to/from one (`< .env`, `> .env`);
-                        an APPEND to a secret file is allowed only on a positive signal (7.3, an
-                        allowlist): every secret-named redirection is a plain stdout append (`>>`, `1>>`,
-                        `&>>`), every command in the line (`$(…)` and backticks included) is `echo`,
-                        `printf`, or `cat` with no file argument, a heredoc delimiter is quoted (`<<'EOF'`:
-                        the body is not expanded), and no redirection reads a file (`<`, `<&`, `<>`).
-                        Why not a list of bad shapes: on Linux reopening an fd path reads the appended file
-                        back (`cp /proc/self/fd/1 x >> .env`), and its spellings are open-ended
-                        (`/proc/<pid>/task/<tid>/fd/1`, a path inside a heredoc or an interpreter's stdin);
+                        an APPEND to a secret file is allowed in ONE form only (7.3): the whole command
+                        is a single call, literally `echo` or `printf`, every word a literal (no `$`,
+                        backtick or unquoted glob), and its one redirection is `>>` or `1>>` to the secret
+                        file — no pipe, list, substitution, wrapper, heredoc, here-string or second
+                        redirection. Why so narrow: each wider exemption (a list of fd paths, then an
+                        allowlist with `cat` and heredocs) depended on this parser agreeing with the shell,
+                        and every disagreement was a secret read (`cp /proc/self/fd/1 x >> .env` reads the
+                        appended file back on Linux);
                         a word after an inline-script option (`-e`, `-c`, `-E`, `-p`, `-r`, `--eval`,
                         `--print`, `--command`, a short cluster ending in c/e) and every word of an
                         interpreter (node, python, perl, ruby, php, deno, bun, …) is also split into
@@ -62,10 +62,10 @@ EXEMPT = {"source", ".", "cp", "ln", "mv", "ls", "test", "[", "[[", "git", "rm"}
 SCRIPT_OPTS = {"-e", "-c", "-E", "-p", "-r", "--eval", "--print", "--command"}
 INTERPRETER_RE = re.compile(r"^(?:node(?:js)?|deno|bun|python[\d.]*|pypy[\d.]*|perl|ruby|php|lua|osascript)$")
 NOT_PATH_RE = re.compile(r"[^A-Za-z0-9._\-/~@%$\x00]+")
-# The only appends that write without a way to read back: stdout alone, or stdout + stderr.
-PLAIN_APPENDS = {">>", "1>>", "&>>"}
-# The commands a secret append may come with — they print their arguments or stdin and read no file.
+# The one exempt form of a secret append (see the module doc): a literal echo / printf, one `>>` / `1>>`.
+PLAIN_APPENDS = {">>", "1>>"}
 APPEND_WRITERS = {"echo", "printf"}
+GLOB_CHARS = "*?["
 
 
 def is_secret(path):
@@ -110,26 +110,26 @@ def _pattern_words(name, argv):
     return skip
 
 
-def append_blocker(calls):
-    """What keeps a secret append from its exemption, or None when the whole line is on the allowlist."""
-    for call in calls:
-        for target in call.get("redirects", ()):
-            op = getattr(target, "op", "")
-            if "<" in op:
-                return "the input redirection `%s %s`" % (op, target)
-        for delim in call.get("heredocs", ()):
-            if not getattr(delim, "quoted", False):
-                return "an unquoted heredoc `<<%s` (its body expands `$(…)`)" % delim
-        name = call["name"]
-        if name is None:
-            continue
-        argv = [str(w) for w in call["argv"]]
-        if argv[0] in APPEND_WRITERS:
-            continue
-        if argv[0] == "cat" and all(w.startswith("-") for w in argv[1:]):
-            continue
-        return "`%s`" % " ".join(argv)[:80]
-    return None
+def literal_append(command, cmdparse):
+    """True only when the whole command is ONE literal `echo` / `printf` whose ONE redirection is `>>` / `1>>` to a
+    secret file. Decided on the raw lexer items, so a pipe, list, substitution, group, wrapper or second
+    redirection is simply a different item list; heredocs and here-strings leave no item, so `<<` anywhere refuses."""
+    if "<<" in command:
+        return False
+    items = cmdparse.lex(command)
+    if len(items) != 2 or items[0][0] != "redir" or items[1][0] != "cmd" or len(items[0][1]) != 1:
+        return False
+    target, words = items[0][1][0], items[1][1]
+    if target.op not in PLAIN_APPENDS or target.dynamic or not is_secret(target):
+        return False
+    if str(words[0]) not in APPEND_WRITERS:
+        return False
+    for word in words:
+        if word.dynamic or cmdparse.SUBST in word:
+            return False
+        if any(ch in GLOB_CHARS and q == "u" for ch, q in zip(str(word), word.quoting)):
+            return False
+    return True
 
 
 def load_cmdparse():
@@ -143,17 +143,13 @@ def secret_in_command(command, cwd):
     """(what, secret word) for the first blocked use, or None."""
     cmdparse = load_cmdparse()
     calls = cmdparse.commands(command, cwd)
-    appended = None
+    # `echo 'K=v' >> .env` appends: nothing of the file comes back into the transcript (owner 2026-10-20, the
+    # agent keeps the project's env up to date). Every other redirection to or from a secret file is blocked.
+    exempt = literal_append(command, cmdparse)
     for call in calls:
         for target in call.get("redirects", ()):
-            if not is_secret(target):
-                continue
-            op = getattr(target, "op", "")
-            # `>> .env` appends: nothing of the file comes back into the transcript (owner 2026-10-20,
-            # the agent keeps the project's env up to date). `>`, `<`, `&>` and `2>>` stay blocked.
-            if op not in PLAIN_APPENDS:
-                return "redirection `%s`" % op, str(target)
-            appended = appended or str(target)
+            if is_secret(target) and not exempt:
+                return "redirection `%s`" % getattr(target, "op", ""), str(target)
         name = call["name"]
         if name is None or name in EXEMPT:
             continue
@@ -169,10 +165,6 @@ def secret_in_command(command, cwd):
                 for token in NOT_PATH_RE.split(word):
                     if token and is_secret(token):
                         return name, token
-    if appended:
-        blocker = append_blocker(calls)
-        if blocker:
-            return "an append beside %s" % blocker, appended
     return None
 
 
@@ -233,6 +225,11 @@ def main():
             "whole (`cp`); if the user really wants it shown, they run it themselves. Set "
             "CMK_SECRETS_GUARD=off to disable.\n" % (what, name)
         )
+        if what.startswith("redirection"):
+            sys.stderr.write(
+                "An append to a secret file is allowed only as one literal `echo` / `printf` with one `>>`, "
+                "e.g. `echo 'KEY=value' >> .env`.\n"
+            )
         return 2
     return 0
 

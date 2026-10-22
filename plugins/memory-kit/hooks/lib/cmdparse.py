@@ -254,9 +254,12 @@ def _parse(s, i, in_subst):
             continue
         if c in "<>":
             fd = ""
-            if st["in_word"] and not st["dyn"] and "".join(st["buf"]).isdigit():
-                fd = "".join(st["buf"])  # `2>` — the digits are an fd, not a word; kept in the op
-                st.update(buf=[], q=[], in_word=False)
+            if (st["in_word"] and not st["dyn"] and set("".join(st["q"])) == {"u"}
+                    and "".join(st["buf"]).isdigit()):
+                # `2>` — unquoted literal digits are an fd, kept in the op; `'2'>` / `"$N">` are a word, as in
+                # the shell. Every per-word field is reset so nothing of the digits reaches the next word.
+                fd = "".join(st["buf"])
+                st.update(buf=[], q=[], in_word=False, dyn=False, array=False)
             else:
                 end_word()
             j = i + 1

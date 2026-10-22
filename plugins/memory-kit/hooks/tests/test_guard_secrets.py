@@ -183,19 +183,58 @@ APPEND_ALLOWLIST_BYPASSES = [
     "npm run gen-env && echo X=1 >> .env",
 ]
 
+# AC-17, third round (integrator STOP SIGNAL, 2026-10-22): every "looks safe" exemption depended on the parser agreeing
+# with the shell. The exemption now has no parser surface: ONE simple call, literally `echo` or `printf`, every word
+# a literal (no `$`, backtick or unquoted glob), and exactly one redirection — `>>` or `1>>` to the secret file.
+# The forms below were allowed by an earlier round of this branch (never released) and are blocked now.
+APPEND_NARROWED = [
+    # reported: cat with a dynamic argument, fd duplication, exec redirections, &>>
+    "cat -$F >> .env",
+    "echo X=1 >> .env 2>&1",
+    "echo X=1 >&3 >> .env",
+    "exec >> .env; echo X=1",
+    "exec 3>>.env",
+    "echo X=1 &>> .env",
+    # dynamic words and globs
+    "echo \"$X\" >> .env",
+    "echo \"KEY=$v\" >> .env",
+    "echo KEY=`id` >> .env",
+    "echo KEY=$(id) >> .env",
+    "printf '%s\\n' * >> .env",
+    "echo KEY=a? >> .env",
+    # more than one call, a wrapper, an assignment, a group
+    "echo a >> .env; cat .env",
+    "echo a >> .env; echo b",
+    "printf 'A=1\\n' >> .env.local && echo done",
+    "echo a | cat >> .env",
+    "VAR=1 echo x >> .env",
+    "command echo x >> .env",
+    "sudo echo x >> .env",
+    "( echo x ) >> .env",
+    "{ echo x; } >> .env",
+    "echo x >(cat) >> .env",
+    # a second redirection, a heredoc or a here-string
+    "echo KEY=v >> .env 2>/dev/null",
+    "echo KEY=v >> .env >> other.txt",
+    "cat <<'EOF' >> .env\nKEY=1\nEOF",
+    "cat >> .env <<< \"KEY=v\"",
+    "echo KEY=v >> .env <<< x",
+    # the name must be literally echo / printf
+    "/bin/echo KEY=v >> .env",
+    "cat - >> .env",
+]
+
 APPEND_ALLOWED = [
     "echo X=1 >> .env",
-    "echo \"KEY=$v\" >> .env",
-    "printf '%s\\n' x >> .env",
-    "cat <<'EOF' >> .env\nKEY=1\nEOF",
-    "cat <<\"EOF\" >> .env\nKEY=$v\nEOF",
-    "cat <<\\EOF >> .env\nKEY=1\nEOF",
-    "cat >> .env <<< \"KEY=$v\"",
-    "cat - >> .env <<'EOF'\nKEY=1\nEOF",
-    "echo X=1 1>> .env",
-    "echo X=1 &>> .env",
-    "echo X=1 >> .env 2>&1",
-    "printf 'A=1\\n' >> .env.local && echo done",
+    "echo 'KEY=value' >> .env",
+    "printf '%s\\n' 'KEY=v' >> .env",
+    "echo KEY=v 1>> .env",
+    "printf '%s\\n' x >> .env.local",
+    "echo \"KEY=a b\" >>.env",
+    "echo 'KEY=$NOT_EXPANDED' >> .env",
+    "echo 'glob*literal' >> .env",
+    # quoted digits before a redirection are an argument, not an fd (cmdparse fix, third round)
+    "echo KEY=v '2'>> .env",
     # an fd path with no secret append is not this rule's business
     "cat /dev/stdin > notes.txt",
     "echo hi >> notes.txt; ls /dev/fd/",
@@ -243,6 +282,13 @@ class SecretsGuardTest(unittest.TestCase):
                 self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
                 self.assertIn("Memory Kit secrets guard:", err)
 
+    def test_append_narrowed_to_one_literal_echo(self):
+        for cmd in APPEND_NARROWED:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+                self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+                self.assertIn("Memory Kit secrets guard:", err)
+
     def test_append_allowed(self):
         for cmd in APPEND_ALLOWED:
             with self.subTest(cmd=cmd):
@@ -250,9 +296,10 @@ class SecretsGuardTest(unittest.TestCase):
                 self.assertEqual(rc, 0, "expected allow: %r, stderr: %s" % (cmd, err))
                 self.assertEqual(err, "")
 
-    def test_fd_append_message_names_the_fd_path(self):
+    def test_block_message_names_the_operator_and_the_exemption(self):
         _, err = self.bash("cp /proc/self/fd/1 /tmp/x >> .env")
-        self.assertIn("/proc/self/fd/1", err)
+        self.assertIn("redirection `>>` on `.env` blocked", err)
+        self.assertIn("one literal `echo` / `printf`", err)
         _, err = self.bash("echo X=1 2>> .env")
         self.assertIn("2>>", err)
 
