@@ -8,6 +8,10 @@
 # This hook only records that a session closed; it does not spawn any
 # background process. Recursion guard kept for compatibility with any
 # future sub-agent invocations.
+#
+# Budget (7.3): SessionEnd hooks share a 1.5-second budget, and a timeout set on a PLUGIN hook does not
+# raise it (code.claude.com/docs/en/hooks §SessionEnd, read 2026-10-22) — hooks.json says 1, and the
+# stdin wait below is 0.5 s, so a run with stdin never closed ends in ~0.6 s (tests/test_session_end.py).
 
 set -euo pipefail
 
@@ -34,10 +38,10 @@ LOG_FILE="$STATE_DIR/session-end.log"
 # Read stdin JSON — but never block on it. Claude Code cancels SessionEnd hooks that are
 # still running when the process exits, and a bare `cat` on a stdin nobody closes is exactly
 # that: every exit printed "SessionEnd hook … failed: Hook cancelled" (found 2026-09-02 while
-# recording the demo). One second is plenty for a JSON payload that is already written.
+# recording the demo). Half a second is plenty for a JSON payload that is already written.
 SESSION_ID=$(python3 -c '
 import json, select, sys
-ready, _, _ = select.select([sys.stdin], [], [], 1.0)
+ready, _, _ = select.select([sys.stdin], [], [], 0.5)
 raw = sys.stdin.read() if ready else ""
 try:
     print(json.loads(raw).get("session_id", "unknown") or "unknown")
