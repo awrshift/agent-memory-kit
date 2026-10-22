@@ -25,7 +25,10 @@ if [[ ! -f "$PROJECT_DIR/.claude/memory/MEMORY.md" && ! -d "$PROJECT_DIR/context
     exit 0
 fi
 
-mkdir -p "$STATE_DIR"
+# Writes go through lib/state.sh: refused when .claude, .claude/state or the log is a symlink or the state
+# directory resolves outside the project (7.3).
+# shellcheck source=lib/state.sh
+. "${CLAUDE_PLUGIN_ROOT:-$(dirname "$0")/..}/hooks/lib/state.sh"
 LOG_FILE="$STATE_DIR/session-end.log"
 
 # Read stdin JSON — but never block on it. Claude Code cancels SessionEnd hooks that are
@@ -42,6 +45,6 @@ except Exception:
     print("unknown")
 ' 2>/dev/null || echo "unknown")
 
-echo "$(date '+%Y-%m-%d %H:%M:%S') [hook] SessionEnd: session=$SESSION_ID" >> "$LOG_FILE"
+cmk_state_append "$LOG_FILE" "$(date '+%Y-%m-%d %H:%M:%S') [hook] SessionEnd: session=$SESSION_ID"
 
 exit 0

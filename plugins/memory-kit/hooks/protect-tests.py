@@ -80,23 +80,23 @@ def ask(reason: str) -> None:
 
 def session_created_file(project_dir: Path, session_id: str, file_path: str) -> bool:
     """Files this session created are its own to iterate on — that is the TDD loop."""
-    ledger = project_dir / ".claude" / "state" / f"{session_id}_created_tests"
-    if not ledger.exists():
-        return False
-    try:
-        return file_path in ledger.read_text(encoding="utf-8").splitlines()
-    except OSError:
-        return False
+    text = statefs().read_text(project_dir, f"{session_id}_created_tests")
+    return text is not None and file_path in text.splitlines()
+
+
+def statefs():
+    """hooks/lib/statefs.py (7.3): the ledger is never read or written through a symlink."""
+    sys.dont_write_bytecode = True
+    lib = str(Path(os.environ.get("CLAUDE_PLUGIN_ROOT", Path(__file__).resolve().parent.parent)) / "hooks" / "lib")
+    if lib not in sys.path:
+        sys.path.insert(0, lib)
+    import statefs as module
+
+    return module
 
 
 def remember_created(project_dir: Path, session_id: str, file_path: str) -> None:
-    ledger = project_dir / ".claude" / "state" / f"{session_id}_created_tests"
-    try:
-        ledger.parent.mkdir(parents=True, exist_ok=True)
-        with ledger.open("a", encoding="utf-8") as fh:
-            fh.write(file_path + "\n")
-    except OSError:
-        pass
+    statefs().append_line(project_dir, f"{session_id}_created_tests", file_path)
 
 
 def weakening(old: str, new: str) -> str:

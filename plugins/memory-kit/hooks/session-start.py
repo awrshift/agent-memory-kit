@@ -46,7 +46,6 @@ from pathlib import Path
 PROJECT_DIR = Path(os.environ.get("CLAUDE_PROJECT_DIR", Path.cwd()))
 PLUGIN_ROOT = Path(os.environ.get("CLAUDE_PLUGIN_ROOT", Path(__file__).resolve().parent.parent))
 
-STATE_DIR = PROJECT_DIR / ".claude" / "state"
 MEMORY_FILE = PROJECT_DIR / ".claude" / "memory" / "MEMORY.md"
 INDEX_FILE = PROJECT_DIR / "knowledge" / "index.md"
 HANDOFFS_DIR = PROJECT_DIR / "context" / "handoffs"
@@ -56,15 +55,23 @@ EXPERIMENTS_DIR = PROJECT_DIR / "experiments"
 IDENTITY_FILE = PLUGIN_ROOT / "context" / "identity.md"
 STALE_REFS_SCRIPT = PLUGIN_ROOT / "hooks" / "lib" / "stale-refs.py"
 LIB_DIR = PLUGIN_ROOT / "hooks" / "lib"
-SESSION_FILE = STATE_DIR / "session_count"
+# State files, by NAME: every read and write under .claude/state goes through hooks/lib/statefs.py, which
+# refuses a symlinked .claude / .claude/state / entry and a state directory outside the project (7.3).
+SESSION_FILE = "session_count"
 # `<session_id>|<source>\t<n>`, written by part 1 BEFORE session_count: a parallel part 2..6 that reads
 # session_count first and this file second always derives the number part 1 printed.
-SESSION_LAST_FILE = STATE_DIR / "session_last"
-# Left by pre-compact.sh when an AUTO compaction ran over stale / over-cap memory: "<date> <time>\t<reason>".
-COMPACT_UNSAVED_FILE = STATE_DIR / "compact-unsaved"
+SESSION_LAST_FILE = "session_last"
+# Left by pre-compact.sh when an AUTO compaction ran over unsaved memory: exactly "<date> <time>\t<code>",
+# the code from COMPACT_REASONS — the file is read back into the model's context, so nothing else is accepted.
+COMPACT_UNSAVED_FILE = "compact-unsaved"
 # `<session key>\t<marker line>`, written by the writing part BEFORE it removes the marker (same protocol as
 # session_last): a read-only part that finds the marker gone reads this and prints the same nudge.
-COMPACT_SEEN_FILE = STATE_DIR / "compact-unsaved-seen"
+COMPACT_SEEN_FILE = "compact-unsaved-seen"
+COMPACT_MARKER_RE = re.compile(r"^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\t(stale|over-cap)$")
+COMPACT_REASONS = {
+    "stale": "stale — MEMORY.md was not written in the 2 minutes before the compaction",
+    "over-cap": "MEMORY.md is over its caps: 180 lines / 32 KB / 3000 chars per line",
+}
 COMPACT_SEEN_WINDOW_S = 120  # the parts of one SessionStart run within seconds of each other
 COMPACT_MARKER_MAX_AGE_S = 1800  # SessionStart `compact` follows the compaction at once; older = left over
 
@@ -190,15 +197,27 @@ def adoption_pointer() -> str:
     )
 
 
+def statefs():
+    """hooks/lib/statefs.py — the only way this hook touches .claude/state."""
+    sys.dont_write_bytecode = True
+    if str(LIB_DIR) not in sys.path:
+        sys.path.insert(0, str(LIB_DIR))
+    import statefs as module
+
+    return module
+
+
 def prune_state() -> None:
     """Per-session bookkeeping accumulated forever in v5. Keep the directory bounded."""
-    if not STATE_DIR.exists():
+    state = statefs().state_dir(PROJECT_DIR)
+    if state is None:
         return
     cutoff = time.time() - STATE_TTL_DAYS * 86400
-    for path in STATE_DIR.iterdir():
+    for path in state.iterdir():
         # rails-v2 / rails-declined are decisions, not bookkeeping: pruning them would
         # bring the rails nudge back 30 days after the user answered it.
-        if path.name in {".gitkeep", "session_count", "session_last", "rails-v2", "rails-declined"} or not path.is_file():
+        keep = {".gitkeep", "session_count", "session_last", "rails-v2", "rails-declined"}
+        if path.name in keep or path.is_symlink() or not path.is_file():
             continue
         try:
             if path.stat().st_mtime < cutoff:
@@ -331,28 +350,19 @@ def maybe_rails_hint() -> str:
 
 def read_session_count() -> int:
     try:
-        return int(SESSION_FILE.read_text(encoding="utf-8").strip() or "0")
-    except (ValueError, OSError):
+        return int((statefs().read_text(PROJECT_DIR, SESSION_FILE) or "0").strip() or "0")
+    except ValueError:
         return 0
 
 
-def write_atomic(path: Path, text: str) -> None:
-    """A parallel reader sees the old file or the new one, never a torn write."""
-    tmp = path.with_name(f".{path.name}.tmp")
-    try:
-        tmp.write_text(text, encoding="utf-8")
-        os.replace(tmp, path)
-    except OSError:
-        pass
-
-
 def bump_session_counter(session_key: str | None) -> int:
-    """Counts real sessions only — v5 also counted resumes and post-compact restarts. Part 1 only."""
-    STATE_DIR.mkdir(parents=True, exist_ok=True)
+    """Counts real sessions only — v5 also counted resumes and post-compact restarts. Part 1 only.
+
+    The replace is atomic (statefs.write_atomic): a parallel reader sees the old file or the new one."""
     new = read_session_count() + 1
     if session_key:
-        write_atomic(SESSION_LAST_FILE, f"{session_key}\t{new}")
-    write_atomic(SESSION_FILE, str(new))
+        statefs().write_atomic(PROJECT_DIR, SESSION_LAST_FILE, f"{session_key}\t{new}")
+    statefs().write_atomic(PROJECT_DIR, SESSION_FILE, str(new))
     return new
 
 
@@ -365,10 +375,10 @@ def peek_session_counter(session_key: str | None) -> int:
     count = read_session_count()
     if session_key:
         try:
-            key, _, num = SESSION_LAST_FILE.read_text(encoding="utf-8").rpartition("\t")
+            key, _, num = (statefs().read_text(PROJECT_DIR, SESSION_LAST_FILE) or "").rpartition("\t")
             if key == session_key:
                 return int(num)
-        except (ValueError, OSError):
+        except ValueError:
             pass
     return count + 1
 
@@ -377,35 +387,32 @@ def compact_unsaved_reason(writer: bool, session_key: str | None) -> str | None:
     """The marker line when the compaction just run went over unsaved memory, else None.
 
     The writer reads the marker, records it in COMPACT_SEEN_FILE, then removes it; a read-only part reads
-    the marker first and COMPACT_SEEN_FILE second, so it derives the same answer in either order.
+    the marker first and COMPACT_SEEN_FILE second, so it derives the same answer in either order. A line
+    not in the marker's exact format counts as no marker (it is never injected).
     """
+    fs = statefs()
     key = session_key or "-"
-    try:
-        line = COMPACT_UNSAVED_FILE.read_text(encoding="utf-8").strip()
-        fresh = time.time() - COMPACT_UNSAVED_FILE.stat().st_mtime <= COMPACT_MARKER_MAX_AGE_S
-    except OSError:
-        line, fresh = None, False
-    if line is not None:
+    raw = fs.read_text(PROJECT_DIR, COMPACT_UNSAVED_FILE)
+    when = fs.mtime(PROJECT_DIR, COMPACT_UNSAVED_FILE)
+    if raw is not None and when is not None:
+        line = raw.strip()
+        valid = bool(COMPACT_MARKER_RE.match(line)) and time.time() - when <= COMPACT_MARKER_MAX_AGE_S
         if writer:
-            if fresh:
-                write_atomic(COMPACT_SEEN_FILE, f"{key}\t{line}")
-            try:
-                COMPACT_UNSAVED_FILE.unlink()
-            except OSError:
-                pass
-        return (line or "memory not saved") if fresh else None
-    try:
-        seen_key, _, seen_line = COMPACT_SEEN_FILE.read_text(encoding="utf-8").partition("\t")
-        if seen_key == key and time.time() - COMPACT_SEEN_FILE.stat().st_mtime <= COMPACT_SEEN_WINDOW_S:
-            return seen_line.strip() or "memory not saved"
-    except OSError:
-        pass
-    return None
+            if valid:
+                fs.write_atomic(PROJECT_DIR, COMPACT_SEEN_FILE, f"{key}\t{line}")
+            fs.remove(PROJECT_DIR, COMPACT_UNSAVED_FILE)
+        return line if valid else None
+    seen = fs.read_text(PROJECT_DIR, COMPACT_SEEN_FILE)
+    seen_at = fs.mtime(PROJECT_DIR, COMPACT_SEEN_FILE)
+    if seen is None or seen_at is None or time.time() - seen_at > COMPACT_SEEN_WINDOW_S:
+        return None
+    seen_key, _, line = seen.strip().partition("\t")
+    return line if seen_key == key and COMPACT_MARKER_RE.match(line) else None
 
 
 def compact_unsaved_nudge(line: str) -> str:
-    when, _, reason = line.partition("\t")
-    reason = reason or when
+    match = COMPACT_MARKER_RE.match(line)
+    reason = COMPACT_REASONS[match.group(2)] if match else "MEMORY.md was not saved"
     return (
         f"⚠ COMPACTION RAN OVER UNSAVED MEMORY ({reason}) — save MEMORY.md now, before anything else: "
         "REPLACE the header current-state lines, add this session's `[YYYY-MM-DD]` patterns, and refresh "

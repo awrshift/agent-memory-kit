@@ -104,7 +104,7 @@ class Compaction(unittest.TestCase):
         out = self.precompact({"trigger": "auto"})
         self.assertNotIn("decision", out)
         with open(self.marker, encoding="utf-8") as fh:
-            self.assertIn("OVER its caps", fh.read())
+            self.assertRegex(fh.read(), r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\tover-cap\n$")
 
     def test_manual_over_stale_memory_still_blocks(self):
         self.memory(age_seconds=3600)

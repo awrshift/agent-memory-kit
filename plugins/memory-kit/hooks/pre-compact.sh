@@ -6,7 +6,7 @@
 #   trigger "manual" (/compact)  → {"decision": "block", "reason": …}: the agent saves, the user
 #                                  runs /compact again.
 #   trigger "auto" (or missing)  → ALLOW, and write .claude/state/compact-unsaved (one line:
-#                                  "<date> <time>	<reason>"). Blocking an auto compaction either skips
+#                                  "<date> <time>\t<stale|over-cap>"). Blocking an auto compaction either skips
 #                                  it (proactive) or FAILS the current request (recovery from a
 #                                  context-limit error) — code.claude.com/docs/en/hooks §PreCompact,
 #                                  read 2026-10-22. session-start.py, on source "compact", then puts a
@@ -30,7 +30,11 @@ if [ ! -f "$MEMORY_FILE" ] && [ ! -d "$PROJECT_DIR/context/handoffs" ]; then
     exit 0
 fi
 
-mkdir -p "$STATE_DIR"
+# Every write under .claude/state goes through lib/state.sh: refused when .claude, .claude/state or the
+# entry is a symlink or the state directory resolves outside the project (7.3).
+# shellcheck source=lib/state.sh
+. "${CLAUDE_PLUGIN_ROOT:-$(dirname "$0")/..}/hooks/lib/state.sh"
+LOG="$STATE_DIR/hook.log"
 MARKER="$STATE_DIR/compact-unsaved"
 # One parse: "<session_id> <trigger>"; anything unreadable is "unknown auto" (never block blind).
 read -r SESSION_ID TRIGGER <<< "$(printf '%s' "$INPUT" | python3 -c '
@@ -46,7 +50,7 @@ print(sid, "manual" if d.get("trigger") == "manual" else "auto")
 SESSION_ID=$(printf '%s' "$SESSION_ID" | tr -cd 'a-zA-Z0-9_-')
 [ -z "$SESSION_ID" ] && SESSION_ID="unknown"
 [ "$TRIGGER" = "manual" ] || TRIGGER="auto"
-echo "[$(date '+%H:%M:%S')] PRE-COMPACT ($TRIGGER) triggered for session $SESSION_ID" >> "$STATE_DIR/hook.log"
+cmk_state_append "$LOG" "[$(date '+%H:%M:%S')] PRE-COMPACT ($TRIGGER) triggered for session $SESSION_ID"
 
 MEMORY_LINES=0
 MEMORY_BYTES=0
@@ -75,30 +79,33 @@ OVER=""
 [ "$MEMORY_MAX_LINE" -gt 3000 ] && OVER="${OVER}longest line ${MEMORY_MAX_LINE}/3000 chars; "
 
 if [ "$FRESH" -eq 1 ] && [ -z "$OVER" ]; then
-    echo "[$(date '+%H:%M:%S')] MEMORY.md fresh (${AGE_SECONDS}s, ${MEMORY_LINES} lines) — allowing compact" >> "$STATE_DIR/hook.log"
-    rm -f "$MARKER"
+    cmk_state_append "$LOG" "[$(date '+%H:%M:%S')] MEMORY.md fresh (${AGE_SECONDS}s, ${MEMORY_LINES} lines) — allowing compact"
+    cmk_state_remove "$MARKER"
     echo '{}'
     exit 0
 fi
 
 if [ -n "$OVER" ]; then
     # Fresh or not, an oversized cache must be pruned, not merely refreshed.
+    CODE="over-cap"
     PROBLEM="your hot cache is OVER its caps (${OVER%; }) — last updated ${MEMORY_AGE}"
     STEP1=".claude/memory/MEMORY.md — PRUNE it back inside the caps (180 lines / 32 KB / 3000 chars per line): promote settled 3+-date patterns to knowledge/concepts/, drop what a handoff already holds, then REPLACE the header current-state lines and add this session's date-tagged patterns"
 else
+    CODE="stale"
     PROBLEM="your memory files are stale (MEMORY.md: ${MEMORY_LINES}/180 lines, last updated ${MEMORY_AGE})"
     STEP1=".claude/memory/MEMORY.md — REPLACE the header current-state lines and add this session's date-tagged patterns (caps: 180 lines / 32 KB / 3000 chars per line)"
 fi
 
 if [ "$TRIGGER" != "manual" ]; then
     # Never block an auto compaction (see the header): leave the marker for the SessionStart that follows.
-    printf '%s\t%s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$PROBLEM" > "$MARKER"
-    echo "[$(date '+%H:%M:%S')] ALLOWING auto compact over unsaved memory — ${PROBLEM}; marker written" >> "$STATE_DIR/hook.log"
+    # One line of a strict format: session-start reads it back into the model's context and accepts nothing else.
+    cmk_state_replace "$MARKER" "$(date '+%Y-%m-%d %H:%M:%S')"$'\t'"${CODE}"
+    cmk_state_append "$LOG" "[$(date '+%H:%M:%S')] ALLOWING auto compact over unsaved memory — ${PROBLEM}; marker written"
     echo '{}'
     exit 0
 fi
 
-echo "[$(date '+%H:%M:%S')] BLOCKING compact — ${PROBLEM}" >> "$STATE_DIR/hook.log"
+cmk_state_append "$LOG" "[$(date '+%H:%M:%S')] BLOCKING compact — ${PROBLEM}"
 
 cat << HOOKJSON
 {
