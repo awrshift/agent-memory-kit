@@ -117,6 +117,9 @@ SESSION_BLOCK_LIST_MAX = 5
 
 MEMORY_INJECT_CAP = 40_000  # a cache at its 32 KB cap fits whole; a bloated one truncates loudly
 HANDOFF_INJECT_CAP = 6_000
+# The section the next session must act on (`## 5. [Opening note for next session]` in the kit template,
+# `## 6. [Opening contract]` in adopters' handoffs) is written LAST, so a plain cut drops exactly it (7.3).
+OPENING_HEADING_RE = re.compile(r"^(#{1,6})[ \t]+.*opening.*$", re.IGNORECASE | re.MULTILINE)
 STATE_TTL_DAYS = 30
 
 # A spec left in `building` for this long is either done-but-unmarked or abandoned; both are
@@ -569,6 +572,33 @@ def newest_handoff() -> Path | None:
     return max(files, key=lambda p: p.stat().st_mtime)
 
 
+def handoff_body(text: str) -> str:
+    """The handoff as injected: whole under HANDOFF_INJECT_CAP; over it, the opening section whole and first
+    (labelled), then the rest cut to what is left of the cap. No opening heading → the plain cut."""
+    cut_note = "\n\n…(truncated — read the full file on demand)\n"
+    if len(text) <= HANDOFF_INJECT_CAP:
+        return text
+    match = OPENING_HEADING_RE.search(text)
+    if not match:
+        return text[:HANDOFF_INJECT_CAP].rstrip() + cut_note
+    level = len(match.group(1))
+    following = re.compile(r"^#{1,%d}[ \t]" % level, re.MULTILINE).search(text, match.end())
+    end = following.start() if following else len(text)
+    opening = text[match.start():end].rstrip()
+    rest = (text[:match.start()].rstrip() + "\n\n" + text[end:].lstrip()).strip()
+    room = HANDOFF_INJECT_CAP - len(opening)
+    if room < 200:
+        rest_text = "(the rest of the handoff is not injected — read the full file on demand)\n"
+    elif len(rest) > room:
+        rest_text = rest[:room].rstrip() + cut_note
+    else:
+        rest_text = rest + "\n"
+    return (
+        "**Opening section (over the injection cap: injected first and whole; the rest of the handoff follows, "
+        "truncated):**\n\n" + opening + "\n\n**The rest of the handoff:**\n\n" + rest_text
+    )
+
+
 def build_context(source: str, writer: bool = True, session_key: str | None = None) -> str:
     """The whole injection. `writer=False` (parts 2..N) builds the same text without touching disk."""
     if not is_adopted():
@@ -652,9 +682,7 @@ def build_context(source: str, writer: bool = True, session_key: str | None = No
     # 5. Where we left off.
     hand = newest_handoff()
     if hand is not None and full:
-        body = read_file_safe(hand)
-        if len(body) > HANDOFF_INJECT_CAP:
-            body = body[:HANDOFF_INJECT_CAP].rstrip() + "\n\n…(truncated — read the full file on demand)\n"
+        body = handoff_body(read_file_safe(hand))
         add_section(
             f"Latest handoff — context/handoffs/{hand.name} (updated {human_age(age_days(hand))})",
             body,
