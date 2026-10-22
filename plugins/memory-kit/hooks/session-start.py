@@ -27,7 +27,8 @@ v6.0 (plugin form). What changed vs v5 and WHY:
    (blocking one skips it or fails the request); it leaves .claude/state/compact-unsaved instead. On
    source `compact` the memory section then opens with a loud "save MEMORY.md now" line, and the
    writing part clears the marker — leaving a `compact-unsaved-seen` copy first, so a read-only part
-   that finds the marker gone still prints the same text.
+   that finds the marker gone still prints the same text. Only read-only parts read that copy, and
+   pre-compact.sh removes it before every compaction (7.3 r2): a later compaction over saved memory is quiet.
 
 Output: {"hookSpecificOutput": {"hookEventName": "SessionStart", "additionalContext": "..."}}
 """
@@ -409,9 +410,12 @@ def peek_session_counter(session_key: str | None) -> int:
 def compact_unsaved_reason(writer: bool, session_key: str | None) -> str | None:
     """The marker line when the compaction just run went over unsaved memory, else None.
 
-    The writer reads the marker, records it in COMPACT_SEEN_FILE, then removes it; a read-only part reads
-    the marker first and COMPACT_SEEN_FILE second, so it derives the same answer in either order. A line
-    not in the marker's exact format counts as no marker (it is never injected).
+    The writer consumes the marker: it records it in COMPACT_SEEN_FILE, then removes it — and with no marker it
+    answers None, never reading COMPACT_SEEN_FILE (7.3 r2: that file belongs to the read-only parts of the SAME
+    run). A read-only part reads the marker first and COMPACT_SEEN_FILE second, so it derives the writer's answer
+    in either order. pre-compact.sh removes COMPACT_SEEN_FILE before every compaction, so a later compaction
+    over saved memory finds neither file. A line not in the marker's exact format counts as no marker (it is
+    never injected).
     """
     fs = statefs()
     key = session_key or "-"
@@ -425,6 +429,8 @@ def compact_unsaved_reason(writer: bool, session_key: str | None) -> str | None:
                 fs.write_atomic(PROJECT_DIR, COMPACT_SEEN_FILE, f"{key}\t{line}")
             fs.remove(PROJECT_DIR, COMPACT_UNSAVED_FILE)
         return line if valid else None
+    if writer:
+        return None
     seen = fs.read_text(PROJECT_DIR, COMPACT_SEEN_FILE)
     seen_at = fs.mtime(PROJECT_DIR, COMPACT_SEEN_FILE)
     if seen is None or seen_at is None or time.time() - seen_at > COMPACT_SEEN_WINDOW_S:

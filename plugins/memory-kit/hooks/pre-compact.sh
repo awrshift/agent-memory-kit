@@ -36,6 +36,9 @@ fi
 . "${CLAUDE_PLUGIN_ROOT:-$(dirname "$0")/..}/hooks/lib/state.sh"
 LOG="$STATE_DIR/hook.log"
 MARKER="$STATE_DIR/compact-unsaved"
+# session-start's copy of the previous marker, for its read-only parts of THAT run only: removed before every
+# compaction, so the SessionStart after this one never repeats an earlier warning (7.3 r2).
+SEEN="$STATE_DIR/compact-unsaved-seen"
 # One parse: "<session_id> <trigger>"; anything unreadable is "unknown auto" (never block blind).
 read -r SESSION_ID TRIGGER <<< "$(printf '%s' "$INPUT" | python3 -c '
 import json, sys
@@ -51,6 +54,7 @@ SESSION_ID=$(printf '%s' "$SESSION_ID" | tr -cd 'a-zA-Z0-9_-')
 [ -z "$SESSION_ID" ] && SESSION_ID="unknown"
 [ "$TRIGGER" = "manual" ] || TRIGGER="auto"
 cmk_state_append "$LOG" "[$(date '+%H:%M:%S')] PRE-COMPACT ($TRIGGER) triggered for session $SESSION_ID"
+cmk_state_remove "$SEEN"
 
 MEMORY_LINES=0
 MEMORY_BYTES=0

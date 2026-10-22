@@ -191,6 +191,30 @@ class Compaction(unittest.TestCase):
         joined = "".join(c for c in self.parts("compact").values() if c)
         self.assertEqual(joined.count(NUDGE), 1)
 
+    # ------------------------------------------------------------------ R2-5: the seen file (v7.3 r2)
+
+    def test_a_second_compaction_over_saved_memory_gives_no_warning(self):
+        """Same session: compaction 1 over stale memory warns once; the agent saves MEMORY.md; compaction 2 (within
+        the parts' read window) runs over saved memory — no part warns again."""
+        self.memory(age_seconds=3600)
+        self.precompact({"session_id": "sess-1", "trigger": "auto"})
+        first = "".join(c for c in self.parts("compact").values() if c)
+        self.assertEqual(first.count(NUDGE), 1)
+        self.memory(age_seconds=0)  # saved
+        self.assertEqual(self.precompact({"session_id": "sess-1", "trigger": "auto"}), {})
+        second = "".join(c for c in self.parts("compact").values() if c)
+        self.assertNotIn(NUDGE, second)
+        self.assertIn("CANARY-STATE", second)
+
+    def test_the_writer_never_reads_the_seen_file(self):
+        """The writing part consumes the marker; with no marker it does not fall back to the seen file (that file
+        is only for the read-only parts of the SAME run)."""
+        self.memory(age_seconds=3600)
+        self.precompact({"session_id": "sess-1", "trigger": "auto"})
+        self.assertEqual("".join(c for c in self.parts("compact").values() if c).count(NUDGE), 1)
+        again = self.parts("compact", which=[1])[1] or ""
+        self.assertNotIn(NUDGE, again)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=1)
