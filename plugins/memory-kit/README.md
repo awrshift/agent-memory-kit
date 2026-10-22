@@ -19,28 +19,33 @@ claude plugin update memory-kit@memory-kit
 
 ## What it does at runtime
 
-- **SessionStart** — injects the working agreement (`context/identity.md`), the discipline nudges
-  that fire, session stats and per-project spec flags (`assumed` · `building > 14 d`), **the hot
-  cache itself**, the newest handoff and the knowledge index. Profile depends on `source`:
-  `compact` gets back exactly what compaction dropped; `resume` gets only the nudges and stats.
-  One «Rails:» line appears while a root env file has no `Read` deny or an allow hands over a
-  whole tool (`Bash(git *)`, `Bash(*)`) — until `/memory-kit:setup rails` runs or you decline it.
-  Since 7.2 it runs as six parts (`--part 1..6`), each under Claude Code's 10,000-character cap on
-  one hook's context — above the cap the model saw only a 2 KB preview, i.e. no hot cache.
-- **PreCompact** — blocks compaction until `MEMORY.md` is fresh and inside its three caps
-  (180 lines / 32 KB / 3000 chars per line).
-- **PreToolUse(Edit|Write)** — asks before an edit that can weaken an existing test (an assertion
-  line changed or removed, a `.skip`/`.only` added) and before any hand edit of a `.snap`; never
-  blocks the red→green loop; `CMK_ALLOW_TEST_EDITS=1` opts out for a session.
-- **PreToolUse(Bash)** — the git guard: blocks force push, `push --mirror`, `reset --hard`,
-  `clean -f`, `branch -D`, `checkout .`, `restore .` wherever the flag sits in a real git command
-  (never in quoted text or a commit message); `--force-with-lease` passes; `CMK_GIT_GUARD=off` opts out.
-- **PreToolUse(Read|Edit|Write|Bash)** — the secrets guard (7.2): blocks reading or writing
-  `.env`, `.env.local`, `.env.*.local`, `.env.production` (and development/test/staging), `*.pem`,
-  `id_rsa*`, `*.p12` — by the file tools or by a shell command, inline script or redirection;
-  `source` / `.`, `cp`/`ln`/`mv`, `ls`, `test`, `git`, `rm` pass, and `.env.example` is never
-  secret; `CMK_SECRETS_GUARD=off` opts out.
-- **SessionEnd** — appends one timestamp line to `.claude/state/session-end.log`.
+- **SessionStart — `session-start.py`** — injects the working agreement (`context/identity.md`), the discipline nudges
+  that fire, session stats and per-project spec flags (`assumed` · `building > 14 d`), **the hot cache itself**, the
+  newest handoff (its opening-note section always whole) and the knowledge index. Profile depends on `source`:
+  `compact` gets back exactly what compaction dropped, plus a loud "save memory now" when the compaction ran over unsaved
+  memory; `resume` gets only the nudges and stats. It flags a project that wires its own copy of a kit hook (it would
+  run twice), and one «Rails:» line while a root env file has no `Read` deny or an allow hands over a whole tool. Runs as
+  six parts (`--part 1..6`), each under Claude Code's 10,000-character cap on one hook's context.
+- **PreCompact — `pre-compact.sh`** — a manual `/compact` waits until `MEMORY.md` is fresh and inside its three caps
+  (180 lines / 32 KB / 3000 chars per line). An automatic compaction is never blocked: Claude Code would fail the
+  request (on a context-limit recovery) or skip the compaction.
+- **PreToolUse(Edit|Write) — `protect-tests.py`** — asks before an edit that can weaken an existing test (an assertion
+  line changed or removed, a `.skip`/`.only` added) and before any hand edit of a `.snap`; never blocks the red→green
+  loop; `CMK_ALLOW_TEST_EDITS=1` opts out for a session.
+- **PreToolUse(Bash) — `guard-git.py`** — blocks force push, `push --mirror`, `reset --hard`, `clean -f`, `branch -D`,
+  `checkout .`, `restore .` wherever the flag sits in a real git command (never in quoted text or a commit message);
+  `--force-with-lease` passes; `CMK_GIT_GUARD=off` opts out.
+- **PreToolUse(Read|Edit|Write|Bash) — `guard-secrets.py`** — blocks reading or writing `.env`, `.env.local`,
+  `.env.*.local`, `.env.production` (and development/test/staging), `*.pem`, `id_rsa*`, `*.p12` — by the file tools or by
+  a shell command, inline script or redirection; a plain append (`>> .env`) passes; `source` / `.`, `cp`/`ln`/`mv`, `ls`,
+  `test`, `git`, `rm` pass, and `.env.example` is never secret; `CMK_SECRETS_GUARD=off` opts out.
+- **PreToolUse(Bash) — `guard-zsh-split.py`** — in zsh only: catches an unquoted variable that zsh will not split into
+  words the way bash does, before the command silently gets one argument instead of several.
+- **SessionEnd — `session-end.sh`** — appends one timestamp line to `.claude/state/session-end.log` (Claude Code gives
+  plugin SessionEnd hooks a 1.5-second budget).
+
+The git and secrets guards carry `"onFailure": "block"` (Claude Code 2.1.295+): a guard that crashes or times out blocks
+the call instead of letting it through, and its own internal errors become an explicit "ask".
 
 In a repository that never ran `/memory-kit:setup`, the hooks inject one pointer line and write
 nothing.
@@ -79,7 +84,7 @@ nothing.
 Agents: `executor` (builds to a spec file in a worktree) · `recon` (read-only facts) ·
 `idea-validator` (isolated critic) · `qa` (one adversarial lens on the running app).
 
-![Orchestrated work: a spec, executors, one integrator](https://raw.githubusercontent.com/awrshift/agent-memory-kit/main/.github/assets/07-orchestrated-work-spec.png)
+![Orchestrated work: a spec, executors, one integrator](https://raw.githubusercontent.com/awrshift/agent-memory-kit/main/.github/assets/07-orchestrated-work-v73.png)
 ![Agent QA and per-project documents](https://raw.githubusercontent.com/awrshift/agent-memory-kit/main/.github/assets/09-agent-qa-projects.png)
 
 ## Beyond Claude Code

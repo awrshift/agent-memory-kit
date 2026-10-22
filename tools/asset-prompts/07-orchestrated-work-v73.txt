@@ -1,0 +1,22 @@
+Redraw this diagram in exactly the same visual style as the reference image (dark background, neon outlined rounded boxes, bold white headings, same fonts and colors). The content grows: the agents row now has FOUR boxes instead of three. Every string below must appear exactly as written.
+
+Title (large bold white): "Agent-orchestrated work"
+Subtitle (grey): "Your agent designs, delegates to subagents in parallel, and verifies the merge."
+
+Box 1, green outline, centered: heading "INTEGRATOR — the main session", line "designs · decides · merges · ALONE writes shared memory & docs". Arrow down.
+
+Box 2, white outline, centered: heading "THE SPEC — a file, written before anyone fans out", green monospace line "projects/<name>/plans/YYYY-MM-DD-<slug>.md", grey line "goal · non-goals · acceptance AC-n · value sources · depth pass · fail branches · gates". Four arrows fan out down to the four agent boxes.
+
+Row of four boxes:
+- orange outline: "executor" (orange monospace), text "builds to the spec in its own worktree; deviations reported, never silent" (short lines, never cut a word at the box edge), orange chip "builds"
+- blue outline: "recon" (blue monospace), text "read-only fact-gatherer; raw facts with file:line — never designs", blue chip "read-only"
+- purple outline: "idea-validator" (purple monospace), text "isolated critic; no parent context — can't anchor on your framing", purple chip "critiques"
+- cyan outline: "qa" (cyan monospace), text "one lens on the running product; findings with repro steps", cyan chip "tests"
+
+Box 3, wide red outline: heading in red "MERGE — «a report is INPUT, never a fact»", line "the integrator re-runs the gates on the merged tree · adjudicates on merits, never counts votes".
+
+Footer two grey lines:
+"Skills on top: /memory-kit:session-review · /memory-kit:second-opinion · /memory-kit:qa-sweep"
+"Ships inside the plugin — executor · recon · idea-validator · qa are there the moment it is installed."
+
+Spelling check — exactly: orchestrated, integrator, adjudicates, deviations, reported, fact-gatherer, idea-validator, framing, critiques, repro.

@@ -1,0 +1,29 @@
+Draw a diagram in exactly the visual style of the reference image (dark near-black background, neon outlined rounded panels with soft glow, large bold white title, grey subtitle, monospace green/pink/cyan identifiers, same fonts). The content is NEW and larger than the reference: three columns instead of two. Every string below must appear exactly as written.
+
+Title (large, bold, white, centered): "What's inside the plugin"
+Subtitle (grey, centered): "Seven hooks run by themselves. Ten skills you call. Four agents it delegates to."
+
+Three panels side by side:
+
+Panel 1, green outline. Header: "HOOKS — run by themselves". Seven rows, identifier in green monospace, then a grey dash and description:
+"session-start.py — loads memory, the last handoff, the rules"
+"pre-compact.sh — save memory before compacting"
+"protect-tests.py — asks before a test is weakened"
+"guard-git.py — stops force push and hard reset"
+"guard-secrets.py — keeps .env and keys out"
+"guard-zsh-split.py — catches zsh word-splitting"
+"session-end.sh — stamps the close"
+
+Panel 2, pink/magenta outline. Header: "SKILLS — /memory-kit:<name>". Ten rows in a two-column grid, monospace, the first two highlighted as filled pink pills:
+"close-session" (pill), "memory-audit" (pill), "system-audit", "setup", "tour", "session-review", "second-opinion", "qa-sweep", "document", "code-sync"
+
+Panel 3, orange outline. Header: "AGENTS — your agent delegates". Four rows, identifier in orange monospace, then description:
+"executor — builds to a spec"
+"recon — gathers facts, read-only"
+"idea-validator — isolated critic"
+"qa — tests the running product"
+
+Bottom: a wide cyan outlined bar with the white text: "One plugin. Skill and agent bodies load only when used."
+Footer small grey text: "Plain text files only. No database. Nothing leaves your machine."
+
+Spelling check — exactly: themselves, delegates, compacting, weakened, word-splitting, session-review, second-opinion, idea-validator, executor, gathers.

@@ -149,6 +149,41 @@ for pattern, ceiling in BUDGETS:
         if ceiling * WARN_AT <= size <= ceiling:
             warn.append(f"{rel} is {size} B — {size * 100 // ceiling} % of its {ceiling} B ceiling")
 
+# 8 — the README shows the whole plugin ---------------------------------------------
+# A plugin install hides its file tree, so the root README is the only place a newcomer sees what
+# ships. Every shipped part must be named there; the plugin README (the directory listing) must name
+# every skill, agent and hook. A part added without its README line fails here, not in a reader's trust.
+def shipped_parts(plugin: Path) -> dict[str, list[str]]:
+    hooks = [p.name for p in sorted((plugin / "hooks").glob("*")) if p.suffix in (".py", ".sh")]
+    hooks += [p.name for p in sorted((plugin / "hooks" / "lib").glob("*.py"))]
+    return {
+        "skill": [p.parent.name for p in sorted(plugin.glob("skills/*/SKILL.md"))],
+        "agent": [p.stem for p in sorted(plugin.glob("agents/*.md"))],
+        "hook": hooks,
+        "reference": [p.name for p in sorted((plugin / "reference").glob("*"))],
+        "template": [p.name for p in sorted(plugin.glob("templates/**/*")) if p.is_file()]
+        + [p.name for p in sorted(plugin.glob("skills/*/templates/*")) if p.is_file()],
+        "script": [p.name for p in sorted((plugin / "scripts").glob("*")) if p.is_file()]
+        + [p.name for p in sorted(plugin.glob("skills/*/scripts/*")) if p.is_file() and p.suffix in (".py", ".sh")
+           and not p.name.endswith("_config.py")],
+        "context": [p.name for p in sorted((plugin / "context").glob("*.md"))],
+    }
+
+
+root_readme = (ROOT / "README.md").read_text(encoding="utf-8")
+for plugin in sorted(ROOT.glob("plugins/*/")):
+    if not (plugin / ".claude-plugin" / "plugin.json").exists():
+        continue
+    parts = shipped_parts(plugin)
+    plugin_readme = (plugin / "README.md").read_text(encoding="utf-8") if (plugin / "README.md").exists() else ""
+    for kind, names in parts.items():
+        for name in names:
+            check(name in root_readme, f"README inventory: the {kind} `{name}` ships but README.md never names it")
+            if kind in ("skill", "agent") or (kind == "hook" and not name.startswith("_")
+                                               and (plugin / "hooks" / name).exists()):
+                check(f"`{name}`" in plugin_readme,
+                      f"plugin README inventory: the {kind} `{name}` ships but {plugin.name}/README.md never names it")
+
 # ----------------------------------------------------------------------------------
 for w in warn:
     print("⚠ ", w)

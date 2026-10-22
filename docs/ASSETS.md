@@ -83,6 +83,15 @@ table plus the copy already visible in each asset.
 
 ## The demo recording (`demo-1…4-*.gif` + `demo-full-session.mp4`)
 
+Since 7.3 the clips are off the README (they slowed reading; the front page now shows the whole plugin instead) and
+live here for the launch post; the README links the full video once.
+
+![demo 1](../.github/assets/demo-1-open-already-knowing.gif)
+![demo 2](../.github/assets/demo-2-two-clients.gif)
+![demo 3](../.github/assets/demo-3-wrap-up-this-one-asks.gif)
+![demo 4](../.github/assets/demo-4-next-morning.gif)
+
+
 One take, five clips — the README shows the scene next to the claim it proves, the launch post
 gets the whole session:
 

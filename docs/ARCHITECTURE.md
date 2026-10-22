@@ -451,6 +451,8 @@ Key property: **user never opens a file during the entire ritual.** They talk, a
 
 ## Multi-project architecture
 
+![Agent QA and per-project documents](../.github/assets/09-agent-qa-projects.png)
+
 ![](../.github/assets/05-multi-project-layer.png)
 
 ![](../.github/assets/08-one-operator-five-hosts.png)
@@ -491,7 +493,7 @@ before writing a plan. Defaults are a default; a working layout outranks them.
 
 ## Hooks (automatic, no user action)
 
-![](../.github/assets/06-hooks-skills-ten.png)
+![](../.github/assets/06-whats-inside.png)
 
 Six hooks, declared in the plugin's `hooks/hooks.json` — nothing to wire in your settings:
 

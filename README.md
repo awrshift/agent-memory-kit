@@ -4,19 +4,36 @@
 
 **Built-in memory decides what to remember. This one asks.**
 
-Your agent proposes, you say yes, it writes a dated line into plain files in your own folder.
-One memory per client, readable by every agent you run, nothing remembered without your yes.
+Memory Kit gives your coding agent a memory you can read, and a way of working you can trust. The agent proposes
+what to remember, you say yes, and it writes a dated line into plain text files in your own folder. Next session it
+opens already knowing where you left off. On top of that it carries a tested method for running work through
+subagents: specs as files, facts checked before they are believed, reviews that compound.
+
+It is one Claude Code plugin. No database, no service, no API key, nothing leaves your machine.
 
 [![Version](https://img.shields.io/github/v/release/awrshift/agent-memory-kit?label=version&color=CFEF4A&cacheSeconds=1800)](https://github.com/awrshift/agent-memory-kit/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-55503E?labelColor=55503E&color=55503E)](LICENSE)
-[![Works with](https://img.shields.io/badge/works_with-Claude_Code_·_Cursor_·_Codex_·_Copilot_·_OpenCode-CFEF4A)](docs/specs/README.md)
+[![Works with](https://img.shields.io/badge/works_with-Claude_Code_·_Cursor_·_Codex_·_Copilot_·_OpenCode-CFEF4A)](#works-with-other-agents)
 
-> *"I wake up already knowing where we left off."* — the agent this kit builds.
+**On this page:** [How it works](#how-it-works) · [Install](#install) · [What is inside the plugin](#what-is-inside-the-plugin) ·
+[What it creates in your folder](#what-it-creates-in-your-folder) · [The method](#the-method-for-work-with-subagents) ·
+[Why not built-in memory](#why-not-the-built-in-memory) · [Other agents](#works-with-other-agents) · [Privacy and cost](#privacy-and-cost)
+
+## How it works
+
+![How Memory Kit works: you talk, the agent writes plain files in your folder, hooks load them at the next start](.github/assets/01-system-map-v73.png)
+
+1. **You talk.** "We're working on Nestlé." "The client hates em-dashes." You never open a memory file.
+2. **The agent writes.** Something worth keeping becomes one dated line in `MEMORY.md`, and the agent says "saved".
+   The work itself (backlog, specs, research, decisions) goes into that client's own folder, `projects/<client>/`.
+3. **You close the day.** Say "we're done for today". The agent looks for patterns across dates ("you rejected
+   em-dashes on four different days, make it a rule?"), writes what you approve, and leaves a handoff note.
+4. **Tomorrow starts already knowing.** At the next session start a hook loads the memory, the newest handoff and the
+   knowledge index. Nothing is remembered without your yes, and every line carries its date, so a stale fact looks stale.
 
 ## Install
 
-Three commands in Claude Code, inside the folder where you work. Any folder will do; git is
-optional, and only needed if you want the wiki and rules to carry their history.
+Inside the folder you work in, in Claude Code:
 
 ```shell
 /plugin marketplace add awrshift/agent-memory-kit
@@ -24,224 +41,214 @@ optional, and only needed if you want the wiki and rules to carry their history.
 /memory-kit:setup
 ```
 
-That is the technical part, and it happens once. From then on you only talk: work as usual, and
-say `/memory-kit:close-session` when you are done for the day. No database, no service, no
-extra cost. Setup reads what your folder already has and **proposes before writing anything**;
-your `CLAUDE.md` stays yours. Other agents install from the same repository, see
-[Works with your agents](#works-with-your-agents).
+`setup` reads what the folder already has and **proposes before writing anything**; your `CLAUDE.md` stays yours.
+Git is optional. To upgrade later: `claude plugin marketplace update memory-kit`, then
+`claude plugin update memory-kit@memory-kit` (the full id is needed), and restart the session. Upgrades never touch
+your files.
 
-<details>
-<summary>Upgrading later, two commands, and the second needs the full id</summary>
+## What is inside the plugin
 
-```shell
-claude plugin marketplace update memory-kit     # refresh the catalog
-claude plugin update memory-kit@memory-kit      # the bare name resolves to nothing
-```
+A plugin install hides its file tree, so here is all of it.
 
-Restart the session to apply. Upgrades never touch your files. Memory, handoffs and knowledge
-live in your folder, not in the plugin.
-</details>
+![What is inside the plugin: seven hooks, ten skills, four agents](.github/assets/06-whats-inside.png)
 
-## The problem
+### Hooks — run by themselves
 
-Every session starts from zero: yesterday you locked the brand voice for a client, today you
-explain it again. Your tools do remember things now, but each one keeps its own notes, outside
-your folder, and decides by itself what goes in. And memory nobody audits **rots**: a status
-note that froze three weeks ago still reads like today's truth, and the agent confidently acts
-on it.
+| Hook | When | What it does |
+|---|---|---|
+| `session-start.py` | every session start, and after a compaction | Loads the working agreement, your `MEMORY.md`, the newest handoff and the knowledge index. Warns when memory is over its caps, when a path in memory no longer exists, when a spec is waiting for your ratification, and when your project wires its own copy of a kit hook (it would run twice). |
+| `pre-compact.sh` | before the conversation is compacted | A manual `/compact` waits until memory is saved and inside its caps. An automatic compaction is never blocked (that would fail your request); if it ran over unsaved memory, the next context opens with "save memory now". |
+| `protect-tests.py` | before a file edit | Asks before an edit that could weaken an existing test: an assertion changed or removed, a `.skip` or `.only` added. New tests pass silently. |
+| `guard-git.py` | before a shell command | Stops force push, `push --mirror`, `reset --hard`, `clean -f`, `branch -D`, `checkout .`. `--force-with-lease` passes. |
+| `guard-secrets.py` | before a read, edit or shell command | Keeps `.env` files, keys and certificates out of the transcript, whether by a file tool, a shell command or a redirection. Appending a line to `.env` is allowed. |
+| `guard-zsh-split.py` | before a shell command, in zsh only | Catches a variable that zsh will NOT split into words the way bash does, before the command silently does the wrong thing. |
+| `session-end.sh` | when the session ends | Writes one timestamp line, nothing else. |
 
-Memory Kit's answer: **one set of plain text files in your folder**, written by the agent only
-after you agree, with a date on every line so a stale fact looks stale.
+The guards for git and secrets block the action if they crash or time out, instead of letting it through. Each guard
+names its opt-out variable. In a folder that never ran `setup`, the hooks write nothing.
+Shared code: `hooks/lib/cmdparse.py` (one shell-command parser for every guard), `hooks/lib/rails.py` (permission
+settings facts), `hooks/lib/stale-refs.py` (finds paths in memory that no longer exist).
 
-![](.github/assets/01-system-map-five-hosts.png)
+### Skills — you call them, or just say what you want
 
-## A day with it
+All are named `/memory-kit:<name>`, and each one also triggers from plain words. A skill costs nothing until it runs.
 
-1. **Open.** The agent wakes up already knowing: your hot cache, the note the last session
-   left, and whether memory is healthy. You just continue.
-2. **Work.** When something worth keeping comes up, the agent saves it as a dated one-liner and
-   says "saved". Before the context is compressed, it has to save state. Weakening an existing
-   test needs your yes, a force push or a hard reset is stopped before it runs, and your `.env`
-   and keys stay out of the transcript.
-3. **Close.** Say you are done for the day. The close ritual audits instead of dumping logs:
-   "you rejected em-dashes on four different dates, make it a rule?" You say yes, it writes,
-   and leaves the note tomorrow's session opens with.
-
-No slash commands in any of this. You talk, the skills trigger from what you said:
-
-![](.github/assets/demo-1-open-already-knowing.gif)
-
-The whole session, uncut except for the model's thinking time:
-[68-second video](.github/assets/demo-full-session.mp4). Seeded folder, real Claude Code,
-reproducible from `tools/demo/`.
-
-## Why not the built-in memory?
-
-Claude Code, Cursor and Copilot all ship memory now, on by default. It is effortless, and it
-is the vendor's silo. The kit is the opposite trade.
-
-| | Built-in auto memory | Memory Kit | Database memory tools |
-|---|---|---|---|
-| Who decides what is remembered | the agent, silently | the agent proposes, **you approve** | the agent, silently |
-| Where it lives | the vendor's directory, outside your folder | **plain files in your folder** | a database or a service |
-| Can you read it, diff it, delete a wrong belief | partly | **yes, it is text in git** | through the tool's UI |
-| One memory per client | no | **yes**, `projects/<client>/` | usually no |
-| Read by other agents | no | **yes**, Claude Code, Cursor, Codex, Copilot, OpenCode | via that tool's integrations |
-| How staleness shows | it doesn't | **every line carries its date**; caps force a prune | it doesn't |
-| Cost at session start | its index, up to 200 lines / 25 KB (Claude Code's docs) | 2–4k tokens on a working cache, ~12k hard ceiling at the caps, plus ~2k of skill descriptions (measured 2026-09-02) | tool-specific |
-| Infrastructure | none | **none** | a database, often a daemon or API key |
-
-Running both means two writers and two truths, so `/memory-kit:setup` asks you to pick.
-Either answer is legitimate.
-
-This is the moment the table is about. "That's all for today, wrap up" — the close ritual
-finds the pattern on four dates and asks; the rule exists only after the yes:
-
-![](.github/assets/demo-3-wrap-up-this-one-asks.gif)
-
-And the next morning, a new session, a plain question:
-
-![](.github/assets/demo-4-next-morning.gif)
-
-## Many clients, one agent
-
-The line is **memory vs paperwork**. What the agent *learned* is shared across everything you
-do: patterns, knowledge, rules. What the work *produced* belongs to one client:
-`projects/<client>/` holds that client's backlog, specs, research, decisions and QA records.
-Say "we're working on Nestlé" and the agent loads that scope only. One folder per client, or
-one repository per client, both work.
-
-A pattern's journey: noticed, saved as a dated line, repeats on 3+ dates, the agent proposes
-promotion, your "yes" makes it a knowledge article or a rule, and the raw lines are pruned.
-Observation, candidate, law. You approve every step.
-
-"Now IKEA" — the agent reads that client's folder, and a schedule change becomes a dated line
-without leaving the conversation:
-
-![](.github/assets/demo-2-two-clients.gif)
-
-## Works with your agents
-
-| Agent | What you get |
+| Skill | What it does |
 |---|---|
-| **Claude Code** | full enforcement: memory injected every session, compaction blocked until state is saved, test edits guarded |
-| **Cursor** | memory injected at session start, all 10 skills ([probed](docs/specs/cursor.md) at v6's eight) |
-| **OpenCode** | memory injected into EVERY model call via the shipped plugin ([verified](docs/specs/opencode.md)) |
-| **Codex** | all 10 skills, the memory discipline via an `AGENTS.md` protocol block ([probed](docs/specs/codex.md) at v6's eight) |
-| **GitHub Copilot CLI** | all 10 skills, the `AGENTS.md` protocol block ([probed](docs/specs/copilot.md) at v6's eight) |
-| **Claude Cowork** (desktop) | skills only: Cowork does not run plugin hooks yet, so memory is not injected there ([documented](docs/specs/cowork.md)) |
-| **Anything else, incl. CI** | the memory is plain text in your folder: readable, greppable, git-versioned |
+| `close-session` | The end-of-day ritual: capture what is new, look for patterns on 3+ dates, promote on your yes, refresh the memory header, write the handoff. |
+| `memory-audit` | When memory trips a cap: a table of moves (to the knowledge base, to a rule, or out) for your approval, then the moves. |
+| `system-audit` | The periodic health check of the whole setup through seven lenses; it measures which layers actually fired and proves each guard through its real wiring. |
+| `setup` | Adopts the kit in this folder, settles how it coexists with Claude Code's own auto memory, and offers safe permission rails. |
+| `tour` | A walkthrough of the kit on your own files. |
+| `session-review` | An adversarial review of a session's work by an isolated reviewer that reads the actual files. |
+| `second-opinion` | Independent reviewers on one high-stakes decision before it reaches you. If you already run your own review board, use that instead. |
+| `qa-sweep` | A multi-lens QA pass over your running product, every finding with repro steps. |
+| `document` | A PR description, changelog entry, release note or postmortem, written only from the actual `git diff`. |
+| `code-sync` | After a merge, reconciles each spec's status with what the code now shows. |
 
-<details>
-<summary>Install commands for the other agents</summary>
+### Agents — workers your agent delegates to
 
-```shell
-codex plugin marketplace add awrshift/agent-memory-kit && codex plugin add memory-kit@memory-kit
-cursor-agent plugin marketplace add https://github.com/awrshift/agent-memory-kit
-copilot plugin marketplace add awrshift/agent-memory-kit && copilot plugin install memory-kit@memory-kit
+| Agent | Model | What it does |
+|---|---|---|
+| `executor` | Opus | Builds to a decided spec in its own git worktree. Never redesigns; any deviation is reported. Stops if a value it must produce has no source in the spec. |
+| `recon` | Sonnet | Read-only fact gatherer: raw facts with file and line, official sources for anything outside the repo. Never designs. |
+| `idea-validator` | Opus | An isolated critic with none of your conversation, so it cannot anchor on your framing. |
+| `qa` | Sonnet | One QA lens on the running product (user flow, edge states, honesty, contract, UX). Observes, never fixes. |
+
+### Rule templates — the always-loaded part you opt into
+
+A plugin cannot install rules, so `setup` offers these and copies them only on your yes.
+
+| Template | What it holds |
+|---|---|
+| `templates/rules/orchestration.md` | Nine invariants for working with subagents ([listed below](#the-method-for-work-with-subagents)). |
+| `templates/rule-template.md` | The shape of a good rule: one checkable always/never, scoped by `paths:` so it loads only where it applies. |
+
+### Reference — depth, read only when needed
+
+| Doc | Read it when |
+|---|---|
+| `reference/spec-depth.md` | Writing a spec: the depth pass, checking outside facts fresh, review by stake, failure branches written first, measuring the outcome rather than a proxy. |
+| `reference/orchestrator-fact-check.md` | Accepting anyone's report: how a claim becomes a fact, and the cheapest decisive check per kind of claim. |
+| `reference/review-loop.md` | Handling findings: triage to the layer that owns them, the review gate on diffs, the registry that turns a repeated mistake into a check. |
+| `reference/parallel-development.md` | Fanning work out: worktrees, one integrator, when to go sequential. |
+| `reference/doc-governance.md` | Keeping docs true: one home per fact, dated status, nothing cited from a temp folder. |
+| `reference/decisions-log.md` | Recording a product or architecture decision in a lean ledger. |
+| `reference/project-extensions.md` | Adding your own rule, skill, hook or agent, and what each costs while idle. |
+| `reference/harness-measurement.md` | Changing settings or hooks: prove it with a fixed probe set before and after. |
+| `reference/capability-map-sweep.md` | Code duplicates what an installed library already does. |
+| `reference/qa-PROTOCOL-TEMPLATE.md`, `reference/qa-mcp.json.example` | Setting up `qa-sweep` for a product. |
+
+### Templates, scripts and the agreement
+
+- **Memory files:** `templates/MEMORY-TEMPLATE.md`, `templates/HANDOFF-TEMPLATE.md`, `templates/workspace/knowledge-index.md`.
+- **Per project:** `templates/workspace/project/README-TEMPLATE.md` (the project's map and workflow tier),
+  `BACKLOG-TEMPLATE.md`, `SPEC-TEMPLATE.md` (the contract an executor builds to), `ASSUMED-SPEC-TEMPLATE.md` (an
+  executor's recorded override, owed your ratification).
+- **Other:** `templates/workspace/AGENTS-MEMORY-PROTOCOL.md` (the same discipline for agents that cannot run hooks),
+  `EXPERIMENT-TEMPLATE.md` and `experiments-README.md` (a sandbox for throwaway work), `ONBOARDING-BACKLOG.md` (a first
+  day in five tasks), and the four `document` templates (`pr.md`, `changelog.md`, `release-note.md`, `postmortem.md`).
+- **Scripts:** `scripts/quiet.sh` (runs a noisy command, keeps the full log in a file, prints a summary),
+  `scripts/permission-probes.sh` (checks that your permission rules stop what they should); `system-audit` carries
+  `collect.sh`, `gates.py` and `usage.py`.
+- **The working agreement:** `context/identity.md`, injected at every session start. It is the kit's only always-on
+  text, about 2k tokens.
+
+```
+plugins/memory-kit/
+├── hooks/        hooks.json · session-start.py · pre-compact.sh · protect-tests.py · guard-git.py
+│                 guard-secrets.py · guard-zsh-split.py · session-end.sh · lib/ · tests/
+├── skills/       close-session · memory-audit · system-audit · setup · tour · session-review
+│                 second-opinion · qa-sweep · document · code-sync
+├── agents/       executor · recon · idea-validator · qa
+├── reference/    the eleven depth docs above
+├── templates/    memory · rules · workspace · project
+├── scripts/      quiet.sh · permission-probes.sh
+└── context/      identity.md
 ```
 
-OpenCode takes one line in `opencode.json`:
-`"plugin": ["memory-kit@git+https://github.com/awrshift/agent-memory-kit.git"]`
+## What it creates in your folder
 
-Hosts that cannot run hooks get the same discipline as an always-loaded instruction:
-`/memory-kit:setup` offers a small protocol block for your `AGENTS.md`. Every claim is probed,
-dated and labeled in [docs/specs/](docs/specs/README.md), degradation stated, never hidden.
-</details>
+Only state, and only after `setup`:
 
-## Private by default
-
-Everything is plain text on your machine; nothing leaves. The hot cache and the session notes
-are gitignored by default, so they stay private even if you push. `knowledge/` and rules are
-tracked: they are your curated wiki, keep the repository private or prune before publishing.
-Working from two machines, or sharing memory with a teammate? Say so at `/memory-kit:setup`
-and the hot cache gets committed instead.
-
-<details>
-<summary><b>What if I forget to run /close-session?</b></summary>
-
-Nothing breaks. Compaction still refuses to run over unsaved state, and the next session still
-opens with your hot cache. You lose that session's handoff note and the pattern audit, the
-deliberate part. Run it next time.
-</details>
-
-<details>
-<summary><b>For builders: the orchestration and QA layers (opt-in)</b></summary>
-
-The same plugin carries the orchestration discipline distilled from hundreds of multi-agent
-sessions: specs as files with pre-registered acceptance, `executor` / `recon` /
-`idea-validator` agents, adversarial `/session-review` and `/second-opinion`, and a multi-lens
-`/qa-sweep` for running products. Two more close the loop: `/document` writes the PR body,
-changelog entry, release note or postmortem from the actual `git diff`, never from what the
-model remembers building; `/code-sync` walks the specs after a merge and reconciles their
-status with what the code now shows, surgically. All lazy-loaded skills, they cost nothing
-until invoked.
-
-**v7 adds the lifecycle layer that makes those two mean something.** A spec's acceptance rows
-carry `AC-n` ids, so a test, a QA finding and a `Verified` cell can all point at the same
-promise. A spec also carries a `Value sources` table naming where every value it asks for comes
-from, and an executor runs an input-coverage gate before its first file: a value with no named
-source is an owed decision and the build STOPS rather than inventing one. Each project declares
-a workflow tier — `prototype · alpha · beta · ga` — which sets how much evidence a `done` owes,
-so a throwaway prototype is not held to a GA standard and a GA change cannot pass on a green
-test alone. When an executor must override the spec to proceed, it writes an *assumed* spec:
-a recorded override that session start surfaces as owed ratification, and that no skill may flip
-on its own.
-
-![](.github/assets/07-orchestrated-work-spec.png)
-![](.github/assets/09-agent-qa-projects.png)
-
-Depth: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and the plugin's
-[reference/](plugins/memory-kit/reference/).
-</details>
-
-<details>
-<summary><b>How it is built: where memory lives, what is in the repo</b></summary>
+```
+your-folder/
+├── .claude/memory/MEMORY.md     hot cache: dated one-liners, capped at 180 lines / 32 KB / 3000 chars a line
+├── context/handoffs/            one note per session; the newest is loaded at the next start
+├── knowledge/                   the wiki: one article per settled topic, written after your yes
+├── .claude/rules/               always / never, only what you promoted
+└── projects/<client>/           each client's own documents: README (the map), BACKLOG, plans/, research/
+```
 
 ```mermaid
 flowchart LR
-    T([you talk]) --> H[".claude/memory/MEMORY.md<br/>hot cache · dated one-liners<br/>180 lines / 32 KB / 3000 chars"]
-    H -->|"/close-session"| N["context/handoffs/*.md<br/>one note per session"]
-    H -->|"same pattern on 3+ dates<br/>and you say yes"| K["knowledge/concepts/*.md<br/>facts + rationale"]
-    K -->|"stable, mechanical"| R[".claude/rules/*.md<br/>always / never"]
-    N -->|"newest one injected"| S([next session])
-    H -->|"injected in full"| S
+    T([you talk]) --> H["MEMORY.md<br/>dated one-liners"]
+    H -->|"/close-session"| N["handoffs/<br/>one note per session"]
+    H -->|"same pattern on 3+ dates<br/>and you say yes"| K["knowledge/<br/>facts + rationale"]
+    K -->|"stable, mechanical"| R["rules/<br/>always / never"]
+    N -->|"newest one loaded"| S([next session])
+    H -->|"loaded in full"| S
 ```
 
-Four files, each answering a different question. The agent writes all of them, you only talk.
-Three size caps on the hot cache (180 lines / 32 KB / 3000 chars per line), checked every
-session, because line count alone lies while content densifies. A stale-reference detector
-checks that paths mentioned in memory still exist on disk, and a heading named after a session
-or a date gets flagged — the chronicle belongs in the handoff, the lesson under its topic.
+A pattern's path is observation, candidate, rule, and you approve every step. **Memory vs paperwork:** what the agent
+learned is shared across your work; what the work produced belongs to one client's folder. Say "now IKEA" and the
+agent reads that folder only.
 
-```
-.claude-plugin/marketplace.json   ← THE catalog: Claude Code, Codex and Copilot install from it
-.cursor-plugin/                   ← metadata for Cursor's central-marketplace listing only
-plugins/memory-kit/               ← the plugin: hooks · skills · agents · templates
-docs/specs/                       ← what each host actually honours, probe by probe
-docs/ARCHITECTURE.md              ← the full design, with rationale
-```
+## The method for work with subagents
 
-In **your** folder the kit owns only state: `.claude/memory/MEMORY.md`, `context/handoffs/`,
-`knowledge/`, `.claude/rules/`, plus one `projects/<name>/` per client.
-</details>
+![Agent-orchestrated work: the main session writes a spec file, four agents work from it, and a report is input, never a fact](.github/assets/07-orchestrated-work-v73.png)
+
+The main session designs and decides; subagents build or gather facts from a spec written as a file before anyone
+starts. The nine invariants in `templates/rules/orchestration.md`, in plain words:
+
+1. A report from a subagent or reviewer is input, not a fact. Re-run the check, read the line, look at one real
+   output yourself.
+2. Subagents build to a decided spec file and never redesign; a deviation is reported, not absorbed.
+3. A value with no named source stops the build as an owed decision; nothing is invented.
+4. The main session alone writes memory and project documents, merges, and re-runs every check on the merged result.
+5. A failing test means the code is wrong, not the test.
+6. Reviewers are judged on merits, never by counting votes.
+7. A subagent is resumed only for a short follow-up; new work gets a fresh one with a brief that points at files.
+8. Every number in a report comes from a script or command shown next to it.
+9. Scope, anything others will see, irreversible data changes and spending are yours to decide; technical choices are
+   the agent's, explained as "decision, why it is correct, what would prove it wrong".
+
+A spec also carries three lines before it is handed over (`reference/spec-depth.md`): a **depth pass** (what a top
+expert in the field would do that nobody asked for), a **practice** line (outside facts checked against official
+sources today, with the date), and a **review** line (who reviews it, by stake). Failure branches are written before
+the run, and success is judged by what reaches the user, not by a counter.
+
+## Why not the built-in memory?
+
+Claude Code, Cursor and Copilot all ship memory now, on by default. It is effortless, and it is the vendor's silo.
+
+| | Built-in auto memory | Memory Kit |
+|---|---|---|
+| Who decides what is remembered | the agent, silently | the agent proposes, **you approve** |
+| Where it lives | the vendor's directory, outside your folder | **plain files in your folder** |
+| Can you read it, diff it, fix a wrong belief | partly | **yes, it is text** |
+| One memory per client | no | **yes**, `projects/<client>/` |
+| Read by other agents | no | **yes** |
+| How staleness shows | it doesn't | **every line is dated**; caps force a prune |
+| Cost at session start | up to 200 lines / 25 KB (Claude Code docs) | 2–4k tokens on a working memory, ~12k at the caps, plus ~2k of skill descriptions (measured 2026-09-02) |
+
+Running both means two writers and two truths, so `setup` asks you to pick one.
+
+## Works with other agents
+
+| Agent | What you get | Evidence |
+|---|---|---|
+| **Claude Code** | everything on this page | the primary host |
+| **OpenCode** | memory in every model call through the shipped plugin; skills | [probed](docs/specs/opencode.md) 2026-08-31 |
+| **Cursor** | memory loaded at session start (Cursor does not wait for it), skills | [probed](docs/specs/cursor.md) 2026-08-31 |
+| **Codex** | skills and the `AGENTS.md` protocol; its docs now say it runs plugin hooks after you review them in `/hooks` | [probed](docs/specs/codex.md) 2026-08-31, docs 2026-10-22 |
+| **GitHub Copilot CLI** | skills and the `AGENTS.md` protocol; its docs now say it runs plugin hooks | [probed](docs/specs/copilot.md) 2026-08-31, docs 2026-10-22 |
+| **Claude Cowork** | skills; hooks per Anthropic's docs, not yet probed by us | [documented](docs/specs/cowork.md) |
+
+Install for the others: `codex plugin marketplace add awrshift/agent-memory-kit && codex plugin add memory-kit@memory-kit` ·
+`cursor-agent plugin marketplace add https://github.com/awrshift/agent-memory-kit` ·
+`copilot plugin marketplace add awrshift/agent-memory-kit && copilot plugin install memory-kit@memory-kit` · OpenCode:
+`"plugin": ["memory-kit@git+https://github.com/awrshift/agent-memory-kit.git"]` in `opencode.json`. An agent that runs
+no hooks gets the same discipline as a short block `setup` offers for your `AGENTS.md`.
+
+## Privacy and cost
+
+- **Nothing leaves your machine.** No hook or script opens a network connection; all are readable Python or shell.
+- **Private by default.** The hot cache and handoffs are gitignored, so they stay local even if you push. The
+  knowledge base and rules are tracked: keep the repository private or prune before publishing. Working from two
+  machines or with a teammate? Say so at `setup` and the hot cache gets committed instead.
+- **Forgot to close the session?** Nothing breaks: the next session still opens with your memory. You lose that
+  session's handoff note and the pattern audit.
 
 ## Origin
 
-Built and used daily by one operator since March 2026, across marketing, research and product
-work, in Claude Code first and the other agents as they arrived. The scars are in the changelog:
-a daily journal, a rolling status file, a staging layer and several more were retired because
-they quietly rotted, and for a year the kit claimed its hot cache was "always loaded" while the
-hook only measured it. v6 found that, fixed it, and CI now
-checks the injection on every push. What remains is what kept earning its place.
+Built and used daily by one operator since March 2026, across marketing, research and product work, and the method
+behind several production agent setups. Layers that quietly rotted were retired (a daily journal, a rolling status
+file, a staging layer), and CI now checks on every push that the memory actually reaches the model and that this page
+lists every part of the plugin.
 
+A 68-second recording of a real session: [demo video](.github/assets/demo-full-session.mp4).
 **Tell me how your first week went:** [open a note](https://github.com/awrshift/agent-memory-kit/issues/new?template=first-week.md).
-It is the only feedback channel, and it decides what gets built next.
 
-**Architecture:** [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) ·
-**Per-host specs:** [docs/specs/](docs/specs/README.md) ·
-**Changelog:** [docs/CHANGELOG.md](docs/CHANGELOG.md) ·
-**Contributing:** [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) ·
-**Open decisions:** [docs/DECISIONS.md](docs/DECISIONS.md)
-
-MIT, see [LICENSE](LICENSE).
+[Architecture](docs/ARCHITECTURE.md) · [Per-host specs](docs/specs/README.md) · [Changelog](docs/CHANGELOG.md) ·
+[Contributing](docs/CONTRIBUTING.md) · [Open decisions](docs/DECISIONS.md) · MIT, see [LICENSE](LICENSE).
