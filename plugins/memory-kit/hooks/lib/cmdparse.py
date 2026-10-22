@@ -24,8 +24,11 @@ leading `VAR=x`, `command`, `env`, `exec`, `nohup`, `time`, `builtin`, `timeout`
 command's substitutions before the command). `$((…))` is an 'arith' item, walked like 'sub'. Each
 Word carries `quoting`, one letter per character: 'u' unquoted, 'd' inside double quotes, 's' single-
 quoted / `$'…'` / backslash-escaped; and `array` = True for `NAME=` written right before `(`.
-Raises ValueError only on a lexing problem (unterminated quote / substitution) or nesting deeper
-than MAX_DEPTH — the caller decides the failure policy.
+A redirection target's `op` is the operator as written, fd prefix included (7.3): `>>`, `1>>`, `2>>`,
+`&>>`, `&>`, `>&`, `<`. `&>` / `&>>` are one redirection (both streams), not a `&` separator.
+Raises ValueError on a lexing problem (unterminated quote / substitution) — a command the shell refuses
+too — and NestingError (a ValueError) on nesting deeper than MAX_DEPTH, a command the shell WOULD run.
+The caller decides the failure policy for each.
 Known gaps (not parsed, by design): git aliases, shell functions, commands inside script files,
 a subcommand the shell computes (`git $(echo push) -f`).
 Python 3.9+, stdlib only.
@@ -65,9 +68,13 @@ MAX_DEPTH = 8
 SUBST = "\x00"  # stands in for a $(...) / backtick result inside a word
 
 
+class NestingError(ValueError):
+    """Nesting deeper than MAX_DEPTH: unlike a lexing error, the shell would run this command."""
+
+
 class Word(str):
     dynamic = False  # True when the shell would expand part of it ($VAR, $(...), `...`)
-    op = ""  # for a redirection target: the operator that named it (`>`, `>>`, `<`, `&>>` …)
+    op = ""  # for a redirection target: the operator as written, fd prefix included (`>>`, `2>>`, `&>>` …)
     quoting = ""  # per character: u (unquoted) · d (double quotes) · s (single quotes / escaped)
     array = False  # `NAME=` followed by `(` — a zsh/bash array assignment
 
@@ -214,6 +221,16 @@ def _parse(s, i, in_subst):
                         break
             del heredocs[:]
             continue
+        if c == "&" and i + 1 < n and s[i + 1] == ">":
+            # `&>` / `&>>`: one redirection of stdout and stderr, not a background `&` (7.3).
+            end_word()
+            j = i + 2
+            while j < n and s[j] in "<>&|":
+                j += 1
+            st["redirect"] = "file"
+            st["op"] = s[i:j]
+            i = j
+            continue
         if c in ";&|":
             end_cmd()
             i += 1
@@ -236,8 +253,10 @@ def _parse(s, i, in_subst):
             depth -= 1
             continue
         if c in "<>":
+            fd = ""
             if st["in_word"] and not st["dyn"] and "".join(st["buf"]).isdigit():
-                st.update(buf=[], q=[], in_word=False)  # `2>` — the digits are an fd, not a word
+                fd = "".join(st["buf"])  # `2>` — the digits are an fd, not a word; kept in the op
+                st.update(buf=[], q=[], in_word=False)
             else:
                 end_word()
             j = i + 1
@@ -251,7 +270,7 @@ def _parse(s, i, in_subst):
             if op == "<<" and j < n and s[j] == "-":
                 j += 1
             st["redirect"] = {"<<": "heredoc", "<<<": "herestring"}.get(op, "file")
-            st["op"] = op
+            st["op"] = fd + op
             i = j
             continue
         add(c, c == "$" and is_var_start(i + 1))
@@ -291,7 +310,7 @@ def _resolve_dir(base, p):
 def walk(items, state, out, depth=0, everything=False):
     """Collect git calls into `out` — or, with everything=True, every simple command (`commands`)."""
     if depth > MAX_DEPTH:
-        raise ValueError("command nesting deeper than %d" % MAX_DEPTH)
+        raise NestingError("command nesting deeper than %d" % MAX_DEPTH)
     for kind, val in items:
         if kind in ("sub", "arith"):
             walk(val, dict(state), out, depth + 1, everything)

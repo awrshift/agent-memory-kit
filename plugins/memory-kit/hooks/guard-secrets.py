@@ -15,7 +15,12 @@ Blocked (exit 2 + reason on stderr):
   Bash                  a command (found by `lib/cmdparse.py`: `&&`, pipes, `$(…)`, `bash -c`,
                         `eval`, `sudo`/`env`/`xargs`… unwrapped) with an argv word whose basename is
                         a secret name, or a file redirection to/from one (`< .env`, `> .env`);
-                        an APPEND (`>> .env`) is allowed: it writes without reading (2026-10-20);
+                        a plain stdout APPEND (`>>`, `1>>`, `&>>` .env) is allowed: it writes without
+                        reading (2026-10-20). Any other fd's append (`2>> .env`) stays blocked, and so
+                        does a command holding a secret append AND a file-descriptor path anywhere in
+                        it — an argv word, a redirection target or inline-script text naming `/dev/fd/`,
+                        `/dev/stdin|stdout|stderr` or `/proc/<self|thread-self|pid>/fd/` (7.3): on Linux
+                        reopening the fd path reads the appended file back (`cp /proc/self/fd/1 x >> .env`);
                         a word after an inline-script option (`-e`, `-c`, `-E`, `-p`, `-r`, `--eval`,
                         `--print`, `--command`, a short cluster ending in c/e) and every word of an
                         interpreter (node, python, perl, ruby, php, deno, bun, …) is also split into
@@ -24,9 +29,15 @@ Allowed commands whatever their arguments: `source` / `.` (loading into a proces
 `mv` (moving the file whole — an executor copying the env into its worktree), `ls`, `test` / `[` /
 `[[`, `git`, `rm`.
 Opt-out: CMK_SECRETS_GUARD=off in the environment.
-Failure policy: fail OPEN on a parse error (an unbalanced quote is also a command the shell refuses).
+Failure policy (7.3): fail OPEN on a lexing error (an unbalanced quote is also a command the shell refuses)
+and on a payload that is not a tool call (not JSON, `tool_input` not an object). Any OTHER exception —
+a bug, a missing `lib/cmdparse.py`, nesting past the parser's depth (a command the shell would run) —
+prints `permissionDecision: "ask"` naming the guard and the error, exit 0: the user decides, nothing
+passes silently. hooks.json sets `"onFailure": "block"` (a crash, timeout or invalid output blocks the
+call) and checks `python3` exists first, so a machine without it is an explicit no-op, not a blocked session.
 Known gaps: globs (`cat .e*`), heredoc bodies fed to an interpreter (`python3 - <<EOF`), script
-files, a copy read afterwards (`cp .env x && cat x`), tools outside the matcher (Grep, NotebookEdit).
+files, a copy read afterwards (`cp .env x && cat x`), tools outside the matcher (Grep, NotebookEdit),
+an fd path the shell computes (`/dev/f$X/1`) or reaches through a symlink made earlier.
 Search patterns are not paths: the pattern word of grep/egrep/fgrep/rg/ag/ack (`grep -rn '.env' src`, `-e .env`) and
 the value of find's -name/-path/-regex are skipped. `grep x .env` (the FILE operand) is still blocked.
 Python 3.9+, stdlib only; never spawns a process.
@@ -49,6 +60,9 @@ EXEMPT = {"source", ".", "cp", "ln", "mv", "ls", "test", "[", "[[", "git", "rm"}
 SCRIPT_OPTS = {"-e", "-c", "-E", "-p", "-r", "--eval", "--print", "--command"}
 INTERPRETER_RE = re.compile(r"^(?:node(?:js)?|deno|bun|python[\d.]*|pypy[\d.]*|perl|ruby|php|lua|osascript)$")
 NOT_PATH_RE = re.compile(r"[^A-Za-z0-9._\-/~@%$\x00]+")
+# The only appends that write without a way to read back: stdout alone, or stdout + stderr.
+PLAIN_APPENDS = {">>", "1>>", "&>>"}
+FD_PATH_RE = re.compile(r"/dev/fd(?:/|$|(?=[^A-Za-z0-9_.-]))|/dev/std(?:in|out|err)\b|/proc/(?:self|thread-self|\d+)/fd\b")
 
 
 def is_secret(path):
@@ -93,17 +107,37 @@ def _pattern_words(name, argv):
     return skip
 
 
-def secret_in_command(command, cwd):
-    """(command name, secret word) for the first blocked use, or None."""
+def fd_path(word):
+    """The file-descriptor path a word names or contains (`/proc/self//fd/1` spelled any way), or None."""
+    for text in (word, os.path.normpath(word) if word else word):
+        m = FD_PATH_RE.search(text)
+        if m:
+            return text
+    return None
+
+
+def load_cmdparse():
     sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "lib"))
     import cmdparse
 
-    for call in cmdparse.commands(command, cwd):
+    return cmdparse
+
+
+def secret_in_command(command, cwd):
+    """(what, secret word) for the first blocked use, or None."""
+    cmdparse = load_cmdparse()
+    calls = cmdparse.commands(command, cwd)
+    appended = None
+    for call in calls:
         for target in call.get("redirects", ()):
+            if not is_secret(target):
+                continue
+            op = getattr(target, "op", "")
             # `>> .env` appends: nothing of the file comes back into the transcript (owner 2026-10-20,
-            # the agent keeps the project's env up to date). `>`, `<` and `&>` stay blocked.
-            if is_secret(target) and not getattr(target, "op", "").endswith(">>"):
-                return "redirection", str(target)
+            # the agent keeps the project's env up to date). `>`, `<`, `&>` and `2>>` stay blocked.
+            if op not in PLAIN_APPENDS:
+                return "redirection `%s`" % op, str(target)
+            appended = appended or str(target)
         name = call["name"]
         if name is None or name in EXEMPT:
             continue
@@ -119,31 +153,64 @@ def secret_in_command(command, cwd):
                 for token in NOT_PATH_RE.split(word):
                     if token and is_secret(token):
                         return name, token
+    if appended:
+        # An append beside an fd path is a read on Linux: `cp /proc/self/fd/1 x >> .env` copies the file.
+        for call in calls:
+            for word in [*call["argv"], *call.get("redirects", ())]:
+                found = fd_path(str(word))
+                if found:
+                    return "append beside the fd path `%s`" % found, appended
     return None
+
+
+def check(raw):
+    """(what, name) when the call is blocked, None when allowed. Raises on an internal error."""
+    low = raw.lower()
+    if not any(marker in low for marker in FAST_PATH):
+        return None
+    try:
+        data = json.loads(raw)
+    except ValueError:
+        return None  # not a tool call we can read (see module doc)
+    if not isinstance(data, dict) or not isinstance(data.get("tool_input") or {}, dict):
+        return None
+    tool = data.get("tool_name")
+    tool_input = data.get("tool_input") or {}
+    if tool in ("Read", "Edit", "Write"):
+        path = tool_input.get("file_path")
+        if isinstance(path, str) and is_secret(path):
+            return tool, os.path.basename(path)
+    elif tool == "Bash":
+        command = tool_input.get("command")
+        if isinstance(command, str):
+            cwd = data.get("cwd") or os.environ.get("CLAUDE_PROJECT_DIR") or os.getcwd()
+            try:
+                return secret_in_command(command, cwd)
+            except ValueError as exc:
+                if type(exc).__name__ == "NestingError":
+                    raise
+                return None  # a lexing error: the shell refuses this command too
+    return None
+
+
+def ask(exc):
+    reason = (
+        "Memory Kit secrets guard failed internally (%s: %s) and could not check this call — "
+        "approve it only if it does not read a secret file. Set CMK_SECRETS_GUARD=off to disable the guard."
+        % (type(exc).__name__, exc)
+    )
+    json.dump({"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "ask",
+                                      "permissionDecisionReason": reason}}, sys.stdout)
+    sys.stdout.write("\n")
 
 
 def main():
     if os.environ.get("CMK_SECRETS_GUARD", "").lower() == "off":
         return 0
     try:
-        raw = sys.stdin.read()
-        low = raw.lower()
-        if not any(marker in low for marker in FAST_PATH):
-            return 0
-        data = json.loads(raw)
-        tool = data.get("tool_name")
-        tool_input = data.get("tool_input") or {}
-        found = None
-        if tool in ("Read", "Edit", "Write"):
-            path = tool_input.get("file_path")
-            if isinstance(path, str) and is_secret(path):
-                found = (tool, os.path.basename(path))
-        elif tool == "Bash":
-            command = tool_input.get("command")
-            if isinstance(command, str):
-                cwd = data.get("cwd") or os.environ.get("CLAUDE_PROJECT_DIR") or os.getcwd()
-                found = secret_in_command(command, cwd)
-    except Exception:  # noqa: BLE001 — fail open on a parse error (see module doc)
+        found = check(sys.stdin.read())
+    except Exception as exc:  # noqa: BLE001 — an internal error asks the user; never a silent pass
+        ask(exc)
         return 0
     if found:
         what, name = found

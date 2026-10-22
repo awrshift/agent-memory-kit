@@ -20,8 +20,11 @@ arguments of echo/grep/... never counts):
   restore   a whole-tree pathspec touching the worktree (`restore .`, `--staged --worktree .`);
             `restore --staged .` only resets the index and is allowed
 Opt-out: CMK_GIT_GUARD=off in the environment.
-Failure policy: fail OPEN on a parse error (an unbalanced quote is also a command the shell
-refuses to run). A directory computed at run time is NOT a parse error — it resolves to None.
+Failure policy (7.3): fail OPEN on a lexing error (an unbalanced quote is also a command the shell
+refuses to run) and on a payload that is not a tool call. A directory computed at run time is NOT a
+parse error — it resolves to None. Any OTHER exception — a bug, a missing `lib/cmdparse.py`, nesting
+past the parser's depth (a command the shell would run) — prints `permissionDecision: "ask"` naming the
+guard and the error, exit 0. hooks.json sets `"onFailure": "block"` and checks `python3` exists first.
 Known gaps: git aliases, shell functions, commands inside script files.
 """
 
@@ -110,24 +113,50 @@ def check(command, cwd):
     return None
 
 
+def verdict(raw):
+    """(operation, reason) when blocked, None when allowed. Raises on an internal error."""
+    if "git" not in raw:  # fast path: most Bash commands never mention git
+        return None
+    try:
+        data = json.loads(raw)
+    except ValueError:
+        return None  # not a tool call we can read (see module doc)
+    if not isinstance(data, dict) or not isinstance(data.get("tool_input") or {}, dict):
+        return None
+    if data.get("tool_name", "Bash") != "Bash":
+        return None
+    command = (data.get("tool_input") or {}).get("command")
+    if not isinstance(command, str) or "git" not in command:
+        return None
+    if not any(w in command for w in WATCHED):
+        return None
+    cwd = data.get("cwd") or os.environ.get("CLAUDE_PROJECT_DIR") or os.getcwd()
+    try:
+        return check(command, cwd)
+    except ValueError as exc:
+        if type(exc).__name__ == "NestingError":
+            raise
+        return None  # a lexing error: the shell refuses this command too
+
+
+def ask(exc):
+    reason = (
+        "Memory Kit git guard failed internally (%s: %s) and could not check this call — approve it only "
+        "if it is not a destructive git command. Set CMK_GIT_GUARD=off to disable the guard."
+        % (type(exc).__name__, exc)
+    )
+    json.dump({"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "ask",
+                                      "permissionDecisionReason": reason}}, sys.stdout)
+    sys.stdout.write("\n")
+
+
 def main():
     if os.environ.get("CMK_GIT_GUARD", "").lower() == "off":
         return 0
     try:
-        raw = sys.stdin.read()
-        if "git" not in raw:  # fast path: most Bash commands never mention git
-            return 0
-        data = json.loads(raw)
-        if data.get("tool_name", "Bash") != "Bash":
-            return 0
-        command = (data.get("tool_input") or {}).get("command")
-        if not isinstance(command, str) or "git" not in command:
-            return 0
-        if not any(w in command for w in WATCHED):
-            return 0
-        cwd = data.get("cwd") or os.environ.get("CLAUDE_PROJECT_DIR") or os.getcwd()
-        found = check(command, cwd)
-    except Exception:  # noqa: BLE001 — fail open on a parse error (see module doc)
+        found = verdict(sys.stdin.read())
+    except Exception as exc:  # noqa: BLE001 — an internal error asks the user; never a silent pass
+        ask(exc)
         return 0
     if found:
         op, reason = found
