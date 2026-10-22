@@ -162,7 +162,7 @@ for pattern, ceiling in BUDGETS:
 # every skill, agent and hook. A part added without its README line fails here, not in a reader's trust.
 def shipped_parts(plugin: Path) -> dict[str, list[str]]:
     hooks = [p.name for p in sorted((plugin / "hooks").glob("*")) if p.suffix in (".py", ".sh")]
-    hooks += [p.name for p in sorted((plugin / "hooks" / "lib").glob("*.py"))]
+    hooks += [p.name for p in sorted((plugin / "hooks" / "lib").glob("*")) if p.suffix in (".py", ".sh")]
     return {
         "skill": [p.parent.name for p in sorted(plugin.glob("skills/*/SKILL.md"))],
         "agent": [p.stem for p in sorted(plugin.glob("agents/*.md"))],

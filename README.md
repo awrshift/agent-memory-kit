@@ -62,14 +62,17 @@ A plugin install hides its file tree, so here is all of it.
 | `pre-compact.sh` | before the conversation is compacted | A manual `/compact` waits until memory is saved and inside its caps. An automatic compaction is never blocked (that would fail your request); if it ran over unsaved memory, the next context opens with "save memory now". |
 | `protect-tests.py` | before a file edit | Asks before an edit that could weaken an existing test: an assertion changed or removed, a `.skip` or `.only` added. New tests pass silently. |
 | `guard-git.py` | before a shell command | Stops force push, `push --mirror`, `reset --hard`, `clean -f`, `branch -D`, `checkout .`. `--force-with-lease` passes. |
-| `guard-secrets.py` | before a read, edit or shell command | Keeps `.env` files, keys and certificates out of the transcript, whether by a file tool, a shell command or a redirection. Appending a line to `.env` is allowed. |
+| `guard-secrets.py` | before a read, edit or shell command | Keeps `.env` files, keys and certificates out of the transcript, whether by a file tool, a shell command or a redirection. One exception: a single literal `echo` or `printf` appending a line to `.env`. |
 | `guard-zsh-split.py` | before a shell command, in zsh only | Catches a variable that zsh will NOT split into words the way bash does, before the command silently does the wrong thing. |
 | `session-end.sh` | when the session ends | Writes one timestamp line, nothing else. |
 
-The guards for git and secrets block the action if they crash or time out, instead of letting it through. Each guard
+The guards for git and secrets block the action if they crash or time out, instead of letting it through (Claude Code
+2.1.295 or later; older versions accept the setting but let the action through). Each guard
 names its opt-out variable. In a folder that never ran `setup`, the hooks write nothing.
-Shared code: `hooks/lib/cmdparse.py` (one shell-command parser for every guard), `hooks/lib/rails.py` (permission
-settings facts), `hooks/lib/stale-refs.py` (finds paths in memory that no longer exist).
+Shared code in `hooks/lib/`: `cmdparse.py` (one shell-command parser for every guard), `rails.py` (permission settings
+facts), `stale-refs.py` (finds paths in memory that no longer exist), `legacy_hooks.py` (spots a project's own copy of a
+kit hook), `statefs.py` and `state.sh` (write the kit's state files safely: never through a symlink, never outside the
+project).
 
 ### Skills — you call them, or just say what you want
 

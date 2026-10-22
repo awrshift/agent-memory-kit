@@ -37,14 +37,15 @@ claude plugin update memory-kit@memory-kit
   `--force-with-lease` passes; `CMK_GIT_GUARD=off` opts out.
 - **PreToolUse(Read|Edit|Write|Bash) — `guard-secrets.py`** — blocks reading or writing `.env`, `.env.local`,
   `.env.*.local`, `.env.production` (and development/test/staging), `*.pem`, `id_rsa*`, `*.p12` — by the file tools or by
-  a shell command, inline script or redirection; a plain append (`>> .env`) passes; `source` / `.`, `cp`/`ln`/`mv`, `ls`,
+  a shell command, inline script or redirection; one literal `echo`/`printf` appending a line (`>> .env`) passes; `source` / `.`, `cp`/`ln`/`mv`, `ls`,
   `test`, `git`, `rm` pass, and `.env.example` is never secret; `CMK_SECRETS_GUARD=off` opts out.
 - **PreToolUse(Bash) — `guard-zsh-split.py`** — in zsh only: catches an unquoted variable that zsh will not split into
   words the way bash does, before the command silently gets one argument instead of several.
 - **SessionEnd — `session-end.sh`** — appends one timestamp line to `.claude/state/session-end.log` (Claude Code gives
   plugin SessionEnd hooks a 1.5-second budget).
 
-The git and secrets guards carry `"onFailure": "block"` (Claude Code 2.1.295+): a guard that crashes or times out blocks
+The git and secrets guards carry `"onFailure": "block"` (Claude Code 2.1.295+; 2.1.290 was probed to accept the field and
+keep every hook running, but it lets a crashed guard's call through): a guard that crashes or times out blocks
 the call instead of letting it through, and its own internal errors become an explicit "ask".
 
 In a repository that never ran `/memory-kit:setup`, the hooks inject one pointer line and write

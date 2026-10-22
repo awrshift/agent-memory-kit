@@ -56,6 +56,11 @@
             "command": "command -v python3 >/dev/null 2>&1 || exit 0; python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/guard-git.py\"",
             "timeout": 10,
             "onFailure": "block"
+          },
+          {
+            "type": "command",
+            "command": "command -v python3 >/dev/null 2>&1 || exit 0; python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/guard-zsh-split.py\"",
+            "timeout": 10
           }
         ]
       },
