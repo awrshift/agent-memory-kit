@@ -63,4 +63,6 @@ opening note). The SessionStart hook injects the newest handoff next time — th
 - Don't promote without the user's yes. Repetition makes a CANDIDATE, not a rule.
 - Don't stack "Prior session" paragraphs in the MEMORY header — replace it.
 - Don't group today's lines under a session heading — see Step 1.
-- Don't write a handoff longer than ~1 screen. It's a note, not a transcript.
+- Don't write a handoff longer than ~1 screen (about 4,000 characters). It's a note, not a transcript.
+  Session start injects 6,000 characters of it; the opening-note section always arrives whole, the rest
+  is cut — so the next session's first move belongs in that section, not in step 4's list.

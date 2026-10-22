@@ -15,6 +15,11 @@ depends on what you have available:
   spots. It reviews from the brief only (no repo access) — lean on it for concept and
   tech-currency, not file-level facts.
 
+**Already have your own review setup?** If your user-level configuration defines a review board
+or a second-opinion skill (your own reviewer agent, a model list, a wrapper for another model
+family), use that one and skip this skill — two review procedures for one decision drift apart.
+This skill is the default for people who have none.
+
 ## When to invoke
 
 1. Two or more viable paths to choose between → Round-Table.

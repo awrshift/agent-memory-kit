@@ -1,5 +1,13 @@
 # Codex CLI — Tier 2 (skills + AGENTS.md protocol)
 
+> **Docs check 2026-10-22 (not a probe — no Codex CLI on the maintainer's machine):** Codex now documents plugin
+> hooks: a plugin's `hooks/hooks.json` is loaded, SessionStart/PreCompact/PreToolUse/SessionEnd exist, SessionStart
+> `additionalContext` "is added as extra developer context" (about 2,500 tokens per hook output by default), and
+> `CLAUDE_PLUGIN_ROOT` / `CLAUDE_PLUGIN_DATA` are set for compatibility. BUT "installing or enabling a plugin doesn't
+> automatically trust its hooks" — they run after review in `/hooks`, which may be why the 0.151.0 probe below saw no
+> SessionStart run. The kit's session start splits into ~9,500-character parts, near that token cap. Until a probe on
+> v7 confirms injection, this page stays Tier 2. Sources: `docs/research/platform-facts-2026-10-22.md`.
+
 Last verified: 2026-08-31, against `codex-cli 0.151.0` (npm `@openai/codex`), macOS, logged in
 via ChatGPT. Probes ran real `codex exec` sessions.
 

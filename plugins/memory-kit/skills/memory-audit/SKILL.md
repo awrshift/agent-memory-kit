@@ -60,8 +60,10 @@ Print the plan and ask for approval. Wait for an explicit yes or edits. No write
 
 - **move (create):** write `knowledge/concepts/<slug>.md` with frontmatter matching
   `knowledge/index.md`'s spec, then add its one-line entry to that index in the same pass.
-- **move (merge):** append under a `### From MEMORY.md (YYYY-MM-DD)` header — never duplicate a
-  section that already says the same thing.
+- **move (merge):** put the fact INTO the body of the article's topic section, with a short date tag
+  (`[since YYYY-MM-DD]`); the line it replaces moves to the article's final `## History` section. Never
+  append a dated «From MEMORY.md» block at the end — appended blocks turn an article into a log nobody can
+  read as current truth. Never duplicate a section that already says the same thing.
 - **in MEMORY.md:** replace the moved section with a one-line pointer plus a one-line teaser.
   A move without a pointer orphans the content — that is the failure this audit exists to prevent.
 - **drop:** delete; keep at most one distilled line.

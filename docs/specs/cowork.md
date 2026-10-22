@@ -1,5 +1,9 @@
 # Claude Cowork (desktop) — skills only, no hooks
 
+> **Update 2026-10-22:** Anthropic's platform-support page (read 2026-10-08) says Cowork loads plugin hooks and agents;
+> the issues cited below are CLOSED (as duplicates or not planned) and the duplicate target #40495 is still OPEN — no
+> official fix note found. Unprobed: treat "hooks run in Cowork" as plausible, not verified, until the checklist runs.
+
 Last verified: 2026-09-02, `documented-only` — from Anthropic's plugin reference and open
 issues in `anthropics/claude-code`; not probed by us (a probe needs a Cowork seat and a
 synced plugin, see the checklist).

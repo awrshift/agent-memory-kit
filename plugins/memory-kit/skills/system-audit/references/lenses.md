@@ -110,6 +110,12 @@ python3 "${CLAUDE_PLUGIN_ROOT}/skills/system-audit/scripts/gates.py" "$PWD"
 - **Context size** is measured by you, not scripted: `claude -p --output-format json "Reply with
   exactly: OK"` on a clean tree → input + cache-creation + cache-read tokens. Compare with the last
   audit's number; a jump names the layer that grew.
+- **Every SessionStart hook the project wires itself** (not the kit's): run it with the project's env and
+  `| wc -c`. Over 10,000 characters the model receives only a file path and a 2,000-character preview —
+  🔴 if what it injects is meant to be read first. A local hook that is a COPY of a kit hook (session-start
+  injecting MEMORY.md, pre-compact, session-end, protect-tests) fires twice next to the plugin — 🔴, unwire
+  it (session start flags these too).
+- Guards that are gates carry `"onFailure": "block"`; without it a crashed or timed-out guard lets the call through.
 - The full probe set (headless permission probes, behaviour scenarios): `reference/harness-measurement.md`.
 
 **Output:** the script's table + per-tool verdicts, each 🔴/⚪ with the hook command as evidence.

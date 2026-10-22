@@ -1,6 +1,6 @@
 ---
 created: 2026-08-27
-last-reviewed: 2026-08-27
+last-reviewed: 2026-10-22
 ---
 
 # Project extensions — when a repeated workflow earns a file
@@ -79,6 +79,18 @@ A hook — the only shape that fires without the agent deciding to. Hooks are th
   { "type": "command", "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/<name>.py\"" }
 ] } ] } }
 ```
+
+Three facts about hooks that fail silently (Claude Code docs, checked 2026-10-22):
+
+- **One hook's output reaching the model is capped at 10,000 characters.** Over it, the model gets a
+  file path and a 2,000-character preview — your hook "printed" the context and the model never saw it.
+  Measure your hook's stdout with `| wc -c`; split a big one into several hooks (the kit's session start
+  runs as six parts for exactly this reason), and prove delivery with a model-level probe, not stdout.
+- **A failing or timed-out hook lets the action through** by default. For a hook that is a gate, set
+  `"onFailure": "block"` (Claude Code 2.1.295+) — and make the script turn its own internal errors into an
+  explicit decision, because a gate that cannot start would otherwise block every call.
+- **Do not wire a copy of a kit hook in your own settings.** The plugin already runs it; a local copy fires
+  twice (two memory injections, two compaction blockers). Session start flags such copies.
 
 Exit non-zero only when you mean *block*. A hook that fails noisily on an unrelated repo state
 is how a project gets a permanently annoyed operator who disables the whole layer.

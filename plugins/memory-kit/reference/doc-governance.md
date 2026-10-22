@@ -1,6 +1,6 @@
 ---
 created: 2026-07-17
-last-reviewed: 2026-07-17
+last-reviewed: 2026-10-22
 ---
 
 # Doc governance — anti-drift
@@ -18,23 +18,34 @@ carry. The rest is opt-in for repositories whose docs actually change status.
 |---|---|
 | `created` | `YYYY-MM-DD` — required |
 | `last-reviewed` | `YYYY-MM-DD` — required; bump it when you re-verify, not when you edit |
-| `status` | `current` · `frozen` · `superseded` · `planned` · `historical` · `archived` (optional; absent = `current`) |
+| `status` | `current` · `frozen` · `superseded` · `historical` · `archived` (optional; absent = `current`). The ONE status vocabulary of the kit — `knowledge/concepts/` articles use it too |
 | `authority` | `ssot` (the one deciding home) · `derived` (a view; sources win) (optional) |
 | `superseded_by` | a pointer (only when superseded) |
 
-`knowledge/concepts/` articles use the richer schema in `knowledge/index.md` (title · status ·
-created · updated · tags) — that index is their SSOT, not this table.
-
-## The three rules
+## The rules
 
 - **R1 — one SSOT per fact.** A derived doc POINTS at the value, never re-copies it. A
-  derivable number (test count, LOC) is not restated as a live value at all — say "run the
+  derivable number (test count, LOC, an open-PR count) is not restated as a live value at all — say "run the
   command"; historical mentions carry "(as of <date>)".
 - **R2 — change a fact → grep for the old value** across all docs and fix/repoint EVERY hit in
   the SAME change. A stale copy that looks current is the #1 doc failure.
 - **R3 — label, don't bury.** Superseded/historical docs keep their `status:` plus a one-line
   "replaced by" note. Archiving = `git mv` to an `archive/` dir + one manifest line
   (what/why/where-preserved). Out of the reading path, still greppable — never lost.
+- **R4 — no symlinks to other repositories.** They die silently when the other repo moves. Reference by path, or copy
+  with a provenance line when this repo owns the copy.
+- **R5 — nothing a doc cites lives only in a session scratchpad.** The scratchpad (`/tmp`, a session temp dir) dies with
+  the session. A script, an output, a draft or a data file that a doc, plan or PR text relies on is copied into the
+  repository in the SAME change and cited there. Secrets never move. A reference that cannot be recovered is marked «lost».
+- **R6 — a decision is either built or says why not.** Every decisions-log entry that needs a build carries a build-by
+  date or a dated «not built — why / replaced by» line; a status rewrite re-reads the open ones. Code that ships a new
+  signal (a column, a flag, a score) names who reads it — a signal nothing consumes is a report, not a gate.
+
+## External state expires
+
+A fact about the outside world — an open PR, «the client is waiting», a price, a model id, a vendor's API behaviour —
+older than ~7 days is a HYPOTHESIS: re-check it live before acting. A practice or standard («how the industry does X»)
+is re-checked after ~30 days when it steers a design.
 
 ## Code change → same-commit doc updates
 

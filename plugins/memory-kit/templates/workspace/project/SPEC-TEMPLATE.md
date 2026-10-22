@@ -2,6 +2,11 @@
 
 **Created:** YYYY-MM-DD · **Status:** draft | decided | building | done | superseded | assumed | stale
 **Authority:** ssot for this slice · **Superseded by:** `<path>` (only when superseded)
+**Depth pass:** YYYY-MM-DD · <what the pass changed, or «nothing changed because …»>
+**Practice:** <dated research file with sources> | not needed because <…>
+**Review:** <high | medium | low> · <why> · <who>
+(What each of these three lines owes, and why: the plugin's `reference/spec-depth.md`. No depth-pass line → an
+executor does not start.)
 
 > This file is the CONTRACT an `executor` builds to. Decided here, by the main session, BEFORE
 > any agent is spawned; the executor's prompt points at this path instead of restating it.
@@ -22,7 +27,8 @@ forbidden to attempt.
 Written BEFORE building, or it is not acceptance. Each row must be checkable by someone who
 did not build it. The ids are stable: executor slices, qa runs, tests and the findings registry
 reference them by name. `Verified` is filled by the integrator only — a date plus a pointer to
-the run record or the gate output.
+the run record or the gate output. Judge the OUTCOME the user gets; a counter, a gate pass or a
+model judge's score is «screen only», never the proof.
 
 | # | What will prove this worked | How it is checked | Verified |
 |---|---|---|---|
@@ -63,6 +69,15 @@ sequential when they don't.
 
 Paths it must read first (`CLAUDE.md`, the matching `.claude/rules/*.md`, the interfaces it
 must not break), plus any fixture or account it may use.
+
+## Failure branches — written before the build
+
+Per failure mode: what is tried next, and whose call it is (a redesign inside the approach = the agent; a change to
+what the user gets = the user). Cover the mixed outcome too. The bar above is not moved after the results are seen.
+
+| If … | Then … | Whose call |
+|---|---|---|
+| | | |
 
 ## Open questions
 

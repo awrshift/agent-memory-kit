@@ -26,7 +26,7 @@ Every article in `concepts/` starts with:
 ```yaml
 ---
 title: <topic>
-status: canonical | draft | archived
+status: current | frozen | superseded | historical | archived   # one vocabulary: reference/doc-governance.md
 created: YYYY-MM-DD
 updated: YYYY-MM-DD
 compiled-from: [2026-04-20, 2026-04-22, ...]   # dates of the MEMORY.md entries this distils
@@ -34,7 +34,7 @@ tags: [tag1, tag2]
 ---
 ```
 
-When you append a new section to an existing article, prefix the section heading with the date — `## [YYYY-MM-DD] New finding from today's research`. This keeps the article's evolution traceable and lets the `/memory-kit:close-session` audit see which articles got refreshed recently.
+A new fact goes INTO the body of its topic section with a short date tag (`[since YYYY-MM-DD]`), and bump `updated`. The line it replaces moves to the article's final `## History` section. Never append dated blocks at the end of an article: an article is the current truth on its topic, the history sits below it, and git keeps the rest.
 
 ---
 

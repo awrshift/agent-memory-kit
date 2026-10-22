@@ -1,5 +1,11 @@
 # GitHub Copilot CLI — Tier 2 (skills + AGENTS.md protocol)
 
+> **Docs check 2026-10-22 (not a probe — no Copilot CLI on the maintainer's machine):** Copilot CLI now documents
+> plugin-bundled hooks (`hooks.json` or `hooks/hooks.json` in the plugin), a `sessionStart` event whose
+> `additionalContext` is consumed, `preCompact` and `preToolUse`, and it also reads a repository's `.claude/settings.json`
+> hooks with Claude-style matching for PascalCase event names. Docs now name one default marketplace (`awesome-copilot`).
+> Until a probe on v7 confirms the kit's hooks run, this page stays Tier 2. Sources: `docs/research/platform-facts-2026-10-22.md`.
+
 Last verified: 2026-08-31, against `GitHub Copilot CLI 1.0.82` (npm `@github/copilot`), macOS,
 authed via the GitHub CLI keyring login. Probes ran real `copilot -p` sessions.
 

@@ -65,13 +65,14 @@ postmortem, written from the diff) · `code-sync` (specs reconciled against the 
 
 **Depth, read on demand** from the plugin's `reference/` directory — free until you open it:
 `orchestrator-fact-check` (a report is INPUT, never a fact; a number from history carries its
-time window and build) · `review-loop` (the diff gate + the
+time window and build) · `spec-depth` (depth pass, fresh-checked practice, review stake, fail
+branches written first, outcome over proxy) · `review-loop` (finding triage, the diff gate, the
 findings-class registry) · `parallel-development` (fan-out, worktree isolation, one integrator) ·
 `doc-governance` (one SSOT per fact, the anti-drift rules) · `decisions-log` (the lean ledger) ·
 `capability-map-sweep` (the "the library already does this" defect class) ·
 `project-extensions` (when a repeated workflow earns a project skill / hook / agent, and what
 each costs when idle). Delegating to
-subagents? `templates/rules/orchestration.md` is the seven always-loaded invariants — copy it into
+subagents? `templates/rules/orchestration.md` is the nine always-loaded invariants — copy it into
 `.claude/rules/` (a plugin cannot ship rules; `/memory-kit:setup` offers this).
 Permissions are speed bumps; hooks are gates, and a gate is proven only through its exact wiring (`reference/harness-measurement.md`).
 Noisy commands: `bash ${CLAUDE_PLUGIN_ROOT}/scripts/quiet.sh <cmd>`.
@@ -86,8 +87,14 @@ Noisy commands: `bash ${CLAUDE_PLUGIN_ROOT}/scripts/quiet.sh <cmd>`.
 ## During the session
 
 Observations happen in conversation; the ones worth keeping become one dated line in the hot
-cache — say "saved" and move on. When context runs long, save state before it is compacted: the
-PreCompact hook will block compaction until `MEMORY.md` is fresh and inside its caps.
+cache — say "saved" and move on. When context runs long, save state before it is compacted: a
+manual `/compact` is blocked until `MEMORY.md` is fresh and inside its caps; an automatic one is
+never blocked (that would fail the user's request), and the next context opens with a loud
+"save memory now" if it ran over unsaved state.
+
+Reporting to the user: lead with the outcome in one plain sentence, then what you need from them.
+Your working labels (ids, branch and file names, rule numbers) are yours — drop them or say in
+plain words what each is. Full sentences, a technical term glossed the first time.
 
 Close with `/memory-kit:close-session`: capture → audit for 3+-date repetition → promote on the
 user's yes → replace the header → write the handoff the next session opens with.

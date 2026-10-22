@@ -1,5 +1,10 @@
 # Cursor — verified: skills + AGENTS.md protocol + SessionStart injection
 
+> **Docs check 2026-10-22 (recon, not re-probed):** Cursor's native `sessionStart` is fire-and-forget (the agent loop
+> does not wait for it) and does not run in cloud agents — memory may arrive after the first answer. `preCompact`,
+> `preToolUse` and `sessionEnd` exist and remain unprobed for the kit. The central-marketplace application (2026-08-31)
+> has no recorded outcome.
+
 Last verified: 2026-08-31, against `cursor-agent 2026.08.25-3e8eec8` (Cursor CLI, headless
 `-p --mode ask` probes), Cursor app 2.1.36 installed but not driven. Auth: logged-in Cursor
 account (required for marketplace operations).

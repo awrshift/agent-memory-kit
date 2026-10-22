@@ -1,5 +1,10 @@
 # OpenCode — Tier 1: real injection via the shipped plugin
 
+> **Docs check 2026-10-22 (recon, not re-probed):** latest `@opencode-ai/plugin` is 1.19.3 (the shim pins 1.18.25).
+> `experimental.session.compacting`: when `output.prompt` is set it replaces the default compaction prompt and
+> `output.context` is ignored — the shim only appends context, so it is unaffected. `tool.execute.before` and
+> `permission.ask` now exist: a test guard is possible here, not built.
+
 Last verified: 2026-08-31, against `opencode-ai 1.18.25` (npm), plugin SDK `@opencode-ai/plugin`
 1.18.25, probes on `google/gemini-2.5-flash` via `opencode run`. Repo note: the OpenCode
 project moved — `sst/opencode` now redirects to `anomalyco/opencode`.
