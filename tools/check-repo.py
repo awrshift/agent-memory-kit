@@ -6,7 +6,8 @@ Deterministic, stdlib-only, no auth: runs in CI and on your machine identically.
   1. manifests parse, and VERSION / plugin.json / marketplace.json agree
      (both catalog families: .claude-plugin/ and .cursor-plugin/)
   2. every marketplace `source` exists and holds a plugin manifest
-  3. every hook command referenced in hooks.json exists and is executable
+  3. every hook command referenced in hooks.json exists and is executable; a hook with
+     `onFailure: block` checks its interpreter exists first (`command -v X ... || exit 0; X ...`)
   4. every skill has frontmatter with a description; every agent has a name
   5. every relative link and every image embed in the markdown resolves
   6. no asset in .github/assets is orphaned (nothing embeds or links it)
@@ -109,6 +110,12 @@ for hooks_json in ROOT.glob("plugins/*/hooks/hooks.json"):
                     check(target.exists(), f"{hooks_json} [{event}]: missing {target}")
                     check(target.exists() and os.access(target, os.X_OK),
                           f"{hooks_json} [{event}]: {target.name} is not executable")
+                # 7.3: a hook whose failure BLOCKS the action must not fail because its interpreter is absent —
+                # that would block every matching tool call. Its command checks the interpreter first.
+                if hook.get("onFailure") == "block":
+                    m = re.match(r"command -v (\S+) >/dev/null 2>&1 \|\| exit 0; (\S+) ", cmd)
+                    check(bool(m) and m.group(1) == m.group(2),
+                          f"{hooks_json} [{event}]: onFailure block without an interpreter check: {cmd[:80]}")
 
 # 4 — skills and agents -------------------------------------------------------------
 for skill in ROOT.glob("plugins/*/skills/*/SKILL.md"):
