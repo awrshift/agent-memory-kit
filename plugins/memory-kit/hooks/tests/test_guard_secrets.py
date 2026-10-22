@@ -91,7 +91,7 @@ BLOCKED = [
 ALLOWED = [
     # an append writes without reading (owner 2026-10-20)
     "echo X=1 >> .env",
-    "pbpaste | awk '{print}' >> .env",
+    # `pbpaste | awk '{print}' >> .env` moved to APPEND_ALLOWLIST_BYPASSES (AC-17 amendment: allowlist only)
     "source .env",
     "set -a; . ./.env; set +a; node app.js",
     "cp .env ../wt/.env",
@@ -159,8 +159,39 @@ APPEND_BYPASSES = [
     "cat /de\\v/fd/1 >> .env",
 ]
 
+# AC-17 amendment (integrator, 2026-10-22, after a security review of the fd-path denylist): the append is exempt
+# ONLY when every command in the line is echo / printf / a file-less cat fed by a quoted heredoc or a here-string,
+# and nothing else reads a file. A list of fd-path spellings missed /proc/<pid>/task/<tid>/fd and fd paths read
+# inside a heredoc, a here-string or an interpreter's stdin; the cases above stay as regression tests.
+APPEND_ALLOWLIST_BYPASSES = [
+    # reported: spellings the denylist did not know
+    "cat /proc/1234/task/1234/fd/1 >> .env",
+    "cp /proc/self/task/77/fd/1 /tmp/x >> .env",
+    # reported: the fd path read where the parser never looks — a heredoc body, a here-string, stdin of an interpreter
+    "python3 >> .env <<'EOF'\nprint(open('/proc/self/fd/1').read())\nEOF",
+    "python3 <<< \"print(open('/proc/self/fd/1').read())\" >> .env",
+    "sh >> .env <<'EOF'\ncat /proc/self/fd/1\nEOF",
+    "cat <<EOF >> .env\n$(cat /proc/self/fd/1)\nEOF",
+    "cat <<EOF >> .env\n`cat /proc/self/fd/1`\nEOF",
+    # anything outside the allowlist with a secret append
+    "pbpaste | awk '{print}' >> .env",
+    "cat notes.txt >> .env",
+    "echo X=1 >> .env < input.txt",
+    "cat <&3 >> .env",
+    "echo \"$(cat /proc/self/fd/1)\" >> .env",
+    "printf '%s\\n' \"$(< /proc/self/fd/1)\" >> .env",
+    "npm run gen-env && echo X=1 >> .env",
+]
+
 APPEND_ALLOWED = [
     "echo X=1 >> .env",
+    "echo \"KEY=$v\" >> .env",
+    "printf '%s\\n' x >> .env",
+    "cat <<'EOF' >> .env\nKEY=1\nEOF",
+    "cat <<\"EOF\" >> .env\nKEY=$v\nEOF",
+    "cat <<\\EOF >> .env\nKEY=1\nEOF",
+    "cat >> .env <<< \"KEY=$v\"",
+    "cat - >> .env <<'EOF'\nKEY=1\nEOF",
     "echo X=1 1>> .env",
     "echo X=1 &>> .env",
     "echo X=1 >> .env 2>&1",
@@ -200,6 +231,13 @@ class SecretsGuardTest(unittest.TestCase):
 
     def test_append_bypasses_blocked(self):
         for cmd in APPEND_BYPASSES:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+                self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+                self.assertIn("Memory Kit secrets guard:", err)
+
+    def test_append_allowlist_bypasses_blocked(self):
+        for cmd in APPEND_ALLOWLIST_BYPASSES:
             with self.subTest(cmd=cmd):
                 rc, err = self.bash(cmd)
                 self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))

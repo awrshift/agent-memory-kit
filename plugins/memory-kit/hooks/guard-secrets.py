@@ -15,12 +15,14 @@ Blocked (exit 2 + reason on stderr):
   Bash                  a command (found by `lib/cmdparse.py`: `&&`, pipes, `$(…)`, `bash -c`,
                         `eval`, `sudo`/`env`/`xargs`… unwrapped) with an argv word whose basename is
                         a secret name, or a file redirection to/from one (`< .env`, `> .env`);
-                        a plain stdout APPEND (`>>`, `1>>`, `&>>` .env) is allowed: it writes without
-                        reading (2026-10-20). Any other fd's append (`2>> .env`) stays blocked, and so
-                        does a command holding a secret append AND a file-descriptor path anywhere in
-                        it — an argv word, a redirection target or inline-script text naming `/dev/fd/`,
-                        `/dev/stdin|stdout|stderr` or `/proc/<self|thread-self|pid>/fd/` (7.3): on Linux
-                        reopening the fd path reads the appended file back (`cp /proc/self/fd/1 x >> .env`);
+                        an APPEND to a secret file is allowed only on a positive signal (7.3, an
+                        allowlist): every secret-named redirection is a plain stdout append (`>>`, `1>>`,
+                        `&>>`), every command in the line (`$(…)` and backticks included) is `echo`,
+                        `printf`, or `cat` with no file argument, a heredoc delimiter is quoted (`<<'EOF'`:
+                        the body is not expanded), and no redirection reads a file (`<`, `<&`, `<>`).
+                        Why not a list of bad shapes: on Linux reopening an fd path reads the appended file
+                        back (`cp /proc/self/fd/1 x >> .env`), and its spellings are open-ended
+                        (`/proc/<pid>/task/<tid>/fd/1`, a path inside a heredoc or an interpreter's stdin);
                         a word after an inline-script option (`-e`, `-c`, `-E`, `-p`, `-r`, `--eval`,
                         `--print`, `--command`, a short cluster ending in c/e) and every word of an
                         interpreter (node, python, perl, ruby, php, deno, bun, …) is also split into
@@ -62,7 +64,8 @@ INTERPRETER_RE = re.compile(r"^(?:node(?:js)?|deno|bun|python[\d.]*|pypy[\d.]*|p
 NOT_PATH_RE = re.compile(r"[^A-Za-z0-9._\-/~@%$\x00]+")
 # The only appends that write without a way to read back: stdout alone, or stdout + stderr.
 PLAIN_APPENDS = {">>", "1>>", "&>>"}
-FD_PATH_RE = re.compile(r"/dev/fd(?:/|$|(?=[^A-Za-z0-9_.-]))|/dev/std(?:in|out|err)\b|/proc/(?:self|thread-self|\d+)/fd\b")
+# The commands a secret append may come with — they print their arguments or stdin and read no file.
+APPEND_WRITERS = {"echo", "printf"}
 
 
 def is_secret(path):
@@ -107,12 +110,25 @@ def _pattern_words(name, argv):
     return skip
 
 
-def fd_path(word):
-    """The file-descriptor path a word names or contains (`/proc/self//fd/1` spelled any way), or None."""
-    for text in (word, os.path.normpath(word) if word else word):
-        m = FD_PATH_RE.search(text)
-        if m:
-            return text
+def append_blocker(calls):
+    """What keeps a secret append from its exemption, or None when the whole line is on the allowlist."""
+    for call in calls:
+        for target in call.get("redirects", ()):
+            op = getattr(target, "op", "")
+            if "<" in op:
+                return "the input redirection `%s %s`" % (op, target)
+        for delim in call.get("heredocs", ()):
+            if not getattr(delim, "quoted", False):
+                return "an unquoted heredoc `<<%s` (its body expands `$(…)`)" % delim
+        name = call["name"]
+        if name is None:
+            continue
+        argv = [str(w) for w in call["argv"]]
+        if argv[0] in APPEND_WRITERS:
+            continue
+        if argv[0] == "cat" and all(w.startswith("-") for w in argv[1:]):
+            continue
+        return "`%s`" % " ".join(argv)[:80]
     return None
 
 
@@ -154,12 +170,9 @@ def secret_in_command(command, cwd):
                     if token and is_secret(token):
                         return name, token
     if appended:
-        # An append beside an fd path is a read on Linux: `cp /proc/self/fd/1 x >> .env` copies the file.
-        for call in calls:
-            for word in [*call["argv"], *call.get("redirects", ())]:
-                found = fd_path(str(word))
-                if found:
-                    return "append beside the fd path `%s`" % found, appended
+        blocker = append_blocker(calls)
+        if blocker:
+            return "an append beside %s" % blocker, appended
     return None
 
 
