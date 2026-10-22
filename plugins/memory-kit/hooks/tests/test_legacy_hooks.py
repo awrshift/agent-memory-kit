@@ -172,6 +172,40 @@ class LegacyHooks(unittest.TestCase):
         self.settings({"PreCompact": "not a list", "SessionEnd": [{"hooks": "x"}, "y"]})
         self.assertNotIn(NUDGE, self.injected())
 
+    # ------------------------------------------------------------ R2-4: how the command names the script (v7.3 r2)
+
+    def test_the_docs_recommended_quoting_is_resolved(self):
+        """`"$CLAUDE_PROJECT_DIR"/.claude/hooks/x.sh` (the form the Claude Code hooks doc recommends) and the
+        braced/unquoted forms resolve to the project's script."""
+        self.write(".claude/hooks/pre-compact.sh", KIT_PRECOMPACT)
+        for command in ('"$CLAUDE_PROJECT_DIR"/.claude/hooks/pre-compact.sh',
+                        'bash "${CLAUDE_PROJECT_DIR}"/.claude/hooks/pre-compact.sh',
+                        "bash $CLAUDE_PROJECT_DIR/.claude/hooks/pre-compact.sh",
+                        "bash ${CLAUDE_PROJECT_DIR}/.claude/hooks/pre-compact.sh"):
+            with self.subTest(command=command):
+                self.settings({"PreCompact": [{"hooks": [{"type": "command", "command": command}]}]})
+                text = self.injected()
+                self.assertIn(NUDGE, text)
+                self.assertIn(".claude/hooks/pre-compact.sh", text)
+
+    def test_a_project_path_with_a_space(self):
+        """A project directory with a space, every quoting form, plus a quoted relative path with a space."""
+        spaced = os.path.join(self.repo, "my project")
+        os.makedirs(spaced)
+        self.addCleanup(shutil.rmtree, self.repo, True)
+        self.repo, self.env["CLAUDE_PROJECT_DIR"] = spaced, spaced
+        self.write(".claude/memory/MEMORY.md", "# Hot\n\n- [2026-01-01] CANARY\n")
+        self.write(".claude/hooks/pre-compact.sh", KIT_PRECOMPACT)
+        self.write(".claude/hooks/save memory.sh", KIT_PRECOMPACT)
+        for command, shown in (('"$CLAUDE_PROJECT_DIR"/.claude/hooks/pre-compact.sh', "pre-compact.sh"),
+                               ('bash "$CLAUDE_PROJECT_DIR/.claude/hooks/pre-compact.sh"', "pre-compact.sh"),
+                               ("bash '.claude/hooks/save memory.sh'", "save memory.sh")):
+            with self.subTest(command=command):
+                self.settings({"PreCompact": [{"hooks": [{"type": "command", "command": command}]}]})
+                text = self.injected()
+                self.assertIn(NUDGE, text)
+                self.assertIn(".claude/hooks/" + shown, text)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=1)

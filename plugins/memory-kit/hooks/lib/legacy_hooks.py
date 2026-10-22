@@ -20,12 +20,16 @@ from __future__ import annotations
 import json
 import os
 import re
+import shlex
 from pathlib import Path
 
 SETTINGS = (".claude/settings.json", ".claude/settings.local.json")
 MAX_READ = 512 * 1024
 MAX_LISTED = 8
 SCRIPT_RE = re.compile(r"""[^\s"'`;|&()<>]+\.(?:sh|bash|py|js|mjs|cjs|ts)\b""")
+SCRIPT_WORD_RE = re.compile(r"""[^"'`;|&()<>]+\.(?:sh|bash|py|js|mjs|cjs|ts)""")  # one shell word: spaces allowed
+PROJECT_TOKEN = "\x00cmk-project-dir\x00"  # stand-ins without spaces or quotes, replaced after the split
+HOME_TOKEN = "\x00cmk-home\x00"
 MEMORY_PATH_RE = re.compile(
     r"""\.claude/memory/MEMORY\.md|["']\.claude["']\s*/\s*["']memory["']\s*/\s*["']MEMORY\.md["']"""
 )
@@ -62,12 +66,26 @@ def plugin_disabled(project_dir: Path) -> bool:
 
 
 def _scripts(command: str, project_dir: Path) -> list[Path]:
-    text = re.sub(r"\$\{?CLAUDE_PROJECT_DIR\}?", str(project_dir), command)
-    text = re.sub(r"\$\{?HOME\}?", str(Path.home()), text)
+    """The script paths a hook command names (7.3 r2): `$CLAUDE_PROJECT_DIR` / `${CLAUDE_PROJECT_DIR}` (and `$HOME`),
+    quoted or not, stand for their directory, then the command is split like a POSIX shell (shlex), so
+    `"$CLAUDE_PROJECT_DIR"/.claude/hooks/x.sh` and a quoted path with a space resolve whole. A word that is not a
+    script path itself (`bash -c 'python3 x.py'`) is searched for one; an unbalanced quote falls back to that
+    search over the whole command."""
+    text = re.sub(r"\$(?:CLAUDE_PROJECT_DIR\b|\{CLAUDE_PROJECT_DIR\})", PROJECT_TOKEN, command)
+    text = re.sub(r"\$(?:HOME\b|\{HOME\})", HOME_TOKEN, text)
+    try:
+        lexer = shlex.shlex(text, posix=True, punctuation_chars=";&|()<>")
+        lexer.whitespace_split = True
+        words = list(lexer)
+    except ValueError:
+        words = [text]
     found = []
-    for token in SCRIPT_RE.findall(text):
-        path = Path(os.path.expanduser(token))
-        found.append(path if path.is_absolute() else project_dir / path)
+    for word in words:
+        word = word.replace(PROJECT_TOKEN, str(project_dir)).replace(HOME_TOKEN, str(Path.home()))
+        tokens = [word] if SCRIPT_WORD_RE.fullmatch(word) else SCRIPT_RE.findall(word)
+        for token in tokens:
+            path = Path(os.path.expanduser(token))
+            found.append(path if path.is_absolute() else project_dir / path)
     return found
 
 
