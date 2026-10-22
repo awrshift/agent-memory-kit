@@ -23,6 +23,11 @@ v6.0 (plugin form). What changed vs v5 and WHY:
    splits it at section boundaries into parts of <= PART_LIMIT and prints part N. Only part 1
    writes (state pruning, the session counter); parts 2..N are read-only. No flag = the whole
    text in one output (tests, tools, a manual look).
+7. AFTER AN AUTO COMPACTION OVER UNSAVED MEMORY (7.3).  pre-compact.sh never blocks an auto compaction
+   (blocking one skips it or fails the request); it leaves .claude/state/compact-unsaved instead. On
+   source `compact` the memory section then opens with a loud "save MEMORY.md now" line, and the
+   writing part clears the marker — leaving a `compact-unsaved-seen` copy first, so a read-only part
+   that finds the marker gone still prints the same text.
 
 Output: {"hookSpecificOutput": {"hookEventName": "SessionStart", "additionalContext": "..."}}
 """
@@ -55,6 +60,13 @@ SESSION_FILE = STATE_DIR / "session_count"
 # `<session_id>|<source>\t<n>`, written by part 1 BEFORE session_count: a parallel part 2..6 that reads
 # session_count first and this file second always derives the number part 1 printed.
 SESSION_LAST_FILE = STATE_DIR / "session_last"
+# Left by pre-compact.sh when an AUTO compaction ran over stale / over-cap memory: "<date> <time>\t<reason>".
+COMPACT_UNSAVED_FILE = STATE_DIR / "compact-unsaved"
+# `<session key>\t<marker line>`, written by the writing part BEFORE it removes the marker (same protocol as
+# session_last): a read-only part that finds the marker gone reads this and prints the same nudge.
+COMPACT_SEEN_FILE = STATE_DIR / "compact-unsaved-seen"
+COMPACT_SEEN_WINDOW_S = 120  # the parts of one SessionStart run within seconds of each other
+COMPACT_MARKER_MAX_AGE_S = 1800  # SessionStart `compact` follows the compaction at once; older = left over
 
 # The transport. Claude Code caps a hook's additionalContext at 10,000 chars (code.claude.com/docs/en/hooks);
 # a part is packed to PART_LIMIT, leaving room for the one-line wrapper and the overflow line.
@@ -361,6 +373,47 @@ def peek_session_counter(session_key: str | None) -> int:
     return count + 1
 
 
+def compact_unsaved_reason(writer: bool, session_key: str | None) -> str | None:
+    """The marker line when the compaction just run went over unsaved memory, else None.
+
+    The writer reads the marker, records it in COMPACT_SEEN_FILE, then removes it; a read-only part reads
+    the marker first and COMPACT_SEEN_FILE second, so it derives the same answer in either order.
+    """
+    key = session_key or "-"
+    try:
+        line = COMPACT_UNSAVED_FILE.read_text(encoding="utf-8").strip()
+        fresh = time.time() - COMPACT_UNSAVED_FILE.stat().st_mtime <= COMPACT_MARKER_MAX_AGE_S
+    except OSError:
+        line, fresh = None, False
+    if line is not None:
+        if writer:
+            if fresh:
+                write_atomic(COMPACT_SEEN_FILE, f"{key}\t{line}")
+            try:
+                COMPACT_UNSAVED_FILE.unlink()
+            except OSError:
+                pass
+        return (line or "memory not saved") if fresh else None
+    try:
+        seen_key, _, seen_line = COMPACT_SEEN_FILE.read_text(encoding="utf-8").partition("\t")
+        if seen_key == key and time.time() - COMPACT_SEEN_FILE.stat().st_mtime <= COMPACT_SEEN_WINDOW_S:
+            return seen_line.strip() or "memory not saved"
+    except OSError:
+        pass
+    return None
+
+
+def compact_unsaved_nudge(line: str) -> str:
+    when, _, reason = line.partition("\t")
+    reason = reason or when
+    return (
+        f"⚠ COMPACTION RAN OVER UNSAVED MEMORY ({reason}) — save MEMORY.md now, before anything else: "
+        "REPLACE the header current-state lines, add this session's `[YYYY-MM-DD]` patterns, and refresh "
+        "this session's handoff in `context/handoffs/` (`/memory-kit:close-session` has the full ritual). "
+        "The summary above still holds what to save; the next compaction may not.\n"
+    )
+
+
 def list_dirs(base: Path) -> list[Path]:
     if not base.exists():
         return []
@@ -523,6 +576,8 @@ def build_context(source: str, writer: bool = True, session_key: str | None = No
     content: str | None = read_file_safe(MEMORY_FILE) if MEMORY_FILE.exists() else None
     if not content:
         content = None
+    unsaved = compact_unsaved_reason(writer, session_key) if restore else None
+    nudge = compact_unsaved_nudge(unsaved) if unsaved else ""
 
     parts: list[str] = []
     remaining = BUDGET
@@ -576,7 +631,10 @@ def build_context(source: str, writer: bool = True, session_key: str | None = No
                 "\n\n…(TRUNCATED — the cache is over its injection cap; run "
                 "`/memory-kit:close-session` and prune)\n"
             )
-        add_section("MEMORY.md (hot cache — durable patterns + current state)", body)
+        # The nudge opens the memory section, so it travels in the part that carries the memory.
+        add_section("MEMORY.md (hot cache — durable patterns + current state)", (nudge + "\n" if nudge else "") + body)
+    elif content is None and nudge:
+        add_section("MEMORY.md", nudge)
     elif content is None and full:
         add_section(
             "MEMORY.md",
