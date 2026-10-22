@@ -119,7 +119,11 @@ MEMORY_INJECT_CAP = 40_000  # a cache at its 32 KB cap fits whole; a bloated one
 HANDOFF_INJECT_CAP = 6_000
 # The section the next session must act on (`## 5. [Opening note for next session]` in the kit template,
 # `## 6. [Opening contract]` in adopters' handoffs) is written LAST, so a plain cut drops exactly it (7.3).
-OPENING_HEADING_RE = re.compile(r"^(#{1,6})[ \t]+.*opening.*$", re.IGNORECASE | re.MULTILINE)
+# 7.3 r2: a heading of level >= 2 whose text STARTS with "opening" once numbering, `[` and punctuation are skipped
+# (a title "# Handoff — reopening the billing work" is not one), never a line inside fenced code.
+ATX_HEADING_RE = re.compile(r"^ {0,3}(#{1,6})(?:[ \t]+(.*?))?[ \t]*$")
+FENCE_RE = re.compile(r"^ {0,3}(`{3,}|~{3,})(.*)$")
+OPENING_TITLE_RE = re.compile(r"^(?:[^\w\n]|[\d_])*opening", re.IGNORECASE)
 STATE_TTL_DAYS = 30
 
 # A spec left in `building` for this long is either done-but-unmarked or abandoned; both are
@@ -588,31 +592,63 @@ def newest_handoff() -> Path | None:
     return max(files, key=lambda p: p.stat().st_mtime)
 
 
+def markdown_headings(text: str) -> list[tuple[int, int, str]]:
+    """(offset, level, title) of every ATX heading outside fenced code (``` / ~~~, closed by the same character
+    at least as long; an unclosed fence runs to the end of the text)."""
+    out: list[tuple[int, int, str]] = []
+    fence: str | None = None
+    offset = 0
+    for line in text.splitlines(keepends=True):
+        bare = line.rstrip("\r\n")
+        opener = FENCE_RE.match(bare)
+        if fence is not None:
+            if opener and opener.group(1)[0] == fence[0] and len(opener.group(1)) >= len(fence) \
+                    and not opener.group(2).strip():
+                fence = None
+        elif opener and not (opener.group(1)[0] == "`" and "`" in opener.group(2)):
+            fence = opener.group(1)
+        else:
+            heading = ATX_HEADING_RE.match(bare)
+            if heading:
+                out.append((offset, len(heading.group(1)), heading.group(2) or ""))
+        offset += len(line)
+    return out
+
+
+def cut_to(text: str, limit: int, note: str) -> str:
+    """`text` whole when it fits `limit`, else cut so that the cut text plus `note` fits it."""
+    if len(text) <= limit:
+        return text
+    return text[: max(0, limit - len(note))].rstrip() + note
+
+
 def handoff_body(text: str) -> str:
-    """The handoff as injected: whole under HANDOFF_INJECT_CAP; over it, the opening section whole and first
-    (labelled), then the rest cut to what is left of the cap. No opening heading → the plain cut."""
+    """The handoff as injected, never longer than HANDOFF_INJECT_CAP: whole when it fits; over it, the opening
+    section first (labelled; cut with the marker when it alone is over the room), then the rest cut to what is left.
+    No opening heading → the plain cut."""
     cut_note = "\n\n…(truncated — read the full file on demand)\n"
     if len(text) <= HANDOFF_INJECT_CAP:
         return text
-    match = OPENING_HEADING_RE.search(text)
-    if not match:
-        return text[:HANDOFF_INJECT_CAP].rstrip() + cut_note
-    level = len(match.group(1))
-    following = re.compile(r"^#{1,%d}[ \t]" % level, re.MULTILINE).search(text, match.end())
-    end = following.start() if following else len(text)
-    opening = text[match.start():end].rstrip()
-    rest = (text[:match.start()].rstrip() + "\n\n" + text[end:].lstrip()).strip()
-    room = HANDOFF_INJECT_CAP - len(opening)
+    headings = markdown_headings(text)
+    pick = next((k for k, (_, level, title) in enumerate(headings)
+                 if level >= 2 and OPENING_TITLE_RE.match(title)), None)
+    if pick is None:
+        return cut_to(text, HANDOFF_INJECT_CAP, cut_note)
+    start, level, _ = headings[pick]
+    end = next((off for off, lvl, _ in headings[pick + 1:] if lvl <= level), len(text))
+    opening = text[start:end].rstrip()
+    rest = (text[:start].rstrip() + "\n\n" + text[end:].lstrip()).strip()
+    head = ("**Opening section (over the injection cap: injected first; the rest of the handoff follows, "
+            "truncated):**\n\n")
+    middle = "\n\n**The rest of the handoff:**\n\n"
+    no_rest = "(the rest of the handoff is not injected — read the full file on demand)\n"
+    opening = cut_to(opening, HANDOFF_INJECT_CAP - len(head) - len(middle) - len(no_rest), cut_note).rstrip()
+    room = HANDOFF_INJECT_CAP - len(head) - len(opening) - len(middle)
     if room < 200:
-        rest_text = "(the rest of the handoff is not injected — read the full file on demand)\n"
-    elif len(rest) > room:
-        rest_text = rest[:room].rstrip() + cut_note
+        rest_text = no_rest
     else:
-        rest_text = rest + "\n"
-    return (
-        "**Opening section (over the injection cap: injected first and whole; the rest of the handoff follows, "
-        "truncated):**\n\n" + opening + "\n\n**The rest of the handoff:**\n\n" + rest_text
-    )
+        rest_text = cut_to(rest + "\n", room, cut_note)
+    return head + opening + middle + rest_text
 
 
 def build_context(source: str, writer: bool = True, session_key: str | None = None) -> str:

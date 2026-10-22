@@ -117,6 +117,80 @@ class HandoffOpening(unittest.TestCase):
         self.assertIn(handoff.rstrip(), block)
         self.assertNotIn("truncated", block)
 
+    # ------------------------------------------------------------ R2-2 / R2-3: the picker and the cap (v7.3 r2)
+
+    def body(self, block):
+        """The injected handoff body: the section minus its `## Latest handoff — …` title line."""
+        return block.split("\n\n", 1)[1].rstrip()
+
+    def test_a_title_that_contains_opening_is_not_the_opening_section(self):
+        """Reviewer's probe: a 9,096-char handoff titled `# Handoff — reopening the billing work` (a level-1
+        heading containing «opening») stays within the cap — before r2 the whole file was its «opening section»."""
+        head = "# Handoff — reopening the billing work (2026-10-22)\n\n## 1. What was done\n\n"
+        line = "- [2026-10-22] a line of what happened in the billing session, nothing more\n"
+        handoff = head + line * ((9096 - len(head)) // len(line))
+        handoff += "x" * (9096 - len(handoff) - 1) + "\n"
+        self.assertEqual(len(handoff), 9096)
+        self.write("context/handoffs/billing-2026-10-22.md", handoff)
+        block = self.injected()
+        self.assertLessEqual(len(self.body(block)), HANDOFF_CAP)
+        self.assertNotRegex(block, r"(?i)opening section")
+        self.assertIn("…(truncated — read the full file on demand)", block)
+
+    def test_an_oversized_opening_section_is_capped(self):
+        """Reviewer's probe: a 12,000-char `## Opening` section is cut to the cap with the cut marker."""
+        filler = "".join("- [2026-10-22] done item %d\n" % k for k in range(40))
+        opening = "## Opening\n\nOPENING-START-CANARY\n" + "".join(
+            "- step %d of the plan for the next session, with its reason\n" % k for k in range(400))
+        opening = opening[:12000]
+        handoff = "# Handoff\n\n## 1. What was done\n\n" + filler + "\n" + opening + "\n"
+        self.write("context/handoffs/big-opening-2026-10-22.md", handoff)
+        body = self.body(self.injected())
+        self.assertLessEqual(len(body), HANDOFF_CAP)
+        self.assertIn("OPENING-START-CANARY", body)
+        self.assertIn("…(truncated — read the full file on demand)", body)
+        self.assertRegex(body[: body.index("OPENING-START-CANARY")], r"(?i)opening section")
+
+    def test_headings_inside_fenced_code_are_ignored(self):
+        """Reviewer's probe: `# reopening port 5432` inside a fenced block is no heading; nor is `## Opening …`
+        inside a fence (the stronger form). No real opening heading → the plain cut."""
+        fence = "```bash\n# reopening port 5432\nlsof -i :5432\n## Opening the tunnel\nssh -L 5432:db:5432 host\n```\n"
+        rest = "".join("- [2026-10-22] a line of what happened in the session, item %d\n" % k for k in range(160))
+        handoff = "# Handoff\n\n## 1. Commands used\n\n" + fence + "\n## 2. What was done\n\n" + rest
+        self.assertGreater(len(handoff), HANDOFF_CAP)
+        self.write("context/handoffs/fence-2026-10-22.md", handoff)
+        block = self.injected()
+        self.assertNotRegex(block, r"(?i)opening section")
+        self.assertLessEqual(len(self.body(block)), HANDOFF_CAP)
+        self.assertIn("…(truncated — read the full file on demand)", block)
+
+    def test_a_fenced_heading_neither_starts_nor_ends_the_opening_section(self):
+        """A fake `## Opening` in a fence before the real one is skipped; a `# comment` in a fence INSIDE the real
+        opening section does not end it."""
+        fake = "```\n## Opening fake\n```\n"
+        rest = "".join("- [2026-10-22] a line of what happened in the session, item %d\n" % k for k in range(120))
+        real = ("## 6. [Opening contract]\n\nRun this first:\n\n```bash\n# reset the stand\nmake reset\n```\n\n"
+                "Then X. OPENING-END-CANARY\n")
+        handoff = "# Handoff\n\n## 1. Done\n\n" + fake + rest + "\n" + real
+        self.assertGreater(len(handoff), HANDOFF_CAP)
+        self.write("context/handoffs/fake-2026-10-22.md", handoff)
+        body = self.body(self.injected())
+        self.assertIn(real.rstrip(), body)
+        self.assertLess(body.index(real.rstrip()), body.index("## 1. Done"))
+        self.assertLessEqual(len(body), HANDOFF_CAP)
+
+    def test_real_shaped_fixture_body_within_the_cap(self):
+        """R2-3: the real-shaped fixture still gets its opening section first and whole, and the whole handoff body,
+        labels and cut note included, is within HANDOFF_INJECT_CAP."""
+        with open(FIXTURE, encoding="utf-8") as fh:
+            handoff = fh.read()
+        self.write("context/handoffs/s143-2026-10-22.md", handoff)
+        body = self.body(self.injected())
+        opening = section(handoff, r"^##\s+.*opening.*$")
+        self.assertIn(opening, body)
+        self.assertLess(body.index(opening), body.index("## 1. What was done"))
+        self.assertLessEqual(len(body), HANDOFF_CAP)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=1)
