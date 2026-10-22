@@ -8,7 +8,7 @@ description: >
   "постмортем". Every draft is built ONLY from `git diff` / `git log` output this skill runs
   itself — never from the session's memory of what it did, never from what it intended. Writes
   no code, no tests, no specs; it never edits an implementation file and never edits a spec.
-allowed-tools: Read, Write, Edit, Grep, Glob
+allowed-tools: Read, Grep, Glob
 ---
 
 # /document — the human record of a change
