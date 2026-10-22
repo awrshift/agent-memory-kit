@@ -77,7 +77,9 @@ BLOCKED = [
     # redirections are reads and writes too
     "cat < .env",
     "while read l; do echo $l; done < .env",
-    "echo X=1 >> .env",
+    "echo X=1 > .env",
+    "cat .env >> notes.txt",
+    "echo X=1 &> .env",
     # interpreters and inline scripts
     "python3 -c \"import pathlib; print(pathlib.Path('.env').read_text())\"",
     "node -p \"require('fs').readFileSync(__dirname + '/.env', 'utf8')\"",
@@ -87,6 +89,9 @@ BLOCKED = [
 ]
 
 ALLOWED = [
+    # an append writes without reading (owner 2026-10-20)
+    "echo X=1 >> .env",
+    "pbpaste | awk '{print}' >> .env",
     "source .env",
     "set -a; . ./.env; set +a; node app.js",
     "cp .env ../wt/.env",

@@ -60,6 +60,7 @@ SUBST = "\x00"  # stands in for a $(...) / backtick result inside a word
 
 class Word(str):
     dynamic = False  # True when the shell would expand part of it ($VAR, $(...), `...`)
+    op = ""  # for a redirection target: the operator that named it (`>`, `>>`, `<`, `&>>` …)
 
 
 # --------------------------------------------------------------------------- lexer
@@ -77,7 +78,7 @@ def _parse(s, i, in_subst):
     """
     n = len(s)
     items, words, subs, heredocs, redirs = [], [], [], [], []
-    st = {"buf": [], "in_word": False, "dyn": False, "redirect": None}
+    st = {"buf": [], "in_word": False, "dyn": False, "redirect": None, "op": ""}
     depth = 0
 
     def end_word():
@@ -90,6 +91,7 @@ def _parse(s, i, in_subst):
         if red == "herestring":
             return
         if red == "file":
+            w.op = st["op"]
             redirs.append(w)
             return
         if red == "heredoc":
@@ -231,6 +233,7 @@ def _parse(s, i, in_subst):
             if op == "<<" and j < n and s[j] == "-":
                 j += 1
             st["redirect"] = {"<<": "heredoc", "<<<": "herestring"}.get(op, "file")
+            st["op"] = op
             i = j
             continue
         add(c, c == "$" and is_var_start(i + 1))

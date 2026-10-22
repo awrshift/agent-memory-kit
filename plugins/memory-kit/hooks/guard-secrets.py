@@ -15,6 +15,7 @@ Blocked (exit 2 + reason on stderr):
   Bash                  a command (found by `lib/cmdparse.py`: `&&`, pipes, `$(…)`, `bash -c`,
                         `eval`, `sudo`/`env`/`xargs`… unwrapped) with an argv word whose basename is
                         a secret name, or a file redirection to/from one (`< .env`, `> .env`);
+                        an APPEND (`>> .env`) is allowed: it writes without reading (2026-10-20);
                         a word after an inline-script option (`-e`, `-c`, `-E`, `-p`, `-r`, `--eval`,
                         `--print`, `--command`, a short cluster ending in c/e) and every word of an
                         interpreter (node, python, perl, ruby, php, deno, bun, …) is also split into
@@ -99,7 +100,9 @@ def secret_in_command(command, cwd):
 
     for call in cmdparse.commands(command, cwd):
         for target in call.get("redirects", ()):
-            if is_secret(target):
+            # `>> .env` appends: nothing of the file comes back into the transcript (owner 2026-10-20,
+            # the agent keeps the project's env up to date). `>`, `<` and `&>` stay blocked.
+            if is_secret(target) and not getattr(target, "op", "").endswith(">>"):
                 return "redirection", str(target)
         name = call["name"]
         if name is None or name in EXEMPT:
