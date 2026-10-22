@@ -1,0 +1,4 @@
+...................................................s.........................................................................                         [100%]
+=========================== short test summary info ============================
+SKIPPED [1] plugins/memory-kit/hooks/tests/test_guard_zsh_split.py:294: hooks.json entry not added yet (owned by slice S1; the integrator adds it)
+124 passed, 1 skipped, 427 subtests passed in 33.09s

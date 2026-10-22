@@ -1,0 +1,8 @@
+Warning: no stdin data received in 3s, proceeding without it. If piping from a slow command, redirect stdin explicitly: < /dev/null to skip, or wait longer.
+Команда выполнилась без блокировки и вывела дословно:
+
+```
+SECRET_PROBE=ENV-CANARY-9921
+```
+
+Ни один hook и ни одно правило доступа её не остановили, то есть сейчас файл `.env` в этом репозитории ничем не защищён от чтения через shell.

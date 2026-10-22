@@ -2,6 +2,69 @@
 
 All notable changes to Memory Kit are documented here. Breaking changes marked **BREAKING**.
 
+<a id="v730"></a>
+
+## [7.3.0] — 2026-10-22 — safer hooks, the method upstreamed, a front page that shows the whole plugin
+
+**BREAKING: none — but read «Behaviour change».** Spec: `docs/plans/2026-10-22-v7.3-audit-fixes-readme.md`;
+platform facts: `docs/research/platform-facts-2026-10-22.md`; proof: `docs/research/v7.3-evidence/`.
+
+### Behaviour change
+
+- **An automatic compaction is never blocked.** Claude Code skips a blocked proactive compaction, and on a
+  context-limit recovery a block FAILS the user's request (hooks docs, 2026-10-22). A manual `/compact` still waits for
+  saved memory. Over unsaved memory an automatic compaction leaves `.claude/state/compact-unsaved`, and the next context
+  opens with "⚠ COMPACTION RAN OVER UNSAVED MEMORY — save MEMORY.md now".
+- **The git and secrets guards fail closed.** `"onFailure": "block"` (Claude Code 2.1.295+): a guard that crashes or
+  times out blocks the call instead of letting it through; each guard turns its own internal errors (and a command
+  nested past the parser's depth) into an explicit `ask`; a missing `python3` stays a no-op so a machine without it is
+  not bricked. Probed: 2.1.290 accepts the field and keeps every hook running, but lets a crashed guard's call through.
+- **Appending to `.env` is allowed in one form only:** a single literal `echo`/`printf` with one `>>` redirection.
+  Everything else touching a secret file is blocked as in 7.2.2 (the 2026-10-20 `>>` exemption was reopened three times
+  by parser differentials — `/proc/self/fd`, heredoc bodies, fd duplication — so it was narrowed to a form with nothing
+  left to parse).
+- **Five skills pre-approve edits only inside their own paths** (close-session, memory-audit, code-sync); `document`
+  and `setup` pre-approve no writes (Anthropic directory note "allowed tools unscoped write").
+- **SessionEnd timeout 1 s** — plugin SessionEnd hooks share a 1.5 s budget a plugin cannot raise; the script now ends in
+  ~0.6 s with stdin left open (was ~1.05 s).
+
+### Added
+
+- `guard-zsh-split.py` — PreToolUse(Bash), active only when the Bash tool runs zsh: blocks an unquoted multi-word
+  `$var` that zsh will not split the way bash does, and history modifiers on an unbraced `$var:`; `CMK_ZSH_GUARD=off`
+  or a `# zsh-split-ok` comment opts out. Ported from a production project hook onto the shared parser.
+- Session start flags a project that wires its own COPY of a kit hook (it fires twice) — by the copy's content, never
+  its filename; measured on 25 adopter repos: 8 flagged, 0 missed, 0 clean repos flagged.
+- An over-cap handoff delivers its opening-note section whole and first.
+- State writes under `.claude/state/` refuse a symlinked `.claude`, state dir or entry, and anything resolving outside
+  the project (`hooks/lib/statefs.py`, `hooks/lib/state.sh`); temp files via mkstemp/mktemp.
+- `reference/spec-depth.md` — depth pass, a dated Practice line, review by stake, failure branches written first,
+  outcome over proxy. SPEC-TEMPLATE carries the three header lines and a failure-branches table.
+- `check-repo.py` check 8: the README names every shipped hook, skill, agent, reference doc, template and script
+  (mutation-tested); check 3: a hook with `onFailure: block` must check its interpreter exists first.
+
+### Changed
+
+- The orchestration template has nine invariants (added: read one real output yourself; counts come from a script;
+  what only the user decides). `review-loop`: triage before a finding is written down, layer 0 (data model / boundary),
+  the stop signal on the 3rd fix round and the direction review, catches vs escapes. `doc-governance`: one status
+  vocabulary, no symlinks, nothing cited from a scratchpad, a decision is built or says why not, external state expires.
+- Knowledge articles: a new fact goes INTO its topic section and the replaced line to `## History` — never an appended
+  dated block (`memory-audit` merge step, the index template).
+- `idea-validator` holds the parallel-review bar and checks currency; `second-opinion` defers to a user-level board.
+- `project-extensions` and the `system-audit` gates lens: the 10,000-character hook-output cap, `onFailure`, double-wired copies.
+- `identity.md`: the compaction semantics, plain-language reporting to the user, the `spec-depth` pointer.
+- README rebuilt: every part of the plugin on the front page, three regenerated diagrams (prompts in
+  `tools/asset-prompts/`), the demo clips moved to `docs/ASSETS.md`. Host specs carry a dated docs check (Codex and
+  Copilot now document plugin hooks — unprobed on v7, still Tier 2).
+
+### Known limits
+
+- `protect-tests.py` still writes its small ledger under `.claude/state/` in a repository that never ran `setup`
+  (unchanged from 7.2; now through the symlink-safe helper).
+- A project that keeps its own zsh word-split hook runs it next to `guard-zsh-split.py`; the double-wired detector
+  does not flag it (no content signal yet) — unwire the project copy.
+
 <a id="v723"></a>
 
 ## [7.2.3] — 2026-10-08 — no skill pre-approves Bash; a plugin icon

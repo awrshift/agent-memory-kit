@@ -1,0 +1,160 @@
+...........                                                                     [100%]
+=================================== FAILURES ===================================
+_ SecretsGuardTest.test_append_allowlist_bypasses_blocked (cmd='cat /proc/1234/task/1234/fd/1 >> .env') _
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_allowlist_bypasses_blocked>
+
+    def test_append_allowlist_bypasses_blocked(self):
+        for cmd in APPEND_ALLOWLIST_BYPASSES:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+E               AssertionError: 0 != 2 : expected block: 'cat /proc/1234/task/1234/fd/1 >> .env' (stderr '')
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:243: AssertionError
+_ SecretsGuardTest.test_append_allowlist_bypasses_blocked (cmd='cp /proc/self/task/77/fd/1 /tmp/x >> .env') _
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_allowlist_bypasses_blocked>
+
+    def test_append_allowlist_bypasses_blocked(self):
+        for cmd in APPEND_ALLOWLIST_BYPASSES:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+E               AssertionError: 0 != 2 : expected block: 'cp /proc/self/task/77/fd/1 /tmp/x >> .env' (stderr '')
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:243: AssertionError
+_ SecretsGuardTest.test_append_allowlist_bypasses_blocked (cmd="python3 >> .env <<'EOF'\nprint(open('/proc/self/fd/1').read())\nEOF") _
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_allowlist_bypasses_blocked>
+
+    def test_append_allowlist_bypasses_blocked(self):
+        for cmd in APPEND_ALLOWLIST_BYPASSES:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+E               AssertionError: 0 != 2 : expected block: "python3 >> .env <<'EOF'\nprint(open('/proc/self/fd/1').read())\nEOF" (stderr '')
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:243: AssertionError
+_ SecretsGuardTest.test_append_allowlist_bypasses_blocked (cmd='python3 <<< "print(open(\'/proc/self/fd/1\').read())" >> .env') _
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_allowlist_bypasses_blocked>
+
+    def test_append_allowlist_bypasses_blocked(self):
+        for cmd in APPEND_ALLOWLIST_BYPASSES:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+E               AssertionError: 0 != 2 : expected block: 'python3 <<< "print(open(\'/proc/self/fd/1\').read())" >> .env' (stderr '')
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:243: AssertionError
+_ SecretsGuardTest.test_append_allowlist_bypasses_blocked (cmd="sh >> .env <<'EOF'\ncat /proc/self/fd/1\nEOF") _
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_allowlist_bypasses_blocked>
+
+    def test_append_allowlist_bypasses_blocked(self):
+        for cmd in APPEND_ALLOWLIST_BYPASSES:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+E               AssertionError: 0 != 2 : expected block: "sh >> .env <<'EOF'\ncat /proc/self/fd/1\nEOF" (stderr '')
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:243: AssertionError
+_ SecretsGuardTest.test_append_allowlist_bypasses_blocked (cmd='cat <<EOF >> .env\n$(cat /proc/self/fd/1)\nEOF') _
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_allowlist_bypasses_blocked>
+
+    def test_append_allowlist_bypasses_blocked(self):
+        for cmd in APPEND_ALLOWLIST_BYPASSES:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+E               AssertionError: 0 != 2 : expected block: 'cat <<EOF >> .env\n$(cat /proc/self/fd/1)\nEOF' (stderr '')
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:243: AssertionError
+_ SecretsGuardTest.test_append_allowlist_bypasses_blocked (cmd='cat <<EOF >> .env\n`cat /proc/self/fd/1`\nEOF') _
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_allowlist_bypasses_blocked>
+
+    def test_append_allowlist_bypasses_blocked(self):
+        for cmd in APPEND_ALLOWLIST_BYPASSES:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+E               AssertionError: 0 != 2 : expected block: 'cat <<EOF >> .env\n`cat /proc/self/fd/1`\nEOF' (stderr '')
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:243: AssertionError
+_ SecretsGuardTest.test_append_allowlist_bypasses_blocked (cmd="pbpaste | awk '{print}' >> .env") _
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_allowlist_bypasses_blocked>
+
+    def test_append_allowlist_bypasses_blocked(self):
+        for cmd in APPEND_ALLOWLIST_BYPASSES:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+E               AssertionError: 0 != 2 : expected block: "pbpaste | awk '{print}' >> .env" (stderr '')
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:243: AssertionError
+_ SecretsGuardTest.test_append_allowlist_bypasses_blocked (cmd='cat notes.txt >> .env') _
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_allowlist_bypasses_blocked>
+
+    def test_append_allowlist_bypasses_blocked(self):
+        for cmd in APPEND_ALLOWLIST_BYPASSES:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+E               AssertionError: 0 != 2 : expected block: 'cat notes.txt >> .env' (stderr '')
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:243: AssertionError
+_ SecretsGuardTest.test_append_allowlist_bypasses_blocked (cmd='echo X=1 >> .env < input.txt') _
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_allowlist_bypasses_blocked>
+
+    def test_append_allowlist_bypasses_blocked(self):
+        for cmd in APPEND_ALLOWLIST_BYPASSES:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+E               AssertionError: 0 != 2 : expected block: 'echo X=1 >> .env < input.txt' (stderr '')
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:243: AssertionError
+_ SecretsGuardTest.test_append_allowlist_bypasses_blocked (cmd='cat <&3 >> .env') _
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_allowlist_bypasses_blocked>
+
+    def test_append_allowlist_bypasses_blocked(self):
+        for cmd in APPEND_ALLOWLIST_BYPASSES:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+E               AssertionError: 0 != 2 : expected block: 'cat <&3 >> .env' (stderr '')
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:243: AssertionError
+_ SecretsGuardTest.test_append_allowlist_bypasses_blocked (cmd='npm run gen-env && echo X=1 >> .env') _
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_allowlist_bypasses_blocked>
+
+    def test_append_allowlist_bypasses_blocked(self):
+        for cmd in APPEND_ALLOWLIST_BYPASSES:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+E               AssertionError: 0 != 2 : expected block: 'npm run gen-env && echo X=1 >> .env' (stderr '')
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:243: AssertionError
+=========================== short test summary info ============================
+SUBFAILED(cmd='cat /proc/1234/task/1234/fd/1 >> .env') plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_allowlist_bypasses_blocked
+SUBFAILED(cmd='cp /proc/self/task/77/fd/1 /tmp/x >> .env') plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_allowlist_bypasses_blocked
+SUBFAILED(cmd="python3 >> .env <<'EOF'\nprint(open('/proc/self/fd/1').read())\nEOF") plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_allowlist_bypasses_blocked
+SUBFAILED(cmd='python3 <<< "print(open(\'/proc/self/fd/1\').read())" >> .env') plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_allowlist_bypasses_blocked
+SUBFAILED(cmd="sh >> .env <<'EOF'\ncat /proc/self/fd/1\nEOF") plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_allowlist_bypasses_blocked
+SUBFAILED(cmd='cat <<EOF >> .env\n$(cat /proc/self/fd/1)\nEOF') plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_allowlist_bypasses_blocked
+SUBFAILED(cmd='cat <<EOF >> .env\n`cat /proc/self/fd/1`\nEOF') plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_allowlist_bypasses_blocked
+SUBFAILED(cmd="pbpaste | awk '{print}' >> .env") plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_allowlist_bypasses_blocked
+SUBFAILED(cmd='cat notes.txt >> .env') plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_allowlist_bypasses_blocked
+SUBFAILED(cmd='echo X=1 >> .env < input.txt') plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_allowlist_bypasses_blocked
+SUBFAILED(cmd='cat <&3 >> .env') plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_allowlist_bypasses_blocked
+SUBFAILED(cmd='npm run gen-env && echo X=1 >> .env') plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_allowlist_bypasses_blocked
+12 failed, 11 passed, 125 subtests passed in 2.73s

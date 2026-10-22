@@ -1,0 +1,5 @@
+2.1.290 (Claude Code)
+Validating plugin manifest: ~/dev/claude-memory-kit-v73-hooks/plugins/memory-kit/.claude-plugin/plugin.json
+
+✔ Validation passed
+rc=0

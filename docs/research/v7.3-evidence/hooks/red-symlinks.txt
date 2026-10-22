@@ -1,0 +1,77 @@
+.FFFF                                                                    [100%]
+=================================== FAILURES ===================================
+____ StateSymlinks.test_symlinked_claude_dir_gets_no_state_created_outside _____
+
+self = <test_state_symlinks.StateSymlinks testMethod=test_symlinked_claude_dir_gets_no_state_created_outside>
+
+    def test_symlinked_claude_dir_gets_no_state_created_outside(self):
+        target = os.path.join(self.outside, "dot-claude")
+        self.adopt(claude_dir=target)
+        os.symlink(target, os.path.join(self.repo, ".claude"))
+        before = self.snapshot(self.outside)
+        self.run_all_hooks()
+>       self.assertEqual(self.snapshot(self.outside), before)
+E       AssertionError: {'dot[16 chars]66326210061185, None), 'dot-claude/memory': (1[1232 chars]o)')} != {'dot[16 chars]66326168250785, None), 'dot-claude/memory': (1[103 chars]\n')}
+E       Diff is 2495 characters long. Set self.maxDiff to None to see it.
+
+plugins/memory-kit/hooks/tests/test_state_symlinks.py:134: AssertionError
+___________ StateSymlinks.test_symlinked_state_dir_is_never_written ____________
+
+self = <test_state_symlinks.StateSymlinks testMethod=test_symlinked_state_dir_is_never_written>
+
+    def test_symlinked_state_dir_is_never_written(self):
+        self.adopt()
+        target = os.path.join(self.outside, "state-target")
+        self.victim_files(target)
+        os.symlink(target, os.path.join(self.repo, ".claude", "state"))
+        before = self.snapshot(self.outside)
+        self.run_all_hooks()
+>       self.assertEqual(self.snapshot(self.outside), before)
+E       AssertionError: {'sta[18 chars]66327958407894, None), 'state-target/session-e[1097 chars]o)')} != {'sta[18 chars]66327232256452, None), 'state-target/old-bookk[634 chars]\n')}
+E       Diff is 3737 characters long. Set self.maxDiff to None to see it.
+
+plugins/memory-kit/hooks/tests/test_state_symlinks.py:113: AssertionError
+__________ StateSymlinks.test_symlinked_state_files_are_never_written __________
+
+self = <test_state_symlinks.StateSymlinks testMethod=test_symlinked_state_files_are_never_written>
+
+    def test_symlinked_state_files_are_never_written(self):
+        self.adopt()
+        state = os.path.join(self.repo, ".claude", "state")
+        os.makedirs(state)
+        self.victim_files(self.outside)
+        for name in STATE_NAMES:
+            os.symlink(os.path.join(self.outside, name), os.path.join(state, name))
+        before = self.snapshot(self.outside)
+        self.run_all_hooks()
+>       self.assertEqual(self.snapshot(self.outside), before)
+E       AssertionError: {'old[157 chars]666329333960166, b'VICTIM session-end.log\n202[906 chars]\n')} != {'old[157 chars]666328288439312, b'VICTIM session-end.log\n'),[346 chars]\n')}
+E       Diff is 1958 characters long. Set self.maxDiff to None to see it.
+
+plugins/memory-kit/hooks/tests/test_state_symlinks.py:124: AssertionError
+____ StateSymlinks.test_unadopted_repo_gets_no_state_dir_from_protect_tests ____
+
+self = <test_state_symlinks.StateSymlinks testMethod=test_unadopted_repo_gets_no_state_dir_from_protect_tests>
+
+    def test_unadopted_repo_gets_no_state_dir_from_protect_tests(self):
+        r = subprocess.run(PROTECT, shell=True, env=self.env, capture_output=True, text=True, input=json.dumps(
+            {"session_id": "s", "tool_name": "Write",
+             "tool_input": {"file_path": os.path.join(self.repo, "tests", "test_new.py"), "content": "x"}}))
+        self.assertEqual(r.returncode, 0, r.stderr)
+>       self.assertEqual(os.listdir(self.repo), [])
+E       AssertionError: Lists differ: ['.claude'] != []
+E       
+E       First list contains 1 additional elements.
+E       First extra element 0:
+E       '.claude'
+E       
+E       - ['.claude']
+E       + []
+
+plugins/memory-kit/hooks/tests/test_state_symlinks.py:150: AssertionError
+=========================== short test summary info ============================
+FAILED plugins/memory-kit/hooks/tests/test_state_symlinks.py::StateSymlinks::test_symlinked_claude_dir_gets_no_state_created_outside
+FAILED plugins/memory-kit/hooks/tests/test_state_symlinks.py::StateSymlinks::test_symlinked_state_dir_is_never_written
+FAILED plugins/memory-kit/hooks/tests/test_state_symlinks.py::StateSymlinks::test_symlinked_state_files_are_never_written
+FAILED plugins/memory-kit/hooks/tests/test_state_symlinks.py::StateSymlinks::test_unadopted_repo_gets_no_state_dir_from_protect_tests
+4 failed, 1 passed in 4.26s

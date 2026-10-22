@@ -1,0 +1,493 @@
+.....F.......F..                                 [100%]
+=================================== FAILURES ===================================
+______ SecretsGuardTest.test_append_allowed (cmd="echo KEY=v '2'>> .env") ______
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_allowed>
+
+    def test_append_allowed(self):
+        for cmd in APPEND_ALLOWED:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 0, "expected allow: %r, stderr: %s" % (cmd, err))
+E               AssertionError: 2 != 0 : expected allow: "echo KEY=v '2'>> .env", stderr: Memory Kit secrets guard: redirection `2>>` on `.env` blocked — a secret file's contents must not enter the transcript. Load it into a process instead (`source`, `set -a; . ./.env; set +a`) or move it whole (`cp`); if the user really wants it shown, they run it themselves. Set CMK_SECRETS_GUARD=off to disable.
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:296: AssertionError
+_ SecretsGuardTest.test_append_allowlist_bypasses_blocked (cmd='cat <<EOF >> .env\n$(cat /proc/self/fd/1)\nEOF') _
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_allowlist_bypasses_blocked>
+
+    def test_append_allowlist_bypasses_blocked(self):
+        for cmd in APPEND_ALLOWLIST_BYPASSES:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+E               AssertionError: 0 != 2 : expected block: 'cat <<EOF >> .env\n$(cat /proc/self/fd/1)\nEOF' (stderr '')
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:282: AssertionError
+_ SecretsGuardTest.test_append_allowlist_bypasses_blocked (cmd='cat <<EOF >> .env\n`cat /proc/self/fd/1`\nEOF') _
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_allowlist_bypasses_blocked>
+
+    def test_append_allowlist_bypasses_blocked(self):
+        for cmd in APPEND_ALLOWLIST_BYPASSES:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+E               AssertionError: 0 != 2 : expected block: 'cat <<EOF >> .env\n`cat /proc/self/fd/1`\nEOF' (stderr '')
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:282: AssertionError
+_ SecretsGuardTest.test_append_narrowed_to_one_literal_echo (cmd='cat -$F >> .env') _
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_narrowed_to_one_literal_echo>
+
+    def test_append_narrowed_to_one_literal_echo(self):
+        for cmd in APPEND_NARROWED:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+E               AssertionError: 0 != 2 : expected block: 'cat -$F >> .env' (stderr '')
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:289: AssertionError
+_ SecretsGuardTest.test_append_narrowed_to_one_literal_echo (cmd='echo X=1 >> .env 2>&1') _
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_narrowed_to_one_literal_echo>
+
+    def test_append_narrowed_to_one_literal_echo(self):
+        for cmd in APPEND_NARROWED:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+E               AssertionError: 0 != 2 : expected block: 'echo X=1 >> .env 2>&1' (stderr '')
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:289: AssertionError
+_ SecretsGuardTest.test_append_narrowed_to_one_literal_echo (cmd='echo X=1 >&3 >> .env') _
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_narrowed_to_one_literal_echo>
+
+    def test_append_narrowed_to_one_literal_echo(self):
+        for cmd in APPEND_NARROWED:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+E               AssertionError: 0 != 2 : expected block: 'echo X=1 >&3 >> .env' (stderr '')
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:289: AssertionError
+_ SecretsGuardTest.test_append_narrowed_to_one_literal_echo (cmd='exec >> .env; echo X=1') _
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_narrowed_to_one_literal_echo>
+
+    def test_append_narrowed_to_one_literal_echo(self):
+        for cmd in APPEND_NARROWED:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+E               AssertionError: 0 != 2 : expected block: 'exec >> .env; echo X=1' (stderr '')
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:289: AssertionError
+_ SecretsGuardTest.test_append_narrowed_to_one_literal_echo (cmd='echo X=1 &>> .env') _
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_narrowed_to_one_literal_echo>
+
+    def test_append_narrowed_to_one_literal_echo(self):
+        for cmd in APPEND_NARROWED:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+E               AssertionError: 0 != 2 : expected block: 'echo X=1 &>> .env' (stderr '')
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:289: AssertionError
+_ SecretsGuardTest.test_append_narrowed_to_one_literal_echo (cmd='echo "$X" >> .env') _
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_narrowed_to_one_literal_echo>
+
+    def test_append_narrowed_to_one_literal_echo(self):
+        for cmd in APPEND_NARROWED:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+E               AssertionError: 0 != 2 : expected block: 'echo "$X" >> .env' (stderr '')
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:289: AssertionError
+_ SecretsGuardTest.test_append_narrowed_to_one_literal_echo (cmd='echo "KEY=$v" >> .env') _
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_narrowed_to_one_literal_echo>
+
+    def test_append_narrowed_to_one_literal_echo(self):
+        for cmd in APPEND_NARROWED:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+E               AssertionError: 0 != 2 : expected block: 'echo "KEY=$v" >> .env' (stderr '')
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:289: AssertionError
+_ SecretsGuardTest.test_append_narrowed_to_one_literal_echo (cmd="printf '%s\\n' * >> .env") _
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_narrowed_to_one_literal_echo>
+
+    def test_append_narrowed_to_one_literal_echo(self):
+        for cmd in APPEND_NARROWED:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+E               AssertionError: 0 != 2 : expected block: "printf '%s\\n' * >> .env" (stderr '')
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:289: AssertionError
+_ SecretsGuardTest.test_append_narrowed_to_one_literal_echo (cmd='echo KEY=a? >> .env') _
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_narrowed_to_one_literal_echo>
+
+    def test_append_narrowed_to_one_literal_echo(self):
+        for cmd in APPEND_NARROWED:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+E               AssertionError: 0 != 2 : expected block: 'echo KEY=a? >> .env' (stderr '')
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:289: AssertionError
+_ SecretsGuardTest.test_append_narrowed_to_one_literal_echo (cmd='echo a >> .env; echo b') _
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_narrowed_to_one_literal_echo>
+
+    def test_append_narrowed_to_one_literal_echo(self):
+        for cmd in APPEND_NARROWED:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+E               AssertionError: 0 != 2 : expected block: 'echo a >> .env; echo b' (stderr '')
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:289: AssertionError
+_ SecretsGuardTest.test_append_narrowed_to_one_literal_echo (cmd="printf 'A=1\\n' >> .env.local && echo done") _
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_narrowed_to_one_literal_echo>
+
+    def test_append_narrowed_to_one_literal_echo(self):
+        for cmd in APPEND_NARROWED:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+E               AssertionError: 0 != 2 : expected block: "printf 'A=1\\n' >> .env.local && echo done" (stderr '')
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:289: AssertionError
+_ SecretsGuardTest.test_append_narrowed_to_one_literal_echo (cmd='echo a | cat >> .env') _
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_narrowed_to_one_literal_echo>
+
+    def test_append_narrowed_to_one_literal_echo(self):
+        for cmd in APPEND_NARROWED:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+E               AssertionError: 0 != 2 : expected block: 'echo a | cat >> .env' (stderr '')
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:289: AssertionError
+_ SecretsGuardTest.test_append_narrowed_to_one_literal_echo (cmd='VAR=1 echo x >> .env') _
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_narrowed_to_one_literal_echo>
+
+    def test_append_narrowed_to_one_literal_echo(self):
+        for cmd in APPEND_NARROWED:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+E               AssertionError: 0 != 2 : expected block: 'VAR=1 echo x >> .env' (stderr '')
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:289: AssertionError
+_ SecretsGuardTest.test_append_narrowed_to_one_literal_echo (cmd='command echo x >> .env') _
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_narrowed_to_one_literal_echo>
+
+    def test_append_narrowed_to_one_literal_echo(self):
+        for cmd in APPEND_NARROWED:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+E               AssertionError: 0 != 2 : expected block: 'command echo x >> .env' (stderr '')
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:289: AssertionError
+_ SecretsGuardTest.test_append_narrowed_to_one_literal_echo (cmd='sudo echo x >> .env') _
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_narrowed_to_one_literal_echo>
+
+    def test_append_narrowed_to_one_literal_echo(self):
+        for cmd in APPEND_NARROWED:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+E               AssertionError: 0 != 2 : expected block: 'sudo echo x >> .env' (stderr '')
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:289: AssertionError
+_ SecretsGuardTest.test_append_narrowed_to_one_literal_echo (cmd='( echo x ) >> .env') _
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_narrowed_to_one_literal_echo>
+
+    def test_append_narrowed_to_one_literal_echo(self):
+        for cmd in APPEND_NARROWED:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+E               AssertionError: 0 != 2 : expected block: '( echo x ) >> .env' (stderr '')
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:289: AssertionError
+_ SecretsGuardTest.test_append_narrowed_to_one_literal_echo (cmd='echo x >(cat) >> .env') _
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_narrowed_to_one_literal_echo>
+
+    def test_append_narrowed_to_one_literal_echo(self):
+        for cmd in APPEND_NARROWED:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+E               AssertionError: 0 != 2 : expected block: 'echo x >(cat) >> .env' (stderr '')
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:289: AssertionError
+_ SecretsGuardTest.test_append_narrowed_to_one_literal_echo (cmd='echo KEY=v >> .env 2>/dev/null') _
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_narrowed_to_one_literal_echo>
+
+    def test_append_narrowed_to_one_literal_echo(self):
+        for cmd in APPEND_NARROWED:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+E               AssertionError: 0 != 2 : expected block: 'echo KEY=v >> .env 2>/dev/null' (stderr '')
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:289: AssertionError
+_ SecretsGuardTest.test_append_narrowed_to_one_literal_echo (cmd='echo KEY=v >> .env >> other.txt') _
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_narrowed_to_one_literal_echo>
+
+    def test_append_narrowed_to_one_literal_echo(self):
+        for cmd in APPEND_NARROWED:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+E               AssertionError: 0 != 2 : expected block: 'echo KEY=v >> .env >> other.txt' (stderr '')
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:289: AssertionError
+_ SecretsGuardTest.test_append_narrowed_to_one_literal_echo (cmd="cat <<'EOF' >> .env\nKEY=1\nEOF") _
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_narrowed_to_one_literal_echo>
+
+    def test_append_narrowed_to_one_literal_echo(self):
+        for cmd in APPEND_NARROWED:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+E               AssertionError: 0 != 2 : expected block: "cat <<'EOF' >> .env\nKEY=1\nEOF" (stderr '')
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:289: AssertionError
+_ SecretsGuardTest.test_append_narrowed_to_one_literal_echo (cmd='cat >> .env <<< "KEY=v"') _
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_narrowed_to_one_literal_echo>
+
+    def test_append_narrowed_to_one_literal_echo(self):
+        for cmd in APPEND_NARROWED:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+E               AssertionError: 0 != 2 : expected block: 'cat >> .env <<< "KEY=v"' (stderr '')
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:289: AssertionError
+_ SecretsGuardTest.test_append_narrowed_to_one_literal_echo (cmd='echo KEY=v >> .env <<< x') _
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_narrowed_to_one_literal_echo>
+
+    def test_append_narrowed_to_one_literal_echo(self):
+        for cmd in APPEND_NARROWED:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+E               AssertionError: 0 != 2 : expected block: 'echo KEY=v >> .env <<< x' (stderr '')
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:289: AssertionError
+_ SecretsGuardTest.test_append_narrowed_to_one_literal_echo (cmd='cat - >> .env') _
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_narrowed_to_one_literal_echo>
+
+    def test_append_narrowed_to_one_literal_echo(self):
+        for cmd in APPEND_NARROWED:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+E               AssertionError: 0 != 2 : expected block: 'cat - >> .env' (stderr '')
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:289: AssertionError
+___ SecretsGuardTest.test_block_message_names_the_operator_and_the_exemption ___
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_block_message_names_the_operator_and_the_exemption>
+
+    def test_block_message_names_the_operator_and_the_exemption(self):
+        _, err = self.bash("cp /proc/self/fd/1 /tmp/x >> .env")
+>       self.assertIn("redirection `>>` on `.env` blocked", err)
+E       AssertionError: 'redirection `>>` on `.env` blocked' not found in "Memory Kit secrets guard: an append beside `cp /proc/self/fd/1 /tmp/x` on `.env` blocked — a secret file's contents must not enter the transcript. Load it into a process instead (`source`, `set -a; . ./.env; set +a`) or move it whole (`cp`); if the user really wants it shown, they run it themselves. Set CMK_SECRETS_GUARD=off to disable.\n"
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:301: AssertionError
+_____________ FdPrefix.test_no_word_state_leaks_past_an_fd_prefix ______________
+
+self = <test_cmdparse_fd.FdPrefix testMethod=test_no_word_state_leaks_past_an_fd_prefix>
+
+    def test_no_word_state_leaks_past_an_fd_prefix(self):
+        # the digits' quoting must not reach the redirection target or the next word
+        lexed = cmdparse.lex("echo '3'<<EOF x\nbody\nEOF")
+        words = [w for kind, val in lexed if kind == "cmd" for w in val]
+>       self.assertEqual([str(w) for w in words], ["echo", "3", "x"])
+E       AssertionError: Lists differ: ['echo', 'x'] != ['echo', '3', 'x']
+E       
+E       First differing element 1:
+E       'x'
+E       '3'
+E       
+E       Second list contains 1 additional elements.
+E       First extra element 2:
+E       'x'
+E       
+E       - ['echo', 'x']
+E       + ['echo', '3', 'x']
+E       ?          +++++
+
+plugins/memory-kit/hooks/tests/test_cmdparse_fd.py:51: AssertionError
+______ FdPrefix.test_quoted_digits_are_an_argument (cmd="echo x '2'>> f") ______
+
+self = <test_cmdparse_fd.FdPrefix testMethod=test_quoted_digits_are_an_argument>
+
+    def test_quoted_digits_are_an_argument(self):
+        for cmd, arg in (("echo x '2'>> f", "2"), ('echo x "2">> f', "2"), ("echo x \\2>> f", "2"),
+                         ("echo x 1'2'>> f", "12"), ("cat '0'< f", "0")):
+            with self.subTest(cmd=cmd):
+                redirects, argv = parse(cmd)
+>               self.assertEqual([op for op, _ in redirects], [redirects[0][0].lstrip("0123456789")])
+E               AssertionError: Lists differ: ['2>>'] != ['>>']
+E               
+E               First differing element 0:
+E               '2>>'
+E               '>>'
+E               
+E               - ['2>>']
+E               ?   -
+E               
+E               + ['>>']
+
+plugins/memory-kit/hooks/tests/test_cmdparse_fd.py:39: AssertionError
+______ FdPrefix.test_quoted_digits_are_an_argument (cmd='echo x "2">> f') ______
+
+self = <test_cmdparse_fd.FdPrefix testMethod=test_quoted_digits_are_an_argument>
+
+    def test_quoted_digits_are_an_argument(self):
+        for cmd, arg in (("echo x '2'>> f", "2"), ('echo x "2">> f', "2"), ("echo x \\2>> f", "2"),
+                         ("echo x 1'2'>> f", "12"), ("cat '0'< f", "0")):
+            with self.subTest(cmd=cmd):
+                redirects, argv = parse(cmd)
+>               self.assertEqual([op for op, _ in redirects], [redirects[0][0].lstrip("0123456789")])
+E               AssertionError: Lists differ: ['2>>'] != ['>>']
+E               
+E               First differing element 0:
+E               '2>>'
+E               '>>'
+E               
+E               - ['2>>']
+E               ?   -
+E               
+E               + ['>>']
+
+plugins/memory-kit/hooks/tests/test_cmdparse_fd.py:39: AssertionError
+______ FdPrefix.test_quoted_digits_are_an_argument (cmd='echo x \\2>> f') ______
+
+self = <test_cmdparse_fd.FdPrefix testMethod=test_quoted_digits_are_an_argument>
+
+    def test_quoted_digits_are_an_argument(self):
+        for cmd, arg in (("echo x '2'>> f", "2"), ('echo x "2">> f', "2"), ("echo x \\2>> f", "2"),
+                         ("echo x 1'2'>> f", "12"), ("cat '0'< f", "0")):
+            with self.subTest(cmd=cmd):
+                redirects, argv = parse(cmd)
+>               self.assertEqual([op for op, _ in redirects], [redirects[0][0].lstrip("0123456789")])
+E               AssertionError: Lists differ: ['2>>'] != ['>>']
+E               
+E               First differing element 0:
+E               '2>>'
+E               '>>'
+E               
+E               - ['2>>']
+E               ?   -
+E               
+E               + ['>>']
+
+plugins/memory-kit/hooks/tests/test_cmdparse_fd.py:39: AssertionError
+_____ FdPrefix.test_quoted_digits_are_an_argument (cmd="echo x 1'2'>> f") ______
+
+self = <test_cmdparse_fd.FdPrefix testMethod=test_quoted_digits_are_an_argument>
+
+    def test_quoted_digits_are_an_argument(self):
+        for cmd, arg in (("echo x '2'>> f", "2"), ('echo x "2">> f', "2"), ("echo x \\2>> f", "2"),
+                         ("echo x 1'2'>> f", "12"), ("cat '0'< f", "0")):
+            with self.subTest(cmd=cmd):
+                redirects, argv = parse(cmd)
+>               self.assertEqual([op for op, _ in redirects], [redirects[0][0].lstrip("0123456789")])
+E               AssertionError: Lists differ: ['12>>'] != ['>>']
+E               
+E               First differing element 0:
+E               '12>>'
+E               '>>'
+E               
+E               - ['12>>']
+E               ?   --
+E               
+E               + ['>>']
+
+plugins/memory-kit/hooks/tests/test_cmdparse_fd.py:39: AssertionError
+________ FdPrefix.test_quoted_digits_are_an_argument (cmd="cat '0'< f") ________
+
+self = <test_cmdparse_fd.FdPrefix testMethod=test_quoted_digits_are_an_argument>
+
+    def test_quoted_digits_are_an_argument(self):
+        for cmd, arg in (("echo x '2'>> f", "2"), ('echo x "2">> f', "2"), ("echo x \\2>> f", "2"),
+                         ("echo x 1'2'>> f", "12"), ("cat '0'< f", "0")):
+            with self.subTest(cmd=cmd):
+                redirects, argv = parse(cmd)
+>               self.assertEqual([op for op, _ in redirects], [redirects[0][0].lstrip("0123456789")])
+E               AssertionError: Lists differ: ['0<'] != ['<']
+E               
+E               First differing element 0:
+E               '0<'
+E               '<'
+E               
+E               - ['0<']
+E               ?   -
+E               
+E               + ['<']
+
+plugins/memory-kit/hooks/tests/test_cmdparse_fd.py:39: AssertionError
+=========================== short test summary info ============================
+SUBFAILED(cmd="echo KEY=v '2'>> .env") plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_allowed
+SUBFAILED(cmd='cat <<EOF >> .env\n$(cat /proc/self/fd/1)\nEOF') plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_allowlist_bypasses_blocked
+SUBFAILED(cmd='cat <<EOF >> .env\n`cat /proc/self/fd/1`\nEOF') plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_allowlist_bypasses_blocked
+SUBFAILED(cmd='cat -$F >> .env') plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_narrowed_to_one_literal_echo
+SUBFAILED(cmd='echo X=1 >> .env 2>&1') plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_narrowed_to_one_literal_echo
+SUBFAILED(cmd='echo X=1 >&3 >> .env') plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_narrowed_to_one_literal_echo
+SUBFAILED(cmd='exec >> .env; echo X=1') plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_narrowed_to_one_literal_echo
+SUBFAILED(cmd='echo X=1 &>> .env') plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_narrowed_to_one_literal_echo
+SUBFAILED(cmd='echo "$X" >> .env') plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_narrowed_to_one_literal_echo
+SUBFAILED(cmd='echo "KEY=$v" >> .env') plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_narrowed_to_one_literal_echo
+SUBFAILED(cmd="printf '%s\\n' * >> .env") plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_narrowed_to_one_literal_echo
+SUBFAILED(cmd='echo KEY=a? >> .env') plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_narrowed_to_one_literal_echo
+SUBFAILED(cmd='echo a >> .env; echo b') plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_narrowed_to_one_literal_echo
+SUBFAILED(cmd="printf 'A=1\\n' >> .env.local && echo done") plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_narrowed_to_one_literal_echo
+SUBFAILED(cmd='echo a | cat >> .env') plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_narrowed_to_one_literal_echo
+SUBFAILED(cmd='VAR=1 echo x >> .env') plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_narrowed_to_one_literal_echo
+SUBFAILED(cmd='command echo x >> .env') plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_narrowed_to_one_literal_echo
+SUBFAILED(cmd='sudo echo x >> .env') plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_narrowed_to_one_literal_echo
+SUBFAILED(cmd='( echo x ) >> .env') plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_narrowed_to_one_literal_echo
+SUBFAILED(cmd='echo x >(cat) >> .env') plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_narrowed_to_one_literal_echo
+SUBFAILED(cmd='echo KEY=v >> .env 2>/dev/null') plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_narrowed_to_one_literal_echo
+SUBFAILED(cmd='echo KEY=v >> .env >> other.txt') plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_narrowed_to_one_literal_echo
+SUBFAILED(cmd="cat <<'EOF' >> .env\nKEY=1\nEOF") plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_narrowed_to_one_literal_echo
+SUBFAILED(cmd='cat >> .env <<< "KEY=v"') plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_narrowed_to_one_literal_echo
+SUBFAILED(cmd='echo KEY=v >> .env <<< x') plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_narrowed_to_one_literal_echo
+SUBFAILED(cmd='cat - >> .env') plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_narrowed_to_one_literal_echo
+FAILED plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_block_message_names_the_operator_and_the_exemption
+FAILED plugins/memory-kit/hooks/tests/test_cmdparse_fd.py::FdPrefix::test_no_word_state_leaks_past_an_fd_prefix
+SUBFAILED(cmd="echo x '2'>> f") plugins/memory-kit/hooks/tests/test_cmdparse_fd.py::FdPrefix::test_quoted_digits_are_an_argument
+SUBFAILED(cmd='echo x "2">> f') plugins/memory-kit/hooks/tests/test_cmdparse_fd.py::FdPrefix::test_quoted_digits_are_an_argument
+SUBFAILED(cmd='echo x \\2>> f') plugins/memory-kit/hooks/tests/test_cmdparse_fd.py::FdPrefix::test_quoted_digits_are_an_argument
+SUBFAILED(cmd="echo x 1'2'>> f") plugins/memory-kit/hooks/tests/test_cmdparse_fd.py::FdPrefix::test_quoted_digits_are_an_argument
+SUBFAILED(cmd="cat '0'< f") plugins/memory-kit/hooks/tests/test_cmdparse_fd.py::FdPrefix::test_quoted_digits_are_an_argument
+33 failed, 14 passed, 137 subtests passed in 3.35s

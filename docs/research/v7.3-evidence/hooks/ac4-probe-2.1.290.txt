@@ -1,0 +1,3 @@
+- [2026-10-22] PROBE-CANARY-4417 the onFailure field must not disable plugin hooks
+
+Эту строку принёс хук SessionStart плагина `memory-kit`. В его блоке «Memory Kit context — part 1 of 1» есть раздел с содержимым горячего кэша, и строка взята оттуда, из файла `.claude/memory/MEMORY.md`.

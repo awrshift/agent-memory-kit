@@ -1,0 +1,30 @@
+project-15                    wired=0  flagged=0   
+project-17                       wired=0  flagged=0   
+project-16                      wired=0  flagged=0   
+project-24                           wired=0  flagged=0   
+project-14                       wired=0  flagged=0   
+project-06                   wired=4  flagged=3   PreToolUse:protect-tests.sh; PreCompact:pre-compact.sh; SessionEnd:session-end.sh
+project-13                   wired=0  flagged=0   
+project-22                      wired=0  flagged=0   
+project-01        wired=2  flagged=0   
+project-02           wired=2  flagged=0   
+project-18            wired=0  flagged=0   
+project-04          wired=4  flagged=3   PreToolUse:protect-tests.sh; PreCompact:pre-compact.sh; SessionEnd:session-end.sh
+project-05                wired=5  flagged=3   SessionStart:session-start.py; PreCompact:pre-compact.sh; SessionEnd:session-end.sh
+project-03   wired=5  flagged=3   SessionStart:session-start.py; PreCompact:pre-compact.sh; SessionEnd:session-end.sh
+project-19                wired=0  flagged=0   
+claude-memory-kit            wired=0  flagged=0   
+project-20              wired=0  flagged=0   
+project-09                      wired=5  flagged=4   SessionStart:session-start.py; PreToolUse:protect-tests.sh; PreCompact:pre-compact.sh; SessionEnd:session-end.sh
+project-10                      wired=4  flagged=3   PreToolUse:protect-tests.sh; PreCompact:pre-compact.sh; SessionEnd:session-end.sh
+project-11                     wired=2  flagged=0   
+project-23                      wired=0  flagged=0   
+project-08               wired=5  flagged=4   SessionStart:session-start.py; PreToolUse:protect-tests.sh; PreCompact:pre-compact.sh; SessionEnd:session-end.sh
+project-12                      wired=4  flagged=2   PreCompact:pre-compact.sh; SessionEnd:session-end.sh
+project-07             wired=8  flagged=0  disabled 
+project-21                wired=0  flagged=0   
+
+repos scanned: 25 | flagged: 8 | not flagged: 17
+expected flagged but missed (missed duplicates): []
+expected clean but flagged (legit flagged): []
+flagged outside the expected list: []

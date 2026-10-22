@@ -1,0 +1,646 @@
+..........F.... [ 93%]
+.                                                                        [100%]
+=================================== FAILURES ===================================
+_ GuardFailureTest.test_both_guards_block_on_failure_and_protect_tests_does_not (script='guard-secrets.py') _
+
+self = <test_guard_failure.GuardFailureTest testMethod=test_both_guards_block_on_failure_and_protect_tests_does_not>
+
+    def test_both_guards_block_on_failure_and_protect_tests_does_not(self):
+        for script, (matcher, _, _) in GUARDS.items():
+            with self.subTest(script=script):
+>               self.assertEqual(wired_hook(matcher, script).get("onFailure"), "block")
+E               AssertionError: None != 'block'
+
+plugins/memory-kit/hooks/tests/test_guard_failure.py:85: AssertionError
+_ GuardFailureTest.test_both_guards_block_on_failure_and_protect_tests_does_not (script='guard-git.py') _
+
+self = <test_guard_failure.GuardFailureTest testMethod=test_both_guards_block_on_failure_and_protect_tests_does_not>
+
+    def test_both_guards_block_on_failure_and_protect_tests_does_not(self):
+        for script, (matcher, _, _) in GUARDS.items():
+            with self.subTest(script=script):
+>               self.assertEqual(wired_hook(matcher, script).get("onFailure"), "block")
+E               AssertionError: None != 'block'
+
+plugins/memory-kit/hooks/tests/test_guard_failure.py:85: AssertionError
+_ GuardFailureTest.test_internal_exception_asks_never_passes_silently (script='guard-secrets.py') _
+
+self = <test_guard_failure.GuardFailureTest testMethod=test_internal_exception_asks_never_passes_silently>
+
+    def test_internal_exception_asks_never_passes_silently(self):
+        env = self.broken_plugin(
+            "def commands(command, cwd):\n    raise RuntimeError('boom-in-parser')\n"
+            "def git_calls(command, cwd):\n    raise RuntimeError('boom-in-parser')\n"
+        )
+        for script, (_, payload, label) in GUARDS.items():
+            with self.subTest(script=script):
+>               self.assert_ask(self.run_hook(script, payload, env), label, "boom-in-parser")
+
+plugins/memory-kit/hooks/tests/test_guard_failure.py:95: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+plugins/memory-kit/hooks/tests/test_guard_failure.py:76: in assert_ask
+    out = json.loads(r.stdout)["hookSpecificOutput"]
+          ^^^^^^^^^^^^^^^^^^^^
+../../.local/share/uv/python/cpython-3.12.14-macos-aarch64-none/lib/python3.12/json/__init__.py:346: in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../.local/share/uv/python/cpython-3.12.14-macos-aarch64-none/lib/python3.12/json/decoder.py:338: in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <json.decoder.JSONDecoder object at 0x104abd6a0>, s = '', idx = 0
+
+    def raw_decode(self, s, idx=0):
+        """Decode a JSON document from ``s`` (a ``str`` beginning with
+        a JSON document) and return a 2-tuple of the Python
+        representation and the index in ``s`` where the document ended.
+    
+        This can be used to decode a JSON document from a string that may
+        have extraneous data at the end.
+    
+        """
+        try:
+            obj, end = self.scan_once(s, idx)
+        except StopIteration as err:
+>           raise JSONDecodeError("Expecting value", s, err.value) from None
+E           json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+../../.local/share/uv/python/cpython-3.12.14-macos-aarch64-none/lib/python3.12/json/decoder.py:356: JSONDecodeError
+_ GuardFailureTest.test_internal_exception_asks_never_passes_silently (script='guard-git.py') _
+
+self = <test_guard_failure.GuardFailureTest testMethod=test_internal_exception_asks_never_passes_silently>
+
+    def test_internal_exception_asks_never_passes_silently(self):
+        env = self.broken_plugin(
+            "def commands(command, cwd):\n    raise RuntimeError('boom-in-parser')\n"
+            "def git_calls(command, cwd):\n    raise RuntimeError('boom-in-parser')\n"
+        )
+        for script, (_, payload, label) in GUARDS.items():
+            with self.subTest(script=script):
+>               self.assert_ask(self.run_hook(script, payload, env), label, "boom-in-parser")
+
+plugins/memory-kit/hooks/tests/test_guard_failure.py:95: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+plugins/memory-kit/hooks/tests/test_guard_failure.py:76: in assert_ask
+    out = json.loads(r.stdout)["hookSpecificOutput"]
+          ^^^^^^^^^^^^^^^^^^^^
+../../.local/share/uv/python/cpython-3.12.14-macos-aarch64-none/lib/python3.12/json/__init__.py:346: in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../.local/share/uv/python/cpython-3.12.14-macos-aarch64-none/lib/python3.12/json/decoder.py:338: in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <json.decoder.JSONDecoder object at 0x104abd6a0>, s = '', idx = 0
+
+    def raw_decode(self, s, idx=0):
+        """Decode a JSON document from ``s`` (a ``str`` beginning with
+        a JSON document) and return a 2-tuple of the Python
+        representation and the index in ``s`` where the document ended.
+    
+        This can be used to decode a JSON document from a string that may
+        have extraneous data at the end.
+    
+        """
+        try:
+            obj, end = self.scan_once(s, idx)
+        except StopIteration as err:
+>           raise JSONDecodeError("Expecting value", s, err.value) from None
+E           json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+../../.local/share/uv/python/cpython-3.12.14-macos-aarch64-none/lib/python3.12/json/decoder.py:356: JSONDecodeError
+_ GuardFailureTest.test_missing_parser_module_asks (script='guard-secrets.py') _
+
+self = <test_guard_failure.GuardFailureTest testMethod=test_missing_parser_module_asks>
+
+    def test_missing_parser_module_asks(self):
+        env = self.broken_plugin("raise ImportError('cmdparse-missing')\n")
+        for script, (_, payload, label) in GUARDS.items():
+            with self.subTest(script=script):
+>               self.assert_ask(self.run_hook(script, payload, env), label, "cmdparse-missing")
+
+plugins/memory-kit/hooks/tests/test_guard_failure.py:101: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+plugins/memory-kit/hooks/tests/test_guard_failure.py:76: in assert_ask
+    out = json.loads(r.stdout)["hookSpecificOutput"]
+          ^^^^^^^^^^^^^^^^^^^^
+../../.local/share/uv/python/cpython-3.12.14-macos-aarch64-none/lib/python3.12/json/__init__.py:346: in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../.local/share/uv/python/cpython-3.12.14-macos-aarch64-none/lib/python3.12/json/decoder.py:338: in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <json.decoder.JSONDecoder object at 0x104abd6a0>, s = '', idx = 0
+
+    def raw_decode(self, s, idx=0):
+        """Decode a JSON document from ``s`` (a ``str`` beginning with
+        a JSON document) and return a 2-tuple of the Python
+        representation and the index in ``s`` where the document ended.
+    
+        This can be used to decode a JSON document from a string that may
+        have extraneous data at the end.
+    
+        """
+        try:
+            obj, end = self.scan_once(s, idx)
+        except StopIteration as err:
+>           raise JSONDecodeError("Expecting value", s, err.value) from None
+E           json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+../../.local/share/uv/python/cpython-3.12.14-macos-aarch64-none/lib/python3.12/json/decoder.py:356: JSONDecodeError
+___ GuardFailureTest.test_missing_parser_module_asks (script='guard-git.py') ___
+
+self = <test_guard_failure.GuardFailureTest testMethod=test_missing_parser_module_asks>
+
+    def test_missing_parser_module_asks(self):
+        env = self.broken_plugin("raise ImportError('cmdparse-missing')\n")
+        for script, (_, payload, label) in GUARDS.items():
+            with self.subTest(script=script):
+>               self.assert_ask(self.run_hook(script, payload, env), label, "cmdparse-missing")
+
+plugins/memory-kit/hooks/tests/test_guard_failure.py:101: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+plugins/memory-kit/hooks/tests/test_guard_failure.py:76: in assert_ask
+    out = json.loads(r.stdout)["hookSpecificOutput"]
+          ^^^^^^^^^^^^^^^^^^^^
+../../.local/share/uv/python/cpython-3.12.14-macos-aarch64-none/lib/python3.12/json/__init__.py:346: in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../.local/share/uv/python/cpython-3.12.14-macos-aarch64-none/lib/python3.12/json/decoder.py:338: in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <json.decoder.JSONDecoder object at 0x104abd6a0>, s = '', idx = 0
+
+    def raw_decode(self, s, idx=0):
+        """Decode a JSON document from ``s`` (a ``str`` beginning with
+        a JSON document) and return a 2-tuple of the Python
+        representation and the index in ``s`` where the document ended.
+    
+        This can be used to decode a JSON document from a string that may
+        have extraneous data at the end.
+    
+        """
+        try:
+            obj, end = self.scan_once(s, idx)
+        except StopIteration as err:
+>           raise JSONDecodeError("Expecting value", s, err.value) from None
+E           json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+../../.local/share/uv/python/cpython-3.12.14-macos-aarch64-none/lib/python3.12/json/decoder.py:356: JSONDecodeError
+_ GuardFailureTest.test_nesting_past_the_parser_depth_asks (script='guard-secrets.py') _
+
+self = <test_guard_failure.GuardFailureTest testMethod=test_nesting_past_the_parser_depth_asks>
+
+    def test_nesting_past_the_parser_depth_asks(self):
+        """A command nested deeper than the parser follows is one the shell WOULD run: not a fail-open case."""
+        cases = {
+            "guard-secrets.py": "cat .env",
+            "guard-git.py": "git reset --hard",
+        }
+        for script, inner in cases.items():
+            cmd = inner
+            for _ in range(10):
+                cmd = "eval %s" % cmd
+            payload = {"tool_name": "Bash", "tool_input": {"command": cmd}}
+            with self.subTest(script=script):
+>               self.assert_ask(self.run_hook(script, payload, self.env), GUARDS[script][2], "nesting")
+
+plugins/memory-kit/hooks/tests/test_guard_failure.py:115: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+plugins/memory-kit/hooks/tests/test_guard_failure.py:76: in assert_ask
+    out = json.loads(r.stdout)["hookSpecificOutput"]
+          ^^^^^^^^^^^^^^^^^^^^
+../../.local/share/uv/python/cpython-3.12.14-macos-aarch64-none/lib/python3.12/json/__init__.py:346: in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../.local/share/uv/python/cpython-3.12.14-macos-aarch64-none/lib/python3.12/json/decoder.py:338: in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <json.decoder.JSONDecoder object at 0x104abd6a0>, s = '', idx = 0
+
+    def raw_decode(self, s, idx=0):
+        """Decode a JSON document from ``s`` (a ``str`` beginning with
+        a JSON document) and return a 2-tuple of the Python
+        representation and the index in ``s`` where the document ended.
+    
+        This can be used to decode a JSON document from a string that may
+        have extraneous data at the end.
+    
+        """
+        try:
+            obj, end = self.scan_once(s, idx)
+        except StopIteration as err:
+>           raise JSONDecodeError("Expecting value", s, err.value) from None
+E           json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+../../.local/share/uv/python/cpython-3.12.14-macos-aarch64-none/lib/python3.12/json/decoder.py:356: JSONDecodeError
+_ GuardFailureTest.test_nesting_past_the_parser_depth_asks (script='guard-git.py') _
+
+self = <test_guard_failure.GuardFailureTest testMethod=test_nesting_past_the_parser_depth_asks>
+
+    def test_nesting_past_the_parser_depth_asks(self):
+        """A command nested deeper than the parser follows is one the shell WOULD run: not a fail-open case."""
+        cases = {
+            "guard-secrets.py": "cat .env",
+            "guard-git.py": "git reset --hard",
+        }
+        for script, inner in cases.items():
+            cmd = inner
+            for _ in range(10):
+                cmd = "eval %s" % cmd
+            payload = {"tool_name": "Bash", "tool_input": {"command": cmd}}
+            with self.subTest(script=script):
+>               self.assert_ask(self.run_hook(script, payload, self.env), GUARDS[script][2], "nesting")
+
+plugins/memory-kit/hooks/tests/test_guard_failure.py:115: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+plugins/memory-kit/hooks/tests/test_guard_failure.py:76: in assert_ask
+    out = json.loads(r.stdout)["hookSpecificOutput"]
+          ^^^^^^^^^^^^^^^^^^^^
+../../.local/share/uv/python/cpython-3.12.14-macos-aarch64-none/lib/python3.12/json/__init__.py:346: in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../.local/share/uv/python/cpython-3.12.14-macos-aarch64-none/lib/python3.12/json/decoder.py:338: in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <json.decoder.JSONDecoder object at 0x104abd6a0>, s = '', idx = 0
+
+    def raw_decode(self, s, idx=0):
+        """Decode a JSON document from ``s`` (a ``str`` beginning with
+        a JSON document) and return a 2-tuple of the Python
+        representation and the index in ``s`` where the document ended.
+    
+        This can be used to decode a JSON document from a string that may
+        have extraneous data at the end.
+    
+        """
+        try:
+            obj, end = self.scan_once(s, idx)
+        except StopIteration as err:
+>           raise JSONDecodeError("Expecting value", s, err.value) from None
+E           json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+../../.local/share/uv/python/cpython-3.12.14-macos-aarch64-none/lib/python3.12/json/decoder.py:356: JSONDecodeError
+_ GuardFailureTest.test_no_python3_is_an_explicit_no_op (script='guard-secrets.py') _
+
+self = <test_guard_failure.GuardFailureTest testMethod=test_no_python3_is_an_explicit_no_op>
+
+    def test_no_python3_is_an_explicit_no_op(self):
+        empty = tempfile.mkdtemp(prefix="cmk-nopath-")
+        try:
+            env = dict(self.env, PATH=empty)
+            for script, (_, payload, _) in GUARDS.items():
+                with self.subTest(script=script):
+                    r = self.run_hook(script, payload, env)
+>                   self.assertEqual((r.returncode, r.stdout, r.stderr), (0, "", ""))
+E                   AssertionError: Tuples differ: (127, '', '/bin/sh: python3: command not found\n') != (0, '', '')
+E                   
+E                   First differing element 0:
+E                   127
+E                   0
+E                   
+E                   - (127, '', '/bin/sh: python3: command not found\n')
+E                   + (0, '', '')
+
+plugins/memory-kit/hooks/tests/test_guard_failure.py:130: AssertionError
+_ GuardFailureTest.test_no_python3_is_an_explicit_no_op (script='guard-git.py') _
+
+self = <test_guard_failure.GuardFailureTest testMethod=test_no_python3_is_an_explicit_no_op>
+
+    def test_no_python3_is_an_explicit_no_op(self):
+        empty = tempfile.mkdtemp(prefix="cmk-nopath-")
+        try:
+            env = dict(self.env, PATH=empty)
+            for script, (_, payload, _) in GUARDS.items():
+                with self.subTest(script=script):
+                    r = self.run_hook(script, payload, env)
+>                   self.assertEqual((r.returncode, r.stdout, r.stderr), (0, "", ""))
+E                   AssertionError: Tuples differ: (127, '', '/bin/sh: python3: command not found\n') != (0, '', '')
+E                   
+E                   First differing element 0:
+E                   127
+E                   0
+E                   
+E                   - (127, '', '/bin/sh: python3: command not found\n')
+E                   + (0, '', '')
+
+plugins/memory-kit/hooks/tests/test_guard_failure.py:130: AssertionError
+___ SecretsGuardTest.test_append_bypasses_blocked (cmd='echo X=1 2>> .env') ____
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_bypasses_blocked>
+
+    def test_append_bypasses_blocked(self):
+        for cmd in APPEND_BYPASSES:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+E               AssertionError: 0 != 2 : expected block: 'echo X=1 2>> .env' (stderr '')
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:205: AssertionError
+______ SecretsGuardTest.test_append_bypasses_blocked (cmd='cat 3>> .env') ______
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_bypasses_blocked>
+
+    def test_append_bypasses_blocked(self):
+        for cmd in APPEND_BYPASSES:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+E               AssertionError: 0 != 2 : expected block: 'cat 3>> .env' (stderr '')
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:205: AssertionError
+_ SecretsGuardTest.test_append_bypasses_blocked (cmd='echo X=1 9>>.env.local') _
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_bypasses_blocked>
+
+    def test_append_bypasses_blocked(self):
+        for cmd in APPEND_BYPASSES:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+E               AssertionError: 0 != 2 : expected block: 'echo X=1 9>>.env.local' (stderr '')
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:205: AssertionError
+_ SecretsGuardTest.test_append_bypasses_blocked (cmd='cp /proc/self/fd/1 /tmp/x >> .env') _
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_bypasses_blocked>
+
+    def test_append_bypasses_blocked(self):
+        for cmd in APPEND_BYPASSES:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+E               AssertionError: 0 != 2 : expected block: 'cp /proc/self/fd/1 /tmp/x >> .env' (stderr '')
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:205: AssertionError
+_ SecretsGuardTest.test_append_bypasses_blocked (cmd='cat /proc/self/fd/1 >> .env') _
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_bypasses_blocked>
+
+    def test_append_bypasses_blocked(self):
+        for cmd in APPEND_BYPASSES:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+E               AssertionError: 0 != 2 : expected block: 'cat /proc/self/fd/1 >> .env' (stderr '')
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:205: AssertionError
+_ SecretsGuardTest.test_append_bypasses_blocked (cmd='cat /proc/12345/fd/1 >> .env') _
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_bypasses_blocked>
+
+    def test_append_bypasses_blocked(self):
+        for cmd in APPEND_BYPASSES:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+E               AssertionError: 0 != 2 : expected block: 'cat /proc/12345/fd/1 >> .env' (stderr '')
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:205: AssertionError
+_ SecretsGuardTest.test_append_bypasses_blocked (cmd='cat /proc/thread-self/fd/1 >> .env') _
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_bypasses_blocked>
+
+    def test_append_bypasses_blocked(self):
+        for cmd in APPEND_BYPASSES:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+E               AssertionError: 0 != 2 : expected block: 'cat /proc/thread-self/fd/1 >> .env' (stderr '')
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:205: AssertionError
+_ SecretsGuardTest.test_append_bypasses_blocked (cmd='cat /dev/fd/1 >> .env') __
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_bypasses_blocked>
+
+    def test_append_bypasses_blocked(self):
+        for cmd in APPEND_BYPASSES:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+E               AssertionError: 0 != 2 : expected block: 'cat /dev/fd/1 >> .env' (stderr '')
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:205: AssertionError
+_ SecretsGuardTest.test_append_bypasses_blocked (cmd='cat /dev/stdout >> .env') _
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_bypasses_blocked>
+
+    def test_append_bypasses_blocked(self):
+        for cmd in APPEND_BYPASSES:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+E               AssertionError: 0 != 2 : expected block: 'cat /dev/stdout >> .env' (stderr '')
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:205: AssertionError
+_ SecretsGuardTest.test_append_bypasses_blocked (cmd='cat /dev/stdin >> .env') _
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_bypasses_blocked>
+
+    def test_append_bypasses_blocked(self):
+        for cmd in APPEND_BYPASSES:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+E               AssertionError: 0 != 2 : expected block: 'cat /dev/stdin >> .env' (stderr '')
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:205: AssertionError
+_ SecretsGuardTest.test_append_bypasses_blocked (cmd='tee /dev/stderr >> .env') _
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_bypasses_blocked>
+
+    def test_append_bypasses_blocked(self):
+        for cmd in APPEND_BYPASSES:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+E               AssertionError: 0 != 2 : expected block: 'tee /dev/stderr >> .env' (stderr '')
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:205: AssertionError
+_ SecretsGuardTest.test_append_bypasses_blocked (cmd='cp /dev/fd/1 /tmp/x 1>> .env') _
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_bypasses_blocked>
+
+    def test_append_bypasses_blocked(self):
+        for cmd in APPEND_BYPASSES:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+E               AssertionError: 0 != 2 : expected block: 'cp /dev/fd/1 /tmp/x 1>> .env' (stderr '')
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:205: AssertionError
+_ SecretsGuardTest.test_append_bypasses_blocked (cmd='cp /dev/fd/1 /tmp/x &>> .env') _
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_bypasses_blocked>
+
+    def test_append_bypasses_blocked(self):
+        for cmd in APPEND_BYPASSES:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+E               AssertionError: 0 != 2 : expected block: 'cp /dev/fd/1 /tmp/x &>> .env' (stderr '')
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:205: AssertionError
+_ SecretsGuardTest.test_append_bypasses_blocked (cmd='cat >> .env < /proc/self/fd/1') _
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_bypasses_blocked>
+
+    def test_append_bypasses_blocked(self):
+        for cmd in APPEND_BYPASSES:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+E               AssertionError: 0 != 2 : expected block: 'cat >> .env < /proc/self/fd/1' (stderr '')
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:205: AssertionError
+_ SecretsGuardTest.test_append_bypasses_blocked (cmd='{ cp /proc/self/fd/1 /tmp/x; } >> .env') _
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_bypasses_blocked>
+
+    def test_append_bypasses_blocked(self):
+        for cmd in APPEND_BYPASSES:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+E               AssertionError: 0 != 2 : expected block: '{ cp /proc/self/fd/1 /tmp/x; } >> .env' (stderr '')
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:205: AssertionError
+_ SecretsGuardTest.test_append_bypasses_blocked (cmd='( cat /dev/fd/1 ) >> .env') _
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_bypasses_blocked>
+
+    def test_append_bypasses_blocked(self):
+        for cmd in APPEND_BYPASSES:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+E               AssertionError: 0 != 2 : expected block: '( cat /dev/fd/1 ) >> .env' (stderr '')
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:205: AssertionError
+_ SecretsGuardTest.test_append_bypasses_blocked (cmd="bash -c 'cp /proc/self/fd/1 /tmp/x' >> .env") _
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_bypasses_blocked>
+
+    def test_append_bypasses_blocked(self):
+        for cmd in APPEND_BYPASSES:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+E               AssertionError: 0 != 2 : expected block: "bash -c 'cp /proc/self/fd/1 /tmp/x' >> .env" (stderr '')
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:205: AssertionError
+_ SecretsGuardTest.test_append_bypasses_blocked (cmd='python3 -c "print(open(\'/proc/self/fd/1\').read())" >> .env') _
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_bypasses_blocked>
+
+    def test_append_bypasses_blocked(self):
+        for cmd in APPEND_BYPASSES:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+E               AssertionError: 0 != 2 : expected block: 'python3 -c "print(open(\'/proc/self/fd/1\').read())" >> .env' (stderr '')
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:205: AssertionError
+_ SecretsGuardTest.test_append_bypasses_blocked (cmd='cat /proc/self//fd/1 >> .env') _
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_bypasses_blocked>
+
+    def test_append_bypasses_blocked(self):
+        for cmd in APPEND_BYPASSES:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+E               AssertionError: 0 != 2 : expected block: 'cat /proc/self//fd/1 >> .env' (stderr '')
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:205: AssertionError
+_ SecretsGuardTest.test_append_bypasses_blocked (cmd='cat /dev/./fd/1 >> .env') _
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_bypasses_blocked>
+
+    def test_append_bypasses_blocked(self):
+        for cmd in APPEND_BYPASSES:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+E               AssertionError: 0 != 2 : expected block: 'cat /dev/./fd/1 >> .env' (stderr '')
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:205: AssertionError
+_ SecretsGuardTest.test_append_bypasses_blocked (cmd='cat /proc/self/x/../fd/1 >> .env') _
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_bypasses_blocked>
+
+    def test_append_bypasses_blocked(self):
+        for cmd in APPEND_BYPASSES:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+E               AssertionError: 0 != 2 : expected block: 'cat /proc/self/x/../fd/1 >> .env' (stderr '')
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:205: AssertionError
+_ SecretsGuardTest.test_append_bypasses_blocked (cmd='cat /de\\v/fd/1 >> .env') _
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_append_bypasses_blocked>
+
+    def test_append_bypasses_blocked(self):
+        for cmd in APPEND_BYPASSES:
+            with self.subTest(cmd=cmd):
+                rc, err = self.bash(cmd)
+>               self.assertEqual(rc, 2, "expected block: %r (stderr %r)" % (cmd, err))
+E               AssertionError: 0 != 2 : expected block: 'cat /de\\v/fd/1 >> .env' (stderr '')
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:205: AssertionError
+__________ SecretsGuardTest.test_fd_append_message_names_the_fd_path ___________
+
+self = <test_guard_secrets.SecretsGuardTest testMethod=test_fd_append_message_names_the_fd_path>
+
+    def test_fd_append_message_names_the_fd_path(self):
+        _, err = self.bash("cp /proc/self/fd/1 /tmp/x >> .env")
+>       self.assertIn("/proc/self/fd/1", err)
+E       AssertionError: '/proc/self/fd/1' not found in ''
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:217: AssertionError
+=========================== short test summary info ============================
+SUBFAILED(script='guard-secrets.py') plugins/memory-kit/hooks/tests/test_guard_failure.py::GuardFailureTest::test_both_guards_block_on_failure_and_protect_tests_does_not
+SUBFAILED(script='guard-git.py') plugins/memory-kit/hooks/tests/test_guard_failure.py::GuardFailureTest::test_both_guards_block_on_failure_and_protect_tests_does_not
+SUBFAILED(script='guard-secrets.py') plugins/memory-kit/hooks/tests/test_guard_failure.py::GuardFailureTest::test_internal_exception_asks_never_passes_silently
+SUBFAILED(script='guard-git.py') plugins/memory-kit/hooks/tests/test_guard_failure.py::GuardFailureTest::test_internal_exception_asks_never_passes_silently
+SUBFAILED(script='guard-secrets.py') plugins/memory-kit/hooks/tests/test_guard_failure.py::GuardFailureTest::test_missing_parser_module_asks
+SUBFAILED(script='guard-git.py') plugins/memory-kit/hooks/tests/test_guard_failure.py::GuardFailureTest::test_missing_parser_module_asks
+SUBFAILED(script='guard-secrets.py') plugins/memory-kit/hooks/tests/test_guard_failure.py::GuardFailureTest::test_nesting_past_the_parser_depth_asks
+SUBFAILED(script='guard-git.py') plugins/memory-kit/hooks/tests/test_guard_failure.py::GuardFailureTest::test_nesting_past_the_parser_depth_asks
+SUBFAILED(script='guard-secrets.py') plugins/memory-kit/hooks/tests/test_guard_failure.py::GuardFailureTest::test_no_python3_is_an_explicit_no_op
+SUBFAILED(script='guard-git.py') plugins/memory-kit/hooks/tests/test_guard_failure.py::GuardFailureTest::test_no_python3_is_an_explicit_no_op
+SUBFAILED(cmd='echo X=1 2>> .env') plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_bypasses_blocked
+SUBFAILED(cmd='cat 3>> .env') plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_bypasses_blocked
+SUBFAILED(cmd='echo X=1 9>>.env.local') plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_bypasses_blocked
+SUBFAILED(cmd='cp /proc/self/fd/1 /tmp/x >> .env') plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_bypasses_blocked
+SUBFAILED(cmd='cat /proc/self/fd/1 >> .env') plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_bypasses_blocked
+SUBFAILED(cmd='cat /proc/12345/fd/1 >> .env') plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_bypasses_blocked
+SUBFAILED(cmd='cat /proc/thread-self/fd/1 >> .env') plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_bypasses_blocked
+SUBFAILED(cmd='cat /dev/fd/1 >> .env') plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_bypasses_blocked
+SUBFAILED(cmd='cat /dev/stdout >> .env') plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_bypasses_blocked
+SUBFAILED(cmd='cat /dev/stdin >> .env') plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_bypasses_blocked
+SUBFAILED(cmd='tee /dev/stderr >> .env') plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_bypasses_blocked
+SUBFAILED(cmd='cp /dev/fd/1 /tmp/x 1>> .env') plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_bypasses_blocked
+SUBFAILED(cmd='cp /dev/fd/1 /tmp/x &>> .env') plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_bypasses_blocked
+SUBFAILED(cmd='cat >> .env < /proc/self/fd/1') plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_bypasses_blocked
+SUBFAILED(cmd='{ cp /proc/self/fd/1 /tmp/x; } >> .env') plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_bypasses_blocked
+SUBFAILED(cmd='( cat /dev/fd/1 ) >> .env') plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_bypasses_blocked
+SUBFAILED(cmd="bash -c 'cp /proc/self/fd/1 /tmp/x' >> .env") plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_bypasses_blocked
+SUBFAILED(cmd='python3 -c "print(open(\'/proc/self/fd/1\').read())" >> .env') plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_bypasses_blocked
+SUBFAILED(cmd='cat /proc/self//fd/1 >> .env') plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_bypasses_blocked
+SUBFAILED(cmd='cat /dev/./fd/1 >> .env') plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_bypasses_blocked
+SUBFAILED(cmd='cat /proc/self/x/../fd/1 >> .env') plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_bypasses_blocked
+SUBFAILED(cmd='cat /de\\v/fd/1 >> .env') plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_append_bypasses_blocked
+FAILED plugins/memory-kit/hooks/tests/test_guard_secrets.py::SecretsGuardTest::test_fd_append_message_names_the_fd_path
+33 failed, 15 passed, 97 subtests passed in 2.45s

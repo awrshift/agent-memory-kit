@@ -1,0 +1,213 @@
+FF....F.FF.                                                     [100%]
+=================================== FAILURES ===================================
+__ Compaction.test_auto_compaction_then_session_start_nudges_once_and_clears ___
+
+self = <test_compaction.Compaction testMethod=test_auto_compaction_then_session_start_nudges_once_and_clears>
+
+    def test_auto_compaction_then_session_start_nudges_once_and_clears(self):
+        self.memory(age_seconds=3600)
+        self.write("context/handoffs/h-2026-01-01.md", "# Handoff\n\nnext: X\n")
+        self.precompact({"session_id": "sess-1", "trigger": "auto"})
+>       self.assertTrue(os.path.exists(self.marker))
+E       AssertionError: False is not true
+
+plugins/memory-kit/hooks/tests/test_compaction.py:140: AssertionError
+________ Compaction.test_auto_over_a_cap_never_blocks_and_names_the_cap ________
+
+self = <test_compaction.Compaction testMethod=test_auto_over_a_cap_never_blocks_and_names_the_cap>
+
+    def test_auto_over_a_cap_never_blocks_and_names_the_cap(self):
+        self.memory(age_seconds=0, lines=200)
+        out = self.precompact({"trigger": "auto"})
+>       self.assertNotIn("decision", out)
+E       AssertionError: 'decision' unexpectedly found in {'decision': 'block', 'reason': "CONTEXT COMPRESSION IMMINENT and your hot cache is OVER its caps (lines 204/180) — last updated 0 min ago. Save before compaction proceeds:\n\n1. .claude/memory/MEMORY.md — PRUNE it back inside the caps (180 lines / 32 KB / 3000 chars per line): promote settled 3+-date patterns to knowledge/concepts/, drop what a handoff already holds, then REPLACE the header current-state lines and add this session's date-tagged patterns\n2. context/handoffs/ — write or refresh this session's handoff: what was done + the immediate next step\n\nWrite these files NOW, then continue. Full ritual: /memory-kit:close-session."}
+
+plugins/memory-kit/hooks/tests/test_compaction.py:105: AssertionError
+_ Compaction.test_auto_over_stale_memory_never_blocks_and_leaves_the_marker (payload={'session_id': 's', 'trigger': 'auto'}) _
+
+self = <test_compaction.Compaction testMethod=test_auto_over_stale_memory_never_blocks_and_leaves_the_marker>
+
+    def test_auto_over_stale_memory_never_blocks_and_leaves_the_marker(self):
+        self.memory(age_seconds=3600)
+        for payload in ({"session_id": "s", "trigger": "auto"}, {"session_id": "s"}, ""):
+            with self.subTest(payload=payload):
+                if os.path.exists(self.marker):
+                    os.remove(self.marker)
+                out = self.precompact(payload)
+>               self.assertNotIn("decision", out)
+E               AssertionError: 'decision' unexpectedly found in {'decision': 'block', 'reason': "CONTEXT COMPRESSION IMMINENT and your memory files are stale (MEMORY.md: 14/180 lines, last updated 60 min ago). Save before compaction proceeds:\n\n1. .claude/memory/MEMORY.md — REPLACE the header current-state lines and add this session's date-tagged patterns (caps: 180 lines / 32 KB / 3000 chars per line)\n2. context/handoffs/ — write or refresh this session's handoff: what was done + the immediate next step\n\nWrite these files NOW, then continue. Full ritual: /memory-kit:close-session."}
+
+plugins/memory-kit/hooks/tests/test_compaction.py:96: AssertionError
+_ Compaction.test_auto_over_stale_memory_never_blocks_and_leaves_the_marker (payload={'session_id': 's'}) _
+
+self = <test_compaction.Compaction testMethod=test_auto_over_stale_memory_never_blocks_and_leaves_the_marker>
+
+    def test_auto_over_stale_memory_never_blocks_and_leaves_the_marker(self):
+        self.memory(age_seconds=3600)
+        for payload in ({"session_id": "s", "trigger": "auto"}, {"session_id": "s"}, ""):
+            with self.subTest(payload=payload):
+                if os.path.exists(self.marker):
+                    os.remove(self.marker)
+                out = self.precompact(payload)
+>               self.assertNotIn("decision", out)
+E               AssertionError: 'decision' unexpectedly found in {'decision': 'block', 'reason': "CONTEXT COMPRESSION IMMINENT and your memory files are stale (MEMORY.md: 14/180 lines, last updated 60 min ago). Save before compaction proceeds:\n\n1. .claude/memory/MEMORY.md — REPLACE the header current-state lines and add this session's date-tagged patterns (caps: 180 lines / 32 KB / 3000 chars per line)\n2. context/handoffs/ — write or refresh this session's handoff: what was done + the immediate next step\n\nWrite these files NOW, then continue. Full ritual: /memory-kit:close-session."}
+
+plugins/memory-kit/hooks/tests/test_compaction.py:96: AssertionError
+_ Compaction.test_auto_over_stale_memory_never_blocks_and_leaves_the_marker (payload='') _
+
+self = <test_compaction.Compaction testMethod=test_auto_over_stale_memory_never_blocks_and_leaves_the_marker>
+
+    def test_auto_over_stale_memory_never_blocks_and_leaves_the_marker(self):
+        self.memory(age_seconds=3600)
+        for payload in ({"session_id": "s", "trigger": "auto"}, {"session_id": "s"}, ""):
+            with self.subTest(payload=payload):
+                if os.path.exists(self.marker):
+                    os.remove(self.marker)
+                out = self.precompact(payload)
+>               self.assertNotIn("decision", out)
+E               AssertionError: 'decision' unexpectedly found in {'decision': 'block', 'reason': "CONTEXT COMPRESSION IMMINENT and your memory files are stale (MEMORY.md: 14/180 lines, last updated 60 min ago). Save before compaction proceeds:\n\n1. .claude/memory/MEMORY.md — REPLACE the header current-state lines and add this session's date-tagged patterns (caps: 180 lines / 32 KB / 3000 chars per line)\n2. context/handoffs/ — write or refresh this session's handoff: what was done + the immediate next step\n\nWrite these files NOW, then continue. Full ritual: /memory-kit:close-session."}
+
+plugins/memory-kit/hooks/tests/test_compaction.py:96: AssertionError
+_ Compaction.test_fresh_memory_allows_both_and_clears_an_old_marker (trigger='auto') _
+
+self = <test_compaction.Compaction testMethod=test_fresh_memory_allows_both_and_clears_an_old_marker>
+
+    def test_fresh_memory_allows_both_and_clears_an_old_marker(self):
+        self.memory(age_seconds=0)
+        self.write(".claude/state/compact-unsaved", "2026-01-01 00:00:00\tan old reason\n")
+        for trigger in ("auto", "manual"):
+            with self.subTest(trigger=trigger):
+                self.assertEqual(self.precompact({"trigger": trigger}), {})
+>               self.assertFalse(os.path.exists(self.marker))
+E               AssertionError: True is not false
+
+plugins/memory-kit/hooks/tests/test_compaction.py:128: AssertionError
+_ Compaction.test_fresh_memory_allows_both_and_clears_an_old_marker (trigger='manual') _
+
+self = <test_compaction.Compaction testMethod=test_fresh_memory_allows_both_and_clears_an_old_marker>
+
+    def test_fresh_memory_allows_both_and_clears_an_old_marker(self):
+        self.memory(age_seconds=0)
+        self.write(".claude/state/compact-unsaved", "2026-01-01 00:00:00\tan old reason\n")
+        for trigger in ("auto", "manual"):
+            with self.subTest(trigger=trigger):
+                self.assertEqual(self.precompact({"trigger": trigger}), {})
+>               self.assertFalse(os.path.exists(self.marker))
+E               AssertionError: True is not false
+
+plugins/memory-kit/hooks/tests/test_compaction.py:128: AssertionError
+_________________ Compaction.test_no_memory_file_still_nudges __________________
+
+self = <test_compaction.Compaction testMethod=test_no_memory_file_still_nudges>
+
+    def test_no_memory_file_still_nudges(self):
+        self.write("context/handoffs/h-2026-01-01.md", "# Handoff\n")
+        self.precompact({"session_id": "sess-1", "trigger": "auto"})
+>       self.assertTrue(os.path.exists(self.marker))
+E       AssertionError: False is not true
+
+plugins/memory-kit/hooks/tests/test_compaction.py:190: AssertionError
+___ Compaction.test_other_sources_neither_nudge_nor_clear (source='startup') ___
+
+self = <test_compaction.Compaction testMethod=test_other_sources_neither_nudge_nor_clear>
+
+    def test_other_sources_neither_nudge_nor_clear(self):
+        self.memory(age_seconds=3600)
+        self.precompact({"session_id": "sess-1", "trigger": "auto"})
+        for src in ("startup", "resume", "clear", "fork"):
+            with self.subTest(source=src):
+                joined = "".join(c for c in self.parts(src).values() if c)
+                self.assertNotIn(NUDGE, joined)
+>               self.assertTrue(os.path.exists(self.marker))
+E               AssertionError: False is not true
+
+plugins/memory-kit/hooks/tests/test_compaction.py:185: AssertionError
+___ Compaction.test_other_sources_neither_nudge_nor_clear (source='resume') ____
+
+self = <test_compaction.Compaction testMethod=test_other_sources_neither_nudge_nor_clear>
+
+    def test_other_sources_neither_nudge_nor_clear(self):
+        self.memory(age_seconds=3600)
+        self.precompact({"session_id": "sess-1", "trigger": "auto"})
+        for src in ("startup", "resume", "clear", "fork"):
+            with self.subTest(source=src):
+                joined = "".join(c for c in self.parts(src).values() if c)
+                self.assertNotIn(NUDGE, joined)
+>               self.assertTrue(os.path.exists(self.marker))
+E               AssertionError: False is not true
+
+plugins/memory-kit/hooks/tests/test_compaction.py:185: AssertionError
+____ Compaction.test_other_sources_neither_nudge_nor_clear (source='clear') ____
+
+self = <test_compaction.Compaction testMethod=test_other_sources_neither_nudge_nor_clear>
+
+    def test_other_sources_neither_nudge_nor_clear(self):
+        self.memory(age_seconds=3600)
+        self.precompact({"session_id": "sess-1", "trigger": "auto"})
+        for src in ("startup", "resume", "clear", "fork"):
+            with self.subTest(source=src):
+                joined = "".join(c for c in self.parts(src).values() if c)
+                self.assertNotIn(NUDGE, joined)
+>               self.assertTrue(os.path.exists(self.marker))
+E               AssertionError: False is not true
+
+plugins/memory-kit/hooks/tests/test_compaction.py:185: AssertionError
+____ Compaction.test_other_sources_neither_nudge_nor_clear (source='fork') _____
+
+self = <test_compaction.Compaction testMethod=test_other_sources_neither_nudge_nor_clear>
+
+    def test_other_sources_neither_nudge_nor_clear(self):
+        self.memory(age_seconds=3600)
+        self.precompact({"session_id": "sess-1", "trigger": "auto"})
+        for src in ("startup", "resume", "clear", "fork"):
+            with self.subTest(source=src):
+                joined = "".join(c for c in self.parts(src).values() if c)
+                self.assertNotIn(NUDGE, joined)
+>               self.assertTrue(os.path.exists(self.marker))
+E               AssertionError: False is not true
+
+plugins/memory-kit/hooks/tests/test_compaction.py:185: AssertionError
+______ Compaction.test_parts_agree_when_part_one_clears_the_marker_first _______
+
+self = <test_compaction.Compaction testMethod=test_parts_agree_when_part_one_clears_the_marker_first>
+
+    def test_parts_agree_when_part_one_clears_the_marker_first(self):
+        """The race the protocol closes: part 1 has already removed the marker when parts 2..6 run."""
+        self.memory(age_seconds=3600, lines=400)
+        self.precompact({"session_id": "sess-1", "trigger": "auto"})
+        first = self.parts("compact", which=[1])[1]
+        self.assertFalse(os.path.exists(self.marker))
+        rest = self.parts("compact", which=range(2, 7))
+        joined = first + "".join(rest[n] for n in sorted(rest) if rest[n])
+>       self.assertEqual(joined.count(NUDGE), 1)
+E       AssertionError: 0 != 1
+
+plugins/memory-kit/hooks/tests/test_compaction.py:175: AssertionError
+______ Compaction.test_read_only_parts_see_the_nudge_and_leave_the_marker ______
+
+self = <test_compaction.Compaction testMethod=test_read_only_parts_see_the_nudge_and_leave_the_marker>
+
+    def test_read_only_parts_see_the_nudge_and_leave_the_marker(self):
+        self.memory(age_seconds=3600, lines=400)  # memory over a part: the section spans parts
+        self.precompact({"session_id": "sess-1", "trigger": "auto"})
+        printed = self.parts("compact", which=range(2, 7))
+>       self.assertTrue(os.path.exists(self.marker))
+E       AssertionError: False is not true
+
+plugins/memory-kit/hooks/tests/test_compaction.py:161: AssertionError
+=========================== short test summary info ============================
+FAILED plugins/memory-kit/hooks/tests/test_compaction.py::Compaction::test_auto_compaction_then_session_start_nudges_once_and_clears
+FAILED plugins/memory-kit/hooks/tests/test_compaction.py::Compaction::test_auto_over_a_cap_never_blocks_and_names_the_cap
+SUBFAILED(payload={'session_id': 's', 'trigger': 'auto'}) plugins/memory-kit/hooks/tests/test_compaction.py::Compaction::test_auto_over_stale_memory_never_blocks_and_leaves_the_marker
+SUBFAILED(payload={'session_id': 's'}) plugins/memory-kit/hooks/tests/test_compaction.py::Compaction::test_auto_over_stale_memory_never_blocks_and_leaves_the_marker
+SUBFAILED(payload='') plugins/memory-kit/hooks/tests/test_compaction.py::Compaction::test_auto_over_stale_memory_never_blocks_and_leaves_the_marker
+SUBFAILED(trigger='auto') plugins/memory-kit/hooks/tests/test_compaction.py::Compaction::test_fresh_memory_allows_both_and_clears_an_old_marker
+SUBFAILED(trigger='manual') plugins/memory-kit/hooks/tests/test_compaction.py::Compaction::test_fresh_memory_allows_both_and_clears_an_old_marker
+FAILED plugins/memory-kit/hooks/tests/test_compaction.py::Compaction::test_no_memory_file_still_nudges
+SUBFAILED(source='startup') plugins/memory-kit/hooks/tests/test_compaction.py::Compaction::test_other_sources_neither_nudge_nor_clear
+SUBFAILED(source='resume') plugins/memory-kit/hooks/tests/test_compaction.py::Compaction::test_other_sources_neither_nudge_nor_clear
+SUBFAILED(source='clear') plugins/memory-kit/hooks/tests/test_compaction.py::Compaction::test_other_sources_neither_nudge_nor_clear
+SUBFAILED(source='fork') plugins/memory-kit/hooks/tests/test_compaction.py::Compaction::test_other_sources_neither_nudge_nor_clear
+FAILED plugins/memory-kit/hooks/tests/test_compaction.py::Compaction::test_parts_agree_when_part_one_clears_the_marker_first
+FAILED plugins/memory-kit/hooks/tests/test_compaction.py::Compaction::test_read_only_parts_see_the_nudge_and_leave_the_marker
+14 failed, 6 passed in 1.53s
