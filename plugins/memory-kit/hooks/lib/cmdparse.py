@@ -1,4 +1,5 @@
-"""Shell-command parser for the Memory Kit guards (`hooks/guard-git.py`, `hooks/guard-secrets.py`).
+"""Shell-command parser for the Memory Kit guards (`hooks/guard-git.py`, `hooks/guard-secrets.py`,
+`hooks/guard-zsh-split.py`).
 
 Ported from a project-level guard (2026-09-26) with one policy change: a directory the shell would
 compute (`cd "$(mktemp -d)"`, `git -C $(pwd)`) resolves to None instead of raising — the dangers the
@@ -18,6 +19,11 @@ heredocs (bodies skipped), `$(...)`/backticks/`<(...)` (recursed), redirections,
 leading `VAR=x`, `command`, `env`, `exec`, `nohup`, `time`, `builtin`, `timeout`, `nice`, `sudo`,
 `xargs` (each after its own options), `eval`, `sh|bash|zsh|dash|ksh -c '<script>'`,
 `if/then/do/!/{` prefixes.
+`lex(command)` (7.3, for `hooks/guard-zsh-split.py`) is the raw lexer: items
+('cmd', [Word]) | ('sub', items) | ('arith', items) | ('redir', [Word]), in execution order (a
+command's substitutions before the command). `$((…))` is an 'arith' item, walked like 'sub'. Each
+Word carries `quoting`, one letter per character: 'u' unquoted, 'd' inside double quotes, 's' single-
+quoted / `$'…'` / backslash-escaped; and `array` = True for `NAME=` written right before `(`.
 Raises ValueError only on a lexing problem (unterminated quote / substitution) or nesting deeper
 than MAX_DEPTH — the caller decides the failure policy.
 Known gaps (not parsed, by design): git aliases, shell functions, commands inside script files,
@@ -31,6 +37,7 @@ import os
 import re
 
 ASSIGN_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*=")
+_ARRAY_HEAD = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*=$")
 SHELLS = ("sh", "bash", "zsh", "dash", "ksh")
 KEYWORDS = ("if", "then", "else", "elif", "do", "while", "until", "!", "{")
 # Wrappers that run their argv as a command: name -> (options that take a SEPARATE value,
@@ -61,6 +68,8 @@ SUBST = "\x00"  # stands in for a $(...) / backtick result inside a word
 class Word(str):
     dynamic = False  # True when the shell would expand part of it ($VAR, $(...), `...`)
     op = ""  # for a redirection target: the operator that named it (`>`, `>>`, `<`, `&>>` …)
+    quoting = ""  # per character: u (unquoted) · d (double quotes) · s (single quotes / escaped)
+    array = False  # `NAME=` followed by `(` — a zsh/bash array assignment
 
 
 # --------------------------------------------------------------------------- lexer
@@ -72,13 +81,13 @@ def lex(s):
 
 
 def _parse(s, i, in_subst):
-    """Items: ('cmd', [Word]) | ('sub', items) | ('redir', [Word]).
+    """Items: ('cmd', [Word]) | ('sub', items) | ('arith', items) | ('redir', [Word]).
 
     Stops at an unmatched ')' when in_subst.
     """
     n = len(s)
     items, words, subs, heredocs, redirs = [], [], [], [], []
-    st = {"buf": [], "in_word": False, "dyn": False, "redirect": None, "op": ""}
+    st = {"buf": [], "q": [], "in_word": False, "dyn": False, "redirect": None, "op": "", "array": False}
     depth = 0
 
     def end_word():
@@ -86,7 +95,9 @@ def _parse(s, i, in_subst):
             return
         w = Word("".join(st["buf"]))
         w.dynamic = st["dyn"]
-        st.update(buf=[], in_word=False, dyn=False)
+        w.quoting = "".join(st["q"])
+        w.array = st["array"]
+        st.update(buf=[], q=[], in_word=False, dyn=False, array=False)
         red, st["redirect"] = st["redirect"], None
         if red == "herestring":
             return
@@ -101,8 +112,7 @@ def _parse(s, i, in_subst):
 
     def end_cmd():
         end_word()
-        for sb in subs:
-            items.append(("sub", sb))
+        items.extend(subs)
         if redirs:
             items.append(("redir", list(redirs)))
         if words:
@@ -111,8 +121,9 @@ def _parse(s, i, in_subst):
         del subs[:]
         del redirs[:]
 
-    def add(text, dyn=False):
+    def add(text, dyn=False, q="u"):
         st["buf"].append(text)
+        st["q"].append(q * len(text))
         st["in_word"] = True
         if dyn:
             st["dyn"] = True
@@ -124,14 +135,14 @@ def _parse(s, i, in_subst):
         c = s[i]
         if c == "\\":
             if i + 1 < n and s[i + 1] != "\n":
-                add(s[i + 1])
+                add(s[i + 1], q="s")
             i += 2
             continue
         if c == "'":
             j = s.find("'", i + 1)
             if j < 0:
                 raise ValueError("unterminated single quote")
-            add(s[i + 1 : j])
+            add(s[i + 1 : j], q="s")
             i = j + 1
             continue
         if c == '"':
@@ -145,24 +156,28 @@ def _parse(s, i, in_subst):
                     i += 1
                     break
                 if d == "\\" and i + 1 < n:
-                    if s[i + 1] != "\n":
-                        add(s[i + 1] if s[i + 1] in '$`"\\' else s[i : i + 2])
+                    if s[i + 1] in '$`"\\':
+                        add(s[i + 1], q="s")
+                    elif s[i + 1] != "\n":
+                        add(s[i : i + 2], q="d")
                     i += 2
                 elif d == "$" and i + 1 < n and s[i + 1] == "(":
+                    kind = "arith" if s.startswith("((", i + 1) else "sub"
                     sub_items, i = _parse(s, i + 2, True)
-                    subs.append(sub_items)
-                    add(SUBST, True)
+                    subs.append((kind, sub_items))
+                    add(SUBST, True, "d")
                 elif d == "`":
                     sub_items, i = _backtick(s, i + 1)
-                    subs.append(sub_items)
-                    add(SUBST, True)
+                    subs.append(("sub", sub_items))
+                    add(SUBST, True, "d")
                 else:
-                    add(d, d == "$" and is_var_start(i + 1))
+                    add(d, d == "$" and is_var_start(i + 1), "d")
                     i += 1
             continue
         if c == "$" and i + 1 < n and s[i + 1] == "(":
+            kind = "arith" if s.startswith("((", i + 1) else "sub"
             sub_items, i = _parse(s, i + 2, True)
-            subs.append(sub_items)
+            subs.append((kind, sub_items))
             add(SUBST, True)
             continue
         if c == "$" and i + 1 < n and s[i + 1] == "'":
@@ -171,12 +186,12 @@ def _parse(s, i, in_subst):
                 j += 2 if s[j] == "\\" else 1
             if j >= n:
                 raise ValueError("unterminated $'...' quote")
-            add(s[i + 2 : j])
+            add(s[i + 2 : j], q="s")
             i = j + 1
             continue
         if c == "`":
             sub_items, i = _backtick(s, i + 1)
-            subs.append(sub_items)
+            subs.append(("sub", sub_items))
             add(SUBST, True)
             continue
         if c in " \t\r":
@@ -204,6 +219,9 @@ def _parse(s, i, in_subst):
             i += 1
             continue
         if c == "(":
+            head = "".join(st["buf"])
+            if st["in_word"] and _ARRAY_HEAD.match(head) and set("".join(st["q"])) == {"u"}:
+                st["array"] = True  # `NAME=(…)`: the word is the assignment, the list follows
             end_cmd()
             depth += 1
             i += 1
@@ -219,7 +237,7 @@ def _parse(s, i, in_subst):
             continue
         if c in "<>":
             if st["in_word"] and not st["dyn"] and "".join(st["buf"]).isdigit():
-                st.update(buf=[], in_word=False)  # `2>` — the digits are an fd, not a word
+                st.update(buf=[], q=[], in_word=False)  # `2>` — the digits are an fd, not a word
             else:
                 end_word()
             j = i + 1
@@ -228,7 +246,7 @@ def _parse(s, i, in_subst):
             op = s[i:j]
             if j < n and s[j] == "(" and op in ("<", ">"):
                 sub_items, i = _parse(s, j + 1, True)  # process substitution
-                subs.append(sub_items)
+                subs.append(("sub", sub_items))
                 continue
             if op == "<<" and j < n and s[j] == "-":
                 j += 1
@@ -275,7 +293,7 @@ def walk(items, state, out, depth=0, everything=False):
     if depth > MAX_DEPTH:
         raise ValueError("command nesting deeper than %d" % MAX_DEPTH)
     for kind, val in items:
-        if kind == "sub":
+        if kind in ("sub", "arith"):
             walk(val, dict(state), out, depth + 1, everything)
         elif kind == "redir":
             if everything:
