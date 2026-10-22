@@ -1,0 +1,8 @@
+# hooks.json switched to the runs-check, check-repo.py still at 4aca9ec:
+✗ 2 problem(s):
+  - ~/dev/claude-memory-kit-v73-r2/plugins/memory-kit/hooks/hooks.json [PreToolUse]: onFailure block without an interpreter check: python3 -c 'import sys; sys.exit(sys.version_info < (3,9))' >/dev/null 2>&1 || e
+  - ~/dev/claude-memory-kit-v73-r2/plugins/memory-kit/hooks/hooks.json [PreToolUse]: onFailure block without an interpreter check: python3 -c 'import sys; sys.exit(sys.version_info < (3,9))' >/dev/null 2>&1 || e
+rc=1
+SUBFAILED(mutation='old command -v form') plugins/memory-kit/hooks/tests/test_guard_failure.py::GuardFailureTest::test_check_repo_rejects_a_guard_without_the_runs_check
+SUBFAILED(mutation='no check at all') plugins/memory-kit/hooks/tests/test_guard_failure.py::GuardFailureTest::test_check_repo_rejects_a_guard_without_the_runs_check
+2 failed, 9 passed, 18 subtests passed in 0.60s

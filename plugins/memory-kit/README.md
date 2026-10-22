@@ -21,7 +21,7 @@ claude plugin update memory-kit@memory-kit
 
 - **SessionStart — `session-start.py`** — injects the working agreement (`context/identity.md`), the discipline nudges
   that fire, session stats and per-project spec flags (`assumed` · `building > 14 d`), **the hot cache itself**, the
-  newest handoff (its opening-note section always whole) and the knowledge index. Profile depends on `source`:
+  newest handoff (its opening-note section first) and the knowledge index. Profile depends on `source`:
   `compact` gets back exactly what compaction dropped, plus a loud "save memory now" when the compaction ran over unsaved
   memory; `resume` gets only the nudges and stats. It flags a project that wires its own copy of a kit hook (it would
   run twice), and one «Rails:» line while a root env file has no `Read` deny or an allow hands over a whole tool. Runs as
@@ -45,7 +45,8 @@ claude plugin update memory-kit@memory-kit
   plugin SessionEnd hooks a 1.5-second budget).
 
 The git and secrets guards carry `"onFailure": "block"` (Claude Code 2.1.295+; 2.1.290 was probed to accept the field and
-keep every hook running, but it lets a crashed guard's call through): a guard that crashes or times out blocks
+keep every hook running, but it lets a crashed guard's call through; each guard first checks that `python3` actually
+runs, so the macOS stub never blocks a session): a guard that crashes or times out blocks
 the call instead of letting it through, and its own internal errors become an explicit "ask".
 
 In a repository that never ran `/memory-kit:setup`, the hooks inject one pointer line and write

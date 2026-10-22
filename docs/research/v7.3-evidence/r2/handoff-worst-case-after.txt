@@ -1,0 +1,7 @@
+spaces then x 200004 0.001
+punct title 300005 0.006
+ws-run lines 200006 0.0
+many fences 400000 0.026
+many headings 550000 0.022
+fence lookalikes 250001 0.0
+hash run 200001 0.0

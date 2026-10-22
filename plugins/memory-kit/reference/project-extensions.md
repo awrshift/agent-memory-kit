@@ -88,7 +88,9 @@ Three facts about hooks that fail silently (Claude Code docs, checked 2026-10-22
   runs as six parts for exactly this reason), and prove delivery with a model-level probe, not stdout.
 - **A failing or timed-out hook lets the action through** by default. For a hook that is a gate, set
   `"onFailure": "block"` (Claude Code 2.1.295+) — and make the script turn its own internal errors into an
-  explicit decision, because a gate that cannot start would otherwise block every call.
+  explicit decision, because a gate that cannot start would otherwise block every call. Check that the
+  interpreter RUNS, not that it exists: `python3 -c 'import sys' >/dev/null 2>&1 || exit 0; …` — on macOS
+  `command -v python3` finds a stub that exits 1 without the developer tools.
 - **Do not wire a copy of a kit hook in your own settings.** The plugin already runs it; a local copy fires
   twice (two memory injections, two compaction blockers). Session start flags such copies.
 

@@ -1,0 +1,5 @@
+long word 200000 0.459
+long word dots 200000 0.44
+quoted long 200002 0.425
+unbalanced 180001 0.363
+seps 200000 0.621

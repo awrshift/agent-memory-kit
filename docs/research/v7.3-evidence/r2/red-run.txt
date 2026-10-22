@@ -1,0 +1,760 @@
+....F..........F.......................................F.......................... [ 59%]
+.......F............FFF.F..F...........................                                                           [100%]
+=================================== FAILURES ===================================
+____ Compaction.test_a_second_compaction_over_saved_memory_gives_no_warning ____
+
+self = <test_compaction.Compaction testMethod=test_a_second_compaction_over_saved_memory_gives_no_warning>
+
+    def test_a_second_compaction_over_saved_memory_gives_no_warning(self):
+        """Same session: compaction 1 over stale memory warns once; the agent saves MEMORY.md; compaction 2 (within
+        the parts' read window) runs over saved memory — no part warns again."""
+        self.memory(age_seconds=3600)
+        self.precompact({"session_id": "sess-1", "trigger": "auto"})
+        first = "".join(c for c in self.parts("compact").values() if c)
+        self.assertEqual(first.count(NUDGE), 1)
+        self.memory(age_seconds=0)  # saved
+        self.assertEqual(self.precompact({"session_id": "sess-1", "trigger": "auto"}), {})
+        second = "".join(c for c in self.parts("compact").values() if c)
+>       self.assertNotIn(NUDGE, second)
+E       AssertionError: 'COMPACTION RAN OVER UNSAVED MEMORY' unexpectedly found in 'Memory Kit context — part 1 of 1 (parts arrive in any order; together they are the whole).\n# Memory Kit — how you work in this repository\n\n> Injected by the `memory-kit` plugin at every session start (and re-injected after compaction).\n> It is versioned with the plugin, so there is nothing to paste into `CLAUDE.md`.\n\n## Two invariants\n\n**1 — The user talks. You write.** The user never opens `MEMORY.md`, a handoff, a rule or a\nconcept article. You propose in conversation, they say "yes", you write the file and say what you\nwrote. If you catch yourself saying "add this to …" — rephrase as "I\'ll write it, confirm?".\n\n**2 — Every memory entry carries a `[YYYY-MM-DD]` tag.** Dates are what make the audit possible:\nwithout them you cannot see that a pattern showed up on three different days, and you cannot tell\na fresh fact from a rotten one. A stored fact about the OUTSIDE world (a price, an open ticket,\n"the client is waiting") older than ~7 days is a hypothesis — re-check before acting on it.\n\n## Where things live (in THIS repository)\n\n| Layer | File | Answers | Loaded |\n|---|---|---|---|\n| Hot cache | `.claude/memory/MEMORY.md` | what repeats · where things stand | injected every session by the hook |\n| Session log | `context/handoffs/<topic>-YYYY-MM-DD.md` | what happened, session by session | newest one injected; the rest on grep |\n| Deep memory | `knowledge/concepts/*.md` + `knowledge/index.md` | facts and rationale by topic | index injected; articles on demand |\n| Hard rules | `.claude/rules/*.md` | what must always / never happen | loaded by Claude Code itself |\n\nThose four are MEMORY, and there is no fifth — no `wisdom/`, `playbooks/`, `patterns/`; a new\nmemory layer is how this system dies.\n\n**The work\'s own documents are not memory.** They live per project in `projects/<name>/`:\n`README.md` (the map of where this project\'s documents live — read it before writing one — and\nthe project\'s **workflow tier**: `prototype · alpha · beta · ga`, how much proof a `done` owes),\n`BACKLOG.md`, `plans/YYYY-MM-DD-<slug>.md` — the spec an executor builds to, which is not\ndelegable without **Goal · Non-goals (what it must NOT do) · Acceptance written before building**,\nplus the exact gate commands once there is something to run (the kit ships the full form as\n`SPEC-TEMPLATE.md`; the skills know its path). Acceptance rows carry stable `AC-n` ids that\nslices, tests, QA runs and findings quote, a `Value sources` table names where every value comes\nfrom, and a spec may be `assumed` — an executor\'s recorded override of a missing source, owed\nratification. The rest of the folder is `research/`, `decisions-log.md`,\n`review-findings.md`, `qa/`. One folder per client or product — a\nsingle-product repo has exactly one. A spec, a backlog or a QA protocol never goes into\n`MEMORY.md`; a dated cross-session pattern never goes into a project folder. If a repo already\nkeeps its documents elsewhere, its project README says so and that mapping wins.\n\n## The caps (why the hook nags)\n\n`MEMORY.md` is a HOT CACHE, not an archive: **180 lines / 32 KB / 3000 chars per line**. Three\ncaps because line count alone lies — content densifies into ever-longer lines while `wc -l` stays\nflat. A tripped cap means run `/memory-kit:memory-audit` BEFORE other work.\n\n- **The header is «current state»**, 2-3 sentences, REPLACED at every close — never a stack of\n  "previous session" paragraphs. History belongs in handoffs.\n- **Overflow flows out by promotion**: a pattern seen on 3+ distinct dates → a\n  `knowledge/concepts/` article (facts + rationale) or a `.claude/rules/` file (a mechanical\n  always/never, only once it is stable). Promoted entries get PRUNED from the cache.\n- **One home per fact.** When a fact changes, grep its restatements and fix them in the same pass.\n  A stale copy that still looks current is the #1 failure mode of agent memory.\n\n## What else ships with the plugin (you have to know it exists to reach it)\n\n**Operators**, all namespaced `/memory-kit:` — bodies load only on invoke: `close-session` ·\n`memory-audit` (when a cap trips) · `system-audit` (the periodic seven-lens sweep) ·\n`session-review` · `second-opinion` · `qa-sweep` · `document` (PR · changelog · release note ·\npostmortem, written from the diff) · `code-sync` (specs reconciled against the code) · `setup` ·\n`tour`.\n\n**Depth, read on demand** from the plugin\'s `reference/` directory — free until you open it:\n`orchestrator-fact-check` (a report is INPUT, never a fact; a number from history carries its\ntime window and build) · `spec-depth` (depth pass, fresh-checked practice, review stake, fail\nbranches written first, outcome over proxy) · `review-loop` (finding triage, the diff gate, the\nfindings-class registry) · `parallel-development` (fan-out, worktree isolation, one integrator) ·\n`doc-governance` (one SSOT per fact, the anti-drift rules) · `decisions-log` (the lean ledger) ·\n`capability-map-sweep` (the "the library already does this" defect class) ·\n`project-extensions` (when a repeated workflow earns a project skill / hook / agent, and what\neach costs when idle). Delegating to\nsubagents? `templates/rules/orchestration.md` is the nine always-loaded invariants — copy it into\n`.claude/rules/` (a plugin cannot ship rules; `/memory-kit:setup` offers this).\nPermissions are speed bumps; hooks are gates, and a gate is proven only through its exact wiring (`reference/harness-measurement.md`).\nNoisy commands: `bash ~/dev/claude-memory-kit-v73-r2/plugins/memory-kit/scripts/quiet.sh <cmd>`.\n\n## What you write freely vs what needs a "yes"\n\n- **Freely (and you say so briefly):** `MEMORY.md` entries, the session handoff.\n- **Ask first:** `.claude/rules/*.md` (always-loaded — every line costs context in every future\n  session), `knowledge/concepts/*.md`, and any promotion. Repetition on 3 dates makes a\n  CANDIDATE, not a rule.\n\n## During the session\n\nObservations happen in conversation; the ones worth keeping become one dated line in the hot\ncache — say "saved" and move on. When context runs long, save state before it is compacted: a\nmanual `/compact` is blocked until `MEMORY.md` is fresh and inside its caps; an automatic one is\nnever blocked (that would fail the user\'s request), and the next context opens with a loud\n"save memory now" if it ran over unsaved state.\n\nReporting to the user: lead with the outcome in one plain sentence, then what you need from them.\nYour working labels (ids, branch and file names, rule numbers) are yours — drop them or say in\nplain words what each is. Full sentences, a technical term glossed the first time.\n\nClose with `/memory-kit:close-session`: capture → audit for 3+-date repetition → promote on the\nuser\'s yes → replace the header → write the handoff the next session opens with.\n\n---\n\n## MEMORY.md (hot cache — durable patterns + current state)\n\n⚠ COMPACTION RAN OVER UNSAVED MEMORY (stale — MEMORY.md was not written in the 2 minutes before the compaction) — save MEMORY.md now, before anything else: REPLACE the header current-state lines, add this session\'s `[YYYY-MM-DD]` patterns, and refresh this session\'s handoff in `context/handoffs/` (`/memory-kit:close-session` has the full ritual). The summary above still holds what to save; the next compaction may not.\n\n# Hot cache\n\n**Current state:** CANARY-STATE.\n\n- [2026-01-01] durable pattern 0\n- [2026-01-01] durable pattern 1\n- [2026-01-01] durable pattern 2\n- [2026-01-01] durable pattern 3\n- [2026-01-01] durable pattern 4\n- [2026-01-01] durable pattern 5\n- [2026-01-01] durable pattern 6\n- [2026-01-01] durable pattern 7\n- [2026-01-01] durable pattern 8\n- [2026-01-01] durable pattern 9\n'
+
+plugins/memory-kit/hooks/tests/test_compaction.py:206: AssertionError
+_____________ Compaction.test_the_writer_never_reads_the_seen_file _____________
+
+self = <test_compaction.Compaction testMethod=test_the_writer_never_reads_the_seen_file>
+
+    def test_the_writer_never_reads_the_seen_file(self):
+        """The writing part consumes the marker; with no marker it does not fall back to the seen file (that file
+        is only for the read-only parts of the SAME run)."""
+        self.memory(age_seconds=3600)
+        self.precompact({"session_id": "sess-1", "trigger": "auto"})
+        self.assertEqual("".join(c for c in self.parts("compact").values() if c).count(NUDGE), 1)
+        again = self.parts("compact", which=[1])[1] or ""
+>       self.assertNotIn(NUDGE, again)
+E       AssertionError: 'COMPACTION RAN OVER UNSAVED MEMORY' unexpectedly found in 'Memory Kit context — part 1 of 1 (parts arrive in any order; together they are the whole).\n# Memory Kit — how you work in this repository\n\n> Injected by the `memory-kit` plugin at every session start (and re-injected after compaction).\n> It is versioned with the plugin, so there is nothing to paste into `CLAUDE.md`.\n\n## Two invariants\n\n**1 — The user talks. You write.** The user never opens `MEMORY.md`, a handoff, a rule or a\nconcept article. You propose in conversation, they say "yes", you write the file and say what you\nwrote. If you catch yourself saying "add this to …" — rephrase as "I\'ll write it, confirm?".\n\n**2 — Every memory entry carries a `[YYYY-MM-DD]` tag.** Dates are what make the audit possible:\nwithout them you cannot see that a pattern showed up on three different days, and you cannot tell\na fresh fact from a rotten one. A stored fact about the OUTSIDE world (a price, an open ticket,\n"the client is waiting") older than ~7 days is a hypothesis — re-check before acting on it.\n\n## Where things live (in THIS repository)\n\n| Layer | File | Answers | Loaded |\n|---|---|---|---|\n| Hot cache | `.claude/memory/MEMORY.md` | what repeats · where things stand | injected every session by the hook |\n| Session log | `context/handoffs/<topic>-YYYY-MM-DD.md` | what happened, session by session | newest one injected; the rest on grep |\n| Deep memory | `knowledge/concepts/*.md` + `knowledge/index.md` | facts and rationale by topic | index injected; articles on demand |\n| Hard rules | `.claude/rules/*.md` | what must always / never happen | loaded by Claude Code itself |\n\nThose four are MEMORY, and there is no fifth — no `wisdom/`, `playbooks/`, `patterns/`; a new\nmemory layer is how this system dies.\n\n**The work\'s own documents are not memory.** They live per project in `projects/<name>/`:\n`README.md` (the map of where this project\'s documents live — read it before writing one — and\nthe project\'s **workflow tier**: `prototype · alpha · beta · ga`, how much proof a `done` owes),\n`BACKLOG.md`, `plans/YYYY-MM-DD-<slug>.md` — the spec an executor builds to, which is not\ndelegable without **Goal · Non-goals (what it must NOT do) · Acceptance written before building**,\nplus the exact gate commands once there is something to run (the kit ships the full form as\n`SPEC-TEMPLATE.md`; the skills know its path). Acceptance rows carry stable `AC-n` ids that\nslices, tests, QA runs and findings quote, a `Value sources` table names where every value comes\nfrom, and a spec may be `assumed` — an executor\'s recorded override of a missing source, owed\nratification. The rest of the folder is `research/`, `decisions-log.md`,\n`review-findings.md`, `qa/`. One folder per client or product — a\nsingle-product repo has exactly one. A spec, a backlog or a QA protocol never goes into\n`MEMORY.md`; a dated cross-session pattern never goes into a project folder. If a repo already\nkeeps its documents elsewhere, its project README says so and that mapping wins.\n\n## The caps (why the hook nags)\n\n`MEMORY.md` is a HOT CACHE, not an archive: **180 lines / 32 KB / 3000 chars per line**. Three\ncaps because line count alone lies — content densifies into ever-longer lines while `wc -l` stays\nflat. A tripped cap means run `/memory-kit:memory-audit` BEFORE other work.\n\n- **The header is «current state»**, 2-3 sentences, REPLACED at every close — never a stack of\n  "previous session" paragraphs. History belongs in handoffs.\n- **Overflow flows out by promotion**: a pattern seen on 3+ distinct dates → a\n  `knowledge/concepts/` article (facts + rationale) or a `.claude/rules/` file (a mechanical\n  always/never, only once it is stable). Promoted entries get PRUNED from the cache.\n- **One home per fact.** When a fact changes, grep its restatements and fix them in the same pass.\n  A stale copy that still looks current is the #1 failure mode of agent memory.\n\n## What else ships with the plugin (you have to know it exists to reach it)\n\n**Operators**, all namespaced `/memory-kit:` — bodies load only on invoke: `close-session` ·\n`memory-audit` (when a cap trips) · `system-audit` (the periodic seven-lens sweep) ·\n`session-review` · `second-opinion` · `qa-sweep` · `document` (PR · changelog · release note ·\npostmortem, written from the diff) · `code-sync` (specs reconciled against the code) · `setup` ·\n`tour`.\n\n**Depth, read on demand** from the plugin\'s `reference/` directory — free until you open it:\n`orchestrator-fact-check` (a report is INPUT, never a fact; a number from history carries its\ntime window and build) · `spec-depth` (depth pass, fresh-checked practice, review stake, fail\nbranches written first, outcome over proxy) · `review-loop` (finding triage, the diff gate, the\nfindings-class registry) · `parallel-development` (fan-out, worktree isolation, one integrator) ·\n`doc-governance` (one SSOT per fact, the anti-drift rules) · `decisions-log` (the lean ledger) ·\n`capability-map-sweep` (the "the library already does this" defect class) ·\n`project-extensions` (when a repeated workflow earns a project skill / hook / agent, and what\neach costs when idle). Delegating to\nsubagents? `templates/rules/orchestration.md` is the nine always-loaded invariants — copy it into\n`.claude/rules/` (a plugin cannot ship rules; `/memory-kit:setup` offers this).\nPermissions are speed bumps; hooks are gates, and a gate is proven only through its exact wiring (`reference/harness-measurement.md`).\nNoisy commands: `bash ~/dev/claude-memory-kit-v73-r2/plugins/memory-kit/scripts/quiet.sh <cmd>`.\n\n## What you write freely vs what needs a "yes"\n\n- **Freely (and you say so briefly):** `MEMORY.md` entries, the session handoff.\n- **Ask first:** `.claude/rules/*.md` (always-loaded — every line costs context in every future\n  session), `knowledge/concepts/*.md`, and any promotion. Repetition on 3 dates makes a\n  CANDIDATE, not a rule.\n\n## During the session\n\nObservations happen in conversation; the ones worth keeping become one dated line in the hot\ncache — say "saved" and move on. When context runs long, save state before it is compacted: a\nmanual `/compact` is blocked until `MEMORY.md` is fresh and inside its caps; an automatic one is\nnever blocked (that would fail the user\'s request), and the next context opens with a loud\n"save memory now" if it ran over unsaved state.\n\nReporting to the user: lead with the outcome in one plain sentence, then what you need from them.\nYour working labels (ids, branch and file names, rule numbers) are yours — drop them or say in\nplain words what each is. Full sentences, a technical term glossed the first time.\n\nClose with `/memory-kit:close-session`: capture → audit for 3+-date repetition → promote on the\nuser\'s yes → replace the header → write the handoff the next session opens with.\n\n---\n\n## MEMORY.md (hot cache — durable patterns + current state)\n\n⚠ COMPACTION RAN OVER UNSAVED MEMORY (stale — MEMORY.md was not written in the 2 minutes before the compaction) — save MEMORY.md now, before anything else: REPLACE the header current-state lines, add this session\'s `[YYYY-MM-DD]` patterns, and refresh this session\'s handoff in `context/handoffs/` (`/memory-kit:close-session` has the full ritual). The summary above still holds what to save; the next compaction may not.\n\n# Hot cache\n\n**Current state:** CANARY-STATE.\n\n- [2026-01-01] durable pattern 0\n- [2026-01-01] durable pattern 1\n- [2026-01-01] durable pattern 2\n- [2026-01-01] durable pattern 3\n- [2026-01-01] durable pattern 4\n- [2026-01-01] durable pattern 5\n- [2026-01-01] durable pattern 6\n- [2026-01-01] durable pattern 7\n- [2026-01-01] durable pattern 8\n- [2026-01-01] durable pattern 9\n'
+
+plugins/memory-kit/hooks/tests/test_compaction.py:216: AssertionError
+_ GuardFailureTest.test_a_python3_that_exists_but_cannot_run_is_a_no_op (script='guard-secrets.py') _
+
+self = <test_guard_failure.GuardFailureTest testMethod=test_a_python3_that_exists_but_cannot_run_is_a_no_op>
+
+    def test_a_python3_that_exists_but_cannot_run_is_a_no_op(self):
+        """R2-1: a `python3` on PATH that exits 1 (the macOS stub without the developer tools) → exit 0, no output,
+        so `onFailure: block` never fires on it. The pre-7.3-r2 `command -v` check passed the stub and the guard
+        then exited 1."""
+        stub_dir = tempfile.mkdtemp(prefix="cmk-stub-")
+        try:
+            stub = os.path.join(stub_dir, "python3")
+            with open(stub, "w") as fh:
+                fh.write("#!/bin/sh\necho 'xcrun: error: invalid active developer path' >&2\nexit 1\n")
+            os.chmod(stub, 0o755)
+            env = dict(self.env, PATH=stub_dir)
+            payloads = {script: payload for script, (_, payload, _) in GUARDS.items()}
+            payloads["guard-zsh-split.py"] = {"tool_name": "Bash", "tool_input": {"command": 'a="x y"; set -- $a'}}
+            for matcher, script in ALL_GUARDS:
+                with self.subTest(script=script):
+                    cmd = wired_hook(matcher, script)["command"]
+                    r = subprocess.run(cmd, shell=True, input=json.dumps(payloads[script]), capture_output=True,
+                                       text=True, env=env)
+>                   self.assertEqual((r.returncode, r.stdout, r.stderr), (0, "", ""))
+E                   AssertionError: Tuples differ: (1, '', 'xcrun: error: invalid active developer path\n') != (0, '', '')
+E                   
+E                   First differing element 0:
+E                   1
+E                   0
+E                   
+E                   - (1, '', 'xcrun: error: invalid active developer path\n')
+E                   + (0, '', '')
+
+plugins/memory-kit/hooks/tests/test_guard_failure.py:170: AssertionError
+_ GuardFailureTest.test_a_python3_that_exists_but_cannot_run_is_a_no_op (script='guard-git.py') _
+
+self = <test_guard_failure.GuardFailureTest testMethod=test_a_python3_that_exists_but_cannot_run_is_a_no_op>
+
+    def test_a_python3_that_exists_but_cannot_run_is_a_no_op(self):
+        """R2-1: a `python3` on PATH that exits 1 (the macOS stub without the developer tools) → exit 0, no output,
+        so `onFailure: block` never fires on it. The pre-7.3-r2 `command -v` check passed the stub and the guard
+        then exited 1."""
+        stub_dir = tempfile.mkdtemp(prefix="cmk-stub-")
+        try:
+            stub = os.path.join(stub_dir, "python3")
+            with open(stub, "w") as fh:
+                fh.write("#!/bin/sh\necho 'xcrun: error: invalid active developer path' >&2\nexit 1\n")
+            os.chmod(stub, 0o755)
+            env = dict(self.env, PATH=stub_dir)
+            payloads = {script: payload for script, (_, payload, _) in GUARDS.items()}
+            payloads["guard-zsh-split.py"] = {"tool_name": "Bash", "tool_input": {"command": 'a="x y"; set -- $a'}}
+            for matcher, script in ALL_GUARDS:
+                with self.subTest(script=script):
+                    cmd = wired_hook(matcher, script)["command"]
+                    r = subprocess.run(cmd, shell=True, input=json.dumps(payloads[script]), capture_output=True,
+                                       text=True, env=env)
+>                   self.assertEqual((r.returncode, r.stdout, r.stderr), (0, "", ""))
+E                   AssertionError: Tuples differ: (1, '', 'xcrun: error: invalid active developer path\n') != (0, '', '')
+E                   
+E                   First differing element 0:
+E                   1
+E                   0
+E                   
+E                   - (1, '', 'xcrun: error: invalid active developer path\n')
+E                   + (0, '', '')
+
+plugins/memory-kit/hooks/tests/test_guard_failure.py:170: AssertionError
+_ GuardFailureTest.test_a_python3_that_exists_but_cannot_run_is_a_no_op (script='guard-zsh-split.py') _
+
+self = <test_guard_failure.GuardFailureTest testMethod=test_a_python3_that_exists_but_cannot_run_is_a_no_op>
+
+    def test_a_python3_that_exists_but_cannot_run_is_a_no_op(self):
+        """R2-1: a `python3` on PATH that exits 1 (the macOS stub without the developer tools) → exit 0, no output,
+        so `onFailure: block` never fires on it. The pre-7.3-r2 `command -v` check passed the stub and the guard
+        then exited 1."""
+        stub_dir = tempfile.mkdtemp(prefix="cmk-stub-")
+        try:
+            stub = os.path.join(stub_dir, "python3")
+            with open(stub, "w") as fh:
+                fh.write("#!/bin/sh\necho 'xcrun: error: invalid active developer path' >&2\nexit 1\n")
+            os.chmod(stub, 0o755)
+            env = dict(self.env, PATH=stub_dir)
+            payloads = {script: payload for script, (_, payload, _) in GUARDS.items()}
+            payloads["guard-zsh-split.py"] = {"tool_name": "Bash", "tool_input": {"command": 'a="x y"; set -- $a'}}
+            for matcher, script in ALL_GUARDS:
+                with self.subTest(script=script):
+                    cmd = wired_hook(matcher, script)["command"]
+                    r = subprocess.run(cmd, shell=True, input=json.dumps(payloads[script]), capture_output=True,
+                                       text=True, env=env)
+>                   self.assertEqual((r.returncode, r.stdout, r.stderr), (0, "", ""))
+E                   AssertionError: Tuples differ: (1, '', 'xcrun: error: invalid active developer path\n') != (0, '', '')
+E                   
+E                   First differing element 0:
+E                   1
+E                   0
+E                   
+E                   - (1, '', 'xcrun: error: invalid active developer path\n')
+E                   + (0, '', '')
+
+plugins/memory-kit/hooks/tests/test_guard_failure.py:170: AssertionError
+_ GuardFailureTest.test_check_repo_rejects_a_guard_without_the_runs_check (mutation='old command -v form') _
+
+self = <test_guard_failure.GuardFailureTest testMethod=test_check_repo_rejects_a_guard_without_the_runs_check>
+
+    @unittest.skipUnless(os.path.isfile(CHECK_REPO), "tools/check-repo.py ships with the repo, not the plugin")
+    def test_check_repo_rejects_a_guard_without_the_runs_check(self):
+        """R2-1 mutation: check-repo §3 fails when a guard's command uses the old `command -v` form or no check at
+        all, and passes the shipped hooks.json. Runs check-repo on a copy of tools/ + plugins/ (other checks may
+        fail on the partial copy; only the hooks lines are read)."""
+        def run(mutate):
+            tmp = tempfile.mkdtemp(prefix="cmk-check-repo-")
+            try:
+                os.makedirs(os.path.join(tmp, "tools"))
+                shutil.copy(CHECK_REPO, os.path.join(tmp, "tools"))
+                shutil.copytree(os.path.join(REPO_ROOT, "plugins"), os.path.join(tmp, "plugins"),
+                                ignore=shutil.ignore_patterns("__pycache__", ".pytest_cache"))
+                path = os.path.join(tmp, "plugins", "memory-kit", "hooks", "hooks.json")
+                with open(path) as fh:
+                    text = fh.read()
+                with open(path, "w") as fh:
+                    fh.write(mutate(text))
+                r = subprocess.run([sys.executable, os.path.join(tmp, "tools", "check-repo.py")],
+                                   capture_output=True, text=True)
+                return [ln for ln in (r.stdout + r.stderr).splitlines() if "hooks.json [PreToolUse]" in ln]
+            finally:
+                shutil.rmtree(tmp, ignore_errors=True)
+    
+        self.assertEqual(run(lambda t: t), [])
+        for label, mutate in (
+            ("old command -v form", lambda t: t.replace(RUNS_CHECK, OLD_CHECK, 1)),
+            ("no check at all", lambda t: t.replace(RUNS_CHECK, "", 1)),
+        ):
+            with self.subTest(mutation=label):
+                lines = run(mutate)
+>               self.assertTrue(lines, "check-repo accepted the %s" % label)
+E               AssertionError: [] is not true : check-repo accepted the old command -v form
+
+plugins/memory-kit/hooks/tests/test_guard_failure.py:204: AssertionError
+_ GuardFailureTest.test_check_repo_rejects_a_guard_without_the_runs_check (mutation='no check at all') _
+
+self = <test_guard_failure.GuardFailureTest testMethod=test_check_repo_rejects_a_guard_without_the_runs_check>
+
+    @unittest.skipUnless(os.path.isfile(CHECK_REPO), "tools/check-repo.py ships with the repo, not the plugin")
+    def test_check_repo_rejects_a_guard_without_the_runs_check(self):
+        """R2-1 mutation: check-repo §3 fails when a guard's command uses the old `command -v` form or no check at
+        all, and passes the shipped hooks.json. Runs check-repo on a copy of tools/ + plugins/ (other checks may
+        fail on the partial copy; only the hooks lines are read)."""
+        def run(mutate):
+            tmp = tempfile.mkdtemp(prefix="cmk-check-repo-")
+            try:
+                os.makedirs(os.path.join(tmp, "tools"))
+                shutil.copy(CHECK_REPO, os.path.join(tmp, "tools"))
+                shutil.copytree(os.path.join(REPO_ROOT, "plugins"), os.path.join(tmp, "plugins"),
+                                ignore=shutil.ignore_patterns("__pycache__", ".pytest_cache"))
+                path = os.path.join(tmp, "plugins", "memory-kit", "hooks", "hooks.json")
+                with open(path) as fh:
+                    text = fh.read()
+                with open(path, "w") as fh:
+                    fh.write(mutate(text))
+                r = subprocess.run([sys.executable, os.path.join(tmp, "tools", "check-repo.py")],
+                                   capture_output=True, text=True)
+                return [ln for ln in (r.stdout + r.stderr).splitlines() if "hooks.json [PreToolUse]" in ln]
+            finally:
+                shutil.rmtree(tmp, ignore_errors=True)
+    
+        self.assertEqual(run(lambda t: t), [])
+        for label, mutate in (
+            ("old command -v form", lambda t: t.replace(RUNS_CHECK, OLD_CHECK, 1)),
+            ("no check at all", lambda t: t.replace(RUNS_CHECK, "", 1)),
+        ):
+            with self.subTest(mutation=label):
+                lines = run(mutate)
+>               self.assertTrue(lines, "check-repo accepted the %s" % label)
+E               AssertionError: [] is not true : check-repo accepted the no check at all
+
+plugins/memory-kit/hooks/tests/test_guard_failure.py:204: AssertionError
+_ GuardFailureTest.test_every_guard_checks_that_python3_runs (script='guard-secrets.py') _
+
+self = <test_guard_failure.GuardFailureTest testMethod=test_every_guard_checks_that_python3_runs>
+
+    def test_every_guard_checks_that_python3_runs(self):
+        """R2-1: the wiring itself — all three guards start with the runs-check, none with `command -v`."""
+        for matcher, script in ALL_GUARDS:
+            with self.subTest(script=script):
+                cmd = wired_hook(matcher, script)["command"]
+>               self.assertTrue(cmd.startswith(RUNS_CHECK), cmd)
+E               AssertionError: False is not true : command -v python3 >/dev/null 2>&1 || exit 0; python3 "${CLAUDE_PLUGIN_ROOT}/hooks/guard-secrets.py"
+
+plugins/memory-kit/hooks/tests/test_guard_failure.py:149: AssertionError
+_ GuardFailureTest.test_every_guard_checks_that_python3_runs (script='guard-git.py') _
+
+self = <test_guard_failure.GuardFailureTest testMethod=test_every_guard_checks_that_python3_runs>
+
+    def test_every_guard_checks_that_python3_runs(self):
+        """R2-1: the wiring itself — all three guards start with the runs-check, none with `command -v`."""
+        for matcher, script in ALL_GUARDS:
+            with self.subTest(script=script):
+                cmd = wired_hook(matcher, script)["command"]
+>               self.assertTrue(cmd.startswith(RUNS_CHECK), cmd)
+E               AssertionError: False is not true : command -v python3 >/dev/null 2>&1 || exit 0; python3 "${CLAUDE_PLUGIN_ROOT}/hooks/guard-git.py"
+
+plugins/memory-kit/hooks/tests/test_guard_failure.py:149: AssertionError
+_ GuardFailureTest.test_every_guard_checks_that_python3_runs (script='guard-zsh-split.py') _
+
+self = <test_guard_failure.GuardFailureTest testMethod=test_every_guard_checks_that_python3_runs>
+
+    def test_every_guard_checks_that_python3_runs(self):
+        """R2-1: the wiring itself — all three guards start with the runs-check, none with `command -v`."""
+        for matcher, script in ALL_GUARDS:
+            with self.subTest(script=script):
+                cmd = wired_hook(matcher, script)["command"]
+>               self.assertTrue(cmd.startswith(RUNS_CHECK), cmd)
+E               AssertionError: False is not true : command -v python3 >/dev/null 2>&1 || exit 0; python3 "${CLAUDE_PLUGIN_ROOT}/hooks/guard-zsh-split.py"
+
+plugins/memory-kit/hooks/tests/test_guard_failure.py:149: AssertionError
+_ LiteralAppendIsLazy.test_literal_append_only_on_a_secret_redirect (cmd='cat .env.example && grep -rn x src') _
+
+self = <test_guard_secrets.LiteralAppendIsLazy testMethod=test_literal_append_only_on_a_secret_redirect>
+
+    def test_literal_append_only_on_a_secret_redirect(self):
+        import importlib.util
+        from unittest import mock
+    
+        sys.dont_write_bytecode = True
+        spec = importlib.util.spec_from_file_location("guard_secrets_r2", os.path.join(PLUGIN_ROOT, "hooks",
+                                                                                     "guard-secrets.py"))
+        guard = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(guard)
+        for cmd, called, verdict in (
+            ("cat .env.example && grep -rn x src", False, False),
+            ("cat .env", False, True),
+            ("echo x > notes.txt; ls .env", False, False),
+            ("echo 'K=v' >> .env", True, False),
+            ("cat x >> .env", True, True),
+        ):
+            with self.subTest(cmd=cmd), mock.patch.object(guard, "literal_append",
+                                                          wraps=guard.literal_append) as spy:
+                found = guard.secret_in_command(cmd, "/tmp")
+>               self.assertEqual(spy.called, called)
+E               AssertionError: True != False
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:354: AssertionError
+_ LiteralAppendIsLazy.test_literal_append_only_on_a_secret_redirect (cmd='cat .env') _
+
+self = <test_guard_secrets.LiteralAppendIsLazy testMethod=test_literal_append_only_on_a_secret_redirect>
+
+    def test_literal_append_only_on_a_secret_redirect(self):
+        import importlib.util
+        from unittest import mock
+    
+        sys.dont_write_bytecode = True
+        spec = importlib.util.spec_from_file_location("guard_secrets_r2", os.path.join(PLUGIN_ROOT, "hooks",
+                                                                                     "guard-secrets.py"))
+        guard = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(guard)
+        for cmd, called, verdict in (
+            ("cat .env.example && grep -rn x src", False, False),
+            ("cat .env", False, True),
+            ("echo x > notes.txt; ls .env", False, False),
+            ("echo 'K=v' >> .env", True, False),
+            ("cat x >> .env", True, True),
+        ):
+            with self.subTest(cmd=cmd), mock.patch.object(guard, "literal_append",
+                                                          wraps=guard.literal_append) as spy:
+                found = guard.secret_in_command(cmd, "/tmp")
+>               self.assertEqual(spy.called, called)
+E               AssertionError: True != False
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:354: AssertionError
+_ LiteralAppendIsLazy.test_literal_append_only_on_a_secret_redirect (cmd='echo x > notes.txt; ls .env') _
+
+self = <test_guard_secrets.LiteralAppendIsLazy testMethod=test_literal_append_only_on_a_secret_redirect>
+
+    def test_literal_append_only_on_a_secret_redirect(self):
+        import importlib.util
+        from unittest import mock
+    
+        sys.dont_write_bytecode = True
+        spec = importlib.util.spec_from_file_location("guard_secrets_r2", os.path.join(PLUGIN_ROOT, "hooks",
+                                                                                     "guard-secrets.py"))
+        guard = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(guard)
+        for cmd, called, verdict in (
+            ("cat .env.example && grep -rn x src", False, False),
+            ("cat .env", False, True),
+            ("echo x > notes.txt; ls .env", False, False),
+            ("echo 'K=v' >> .env", True, False),
+            ("cat x >> .env", True, True),
+        ):
+            with self.subTest(cmd=cmd), mock.patch.object(guard, "literal_append",
+                                                          wraps=guard.literal_append) as spy:
+                found = guard.secret_in_command(cmd, "/tmp")
+>               self.assertEqual(spy.called, called)
+E               AssertionError: True != False
+
+plugins/memory-kit/hooks/tests/test_guard_secrets.py:354: AssertionError
+_ HookTest.test_a_prefix_assignment_does_not_outlive_its_command (cmd='MSG="a b" git commit -q; ls $MSG') _
+
+self = <test_guard_zsh_split.HookTest testMethod=test_a_prefix_assignment_does_not_outlive_its_command>
+
+    def test_a_prefix_assignment_does_not_outlive_its_command(self):
+        """`NAME=v cmd` sets NAME in cmd's environment only: a later `$NAME` is not this command's value."""
+        for cmd in ('MSG="a b" git commit -q; ls $MSG',
+                    'FLAGS="--a --b" make; ./deploy.sh $FLAGS',
+                    'X="a b" Y=1 env | grep X; set -- $X'):
+            with self.subTest(cmd=cmd):
+>               self.assert_silent(cmd)
+
+plugins/memory-kit/hooks/tests/test_guard_zsh_split.py:302: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+plugins/memory-kit/hooks/tests/test_guard_zsh_split.py:196: in assert_silent
+    self.assertEqual((r.returncode, r.stdout, r.stderr), (0, "", ""), cmd)
+E   AssertionError: Tuples differ: (2, '', 'Memory Kit zsh guard: `$MSG` hold[353 chars].\n') != (0, '', '')
+E   
+E   First differing element 0:
+E   2
+E   0
+E   
+E   + (0, '', '')
+E   - (2,
+E   -  '',
+E   -  'Memory Kit zsh guard: `$MSG` holds a quoted string with spaces and is used '
+E   -  'unquoted in an argument. The Bash tool runs zsh, and zsh does NOT word-split '
+E   -  'an unquoted scalar — the command would get ONE argument (or loop once). '
+E   -  'Write the words out, use an array `MSG=(…)` with "${MSG[@]}", or split '
+E   -  'explicitly with `${=MSG}`. If one word is intended, quote it "$MSG" or add '
+E   -  '`# zsh-split-ok`.\n') : MSG="a b" git commit -q; ls $MSG
+_ HookTest.test_a_prefix_assignment_does_not_outlive_its_command (cmd='FLAGS="--a --b" make; ./deploy.sh $FLAGS') _
+
+self = <test_guard_zsh_split.HookTest testMethod=test_a_prefix_assignment_does_not_outlive_its_command>
+
+    def test_a_prefix_assignment_does_not_outlive_its_command(self):
+        """`NAME=v cmd` sets NAME in cmd's environment only: a later `$NAME` is not this command's value."""
+        for cmd in ('MSG="a b" git commit -q; ls $MSG',
+                    'FLAGS="--a --b" make; ./deploy.sh $FLAGS',
+                    'X="a b" Y=1 env | grep X; set -- $X'):
+            with self.subTest(cmd=cmd):
+>               self.assert_silent(cmd)
+
+plugins/memory-kit/hooks/tests/test_guard_zsh_split.py:302: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+plugins/memory-kit/hooks/tests/test_guard_zsh_split.py:196: in assert_silent
+    self.assertEqual((r.returncode, r.stdout, r.stderr), (0, "", ""), cmd)
+E   AssertionError: Tuples differ: (2, '', 'Memory Kit zsh guard: `$FLAGS` ho[363 chars].\n') != (0, '', '')
+E   
+E   First differing element 0:
+E   2
+E   0
+E   
+E   + (0, '', '')
+E   - (2,
+E   -  '',
+E   -  'Memory Kit zsh guard: `$FLAGS` holds a quoted string with spaces and is used '
+E   -  'unquoted in an argument. The Bash tool runs zsh, and zsh does NOT word-split '
+E   -  'an unquoted scalar — the command would get ONE argument (or loop once). '
+E   -  'Write the words out, use an array `FLAGS=(…)` with "${FLAGS[@]}", or split '
+E   -  'explicitly with `${=FLAGS}`. If one word is intended, quote it "$FLAGS" or '
+E   -  'add `# zsh-split-ok`.\n') : FLAGS="--a --b" make; ./deploy.sh $FLAGS
+_ HookTest.test_a_prefix_assignment_does_not_outlive_its_command (cmd='X="a b" Y=1 env | grep X; set -- $X') _
+
+self = <test_guard_zsh_split.HookTest testMethod=test_a_prefix_assignment_does_not_outlive_its_command>
+
+    def test_a_prefix_assignment_does_not_outlive_its_command(self):
+        """`NAME=v cmd` sets NAME in cmd's environment only: a later `$NAME` is not this command's value."""
+        for cmd in ('MSG="a b" git commit -q; ls $MSG',
+                    'FLAGS="--a --b" make; ./deploy.sh $FLAGS',
+                    'X="a b" Y=1 env | grep X; set -- $X'):
+            with self.subTest(cmd=cmd):
+>               self.assert_silent(cmd)
+
+plugins/memory-kit/hooks/tests/test_guard_zsh_split.py:302: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+plugins/memory-kit/hooks/tests/test_guard_zsh_split.py:196: in assert_silent
+    self.assertEqual((r.returncode, r.stdout, r.stderr), (0, "", ""), cmd)
+E   AssertionError: Tuples differ: (2, '', 'Memory Kit zsh guard: `$X` holds [337 chars].\n') != (0, '', '')
+E   
+E   First differing element 0:
+E   2
+E   0
+E   
+E   + (0, '', '')
+E   - (2,
+E   -  '',
+E   -  'Memory Kit zsh guard: `$X` holds a quoted string with spaces and is used '
+E   -  'unquoted in `set`. The Bash tool runs zsh, and zsh does NOT word-split an '
+E   -  'unquoted scalar — the command would get ONE argument (or loop once). Write '
+E   -  'the words out, use an array `X=(…)` with "${X[@]}", or split explicitly with '
+E   -  '`${=X}`. If one word is intended, quote it "$X" or add `# zsh-split-ok`.\n') : X="a b" Y=1 env | grep X; set -- $X
+_ HookTest.test_a_substitution_in_an_assignment_sees_the_assignments_before_it (cmd='x="a b" y=$(printf %s $x)') _
+
+self = <test_guard_zsh_split.HookTest testMethod=test_a_substitution_in_an_assignment_sees_the_assignments_before_it>
+
+    def test_a_substitution_in_an_assignment_sees_the_assignments_before_it(self):
+        """`x="a b" y=$(printf %s $x)`: zsh assigns left to right, so the substitution sees the multi-word x."""
+        for cmd in ('x="a b"; y=$(printf %s $x)',
+                    'x="a b" y=$(printf %s $x)',
+                    'x="a b" y="$(printf %s $x)" z=1'):
+            with self.subTest(cmd=cmd):
+>               self.assert_blocked(cmd)
+
+plugins/memory-kit/hooks/tests/test_guard_zsh_split.py:311: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+plugins/memory-kit/hooks/tests/test_guard_zsh_split.py:191: in assert_blocked
+    self.assertEqual(r.returncode, 2, (cmd, r.stdout, r.stderr))
+E   AssertionError: 0 != 2 : ('x="a b" y=$(printf %s $x)', '', '')
+_ HookTest.test_a_substitution_in_an_assignment_sees_the_assignments_before_it (cmd='x="a b" y="$(printf %s $x)" z=1') _
+
+self = <test_guard_zsh_split.HookTest testMethod=test_a_substitution_in_an_assignment_sees_the_assignments_before_it>
+
+    def test_a_substitution_in_an_assignment_sees_the_assignments_before_it(self):
+        """`x="a b" y=$(printf %s $x)`: zsh assigns left to right, so the substitution sees the multi-word x."""
+        for cmd in ('x="a b"; y=$(printf %s $x)',
+                    'x="a b" y=$(printf %s $x)',
+                    'x="a b" y="$(printf %s $x)" z=1'):
+            with self.subTest(cmd=cmd):
+>               self.assert_blocked(cmd)
+
+plugins/memory-kit/hooks/tests/test_guard_zsh_split.py:311: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+plugins/memory-kit/hooks/tests/test_guard_zsh_split.py:191: in assert_blocked
+    self.assertEqual(r.returncode, 2, (cmd, r.stdout, r.stderr))
+E   AssertionError: 0 != 2 : ('x="a b" y="$(printf %s $x)" z=1', '', '')
+_______________ HookTest.test_nesting_past_the_parser_depth_asks _______________
+
+self = <test_guard_zsh_split.HookTest testMethod=test_nesting_past_the_parser_depth_asks>
+
+    def test_nesting_past_the_parser_depth_asks(self):
+        """R2-8: nesting deeper than cmdparse.MAX_DEPTH is a command the shell WOULD run — ask, like the other
+        guards (before r2: a ValueError read as a lexing problem → silent pass)."""
+        depth = G.cmdparse.MAX_DEPTH + 2
+        cmd = 'a="x y"; echo ' + "$(echo " * depth + "$a" + ")" * depth
+>       self.assert_ask(run_hook(cmd), "NestingError", "nesting")
+
+plugins/memory-kit/hooks/tests/test_guard_zsh_split.py:320: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+plugins/memory-kit/hooks/tests/test_guard_zsh_split.py:247: in assert_ask
+    out = json.loads(r.stdout)["hookSpecificOutput"]
+          ^^^^^^^^^^^^^^^^^^^^
+../../.local/share/uv/python/cpython-3.12.14-macos-aarch64-none/lib/python3.12/json/__init__.py:346: in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../.local/share/uv/python/cpython-3.12.14-macos-aarch64-none/lib/python3.12/json/decoder.py:338: in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <json.decoder.JSONDecoder object at 0x101e96000>, s = '', idx = 0
+
+    def raw_decode(self, s, idx=0):
+        """Decode a JSON document from ``s`` (a ``str`` beginning with
+        a JSON document) and return a 2-tuple of the Python
+        representation and the index in ``s`` where the document ended.
+    
+        This can be used to decode a JSON document from a string that may
+        have extraneous data at the end.
+    
+        """
+        try:
+            obj, end = self.scan_once(s, idx)
+        except StopIteration as err:
+>           raise JSONDecodeError("Expecting value", s, err.value) from None
+E           json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+../../.local/share/uv/python/cpython-3.12.14-macos-aarch64-none/lib/python3.12/json/decoder.py:356: JSONDecodeError
+_ LegacyHooks.test_a_project_path_with_a_space (command='"$CLAUDE_PROJECT_DIR"/.claude/hooks/pre-compact.sh') _
+
+self = <test_legacy_hooks.LegacyHooks testMethod=test_a_project_path_with_a_space>
+
+    def test_a_project_path_with_a_space(self):
+        """A project directory with a space, every quoting form, plus a quoted relative path with a space."""
+        spaced = os.path.join(self.repo, "my project")
+        os.makedirs(spaced)
+        self.addCleanup(shutil.rmtree, self.repo, True)
+        self.repo, self.env["CLAUDE_PROJECT_DIR"] = spaced, spaced
+        self.write(".claude/memory/MEMORY.md", "# Hot\n\n- [2026-01-01] CANARY\n")
+        self.write(".claude/hooks/pre-compact.sh", KIT_PRECOMPACT)
+        self.write(".claude/hooks/save memory.sh", KIT_PRECOMPACT)
+        for command, shown in (('"$CLAUDE_PROJECT_DIR"/.claude/hooks/pre-compact.sh', "pre-compact.sh"),
+                               ('bash "$CLAUDE_PROJECT_DIR/.claude/hooks/pre-compact.sh"', "pre-compact.sh"),
+                               ("bash '.claude/hooks/save memory.sh'", "save memory.sh")):
+            with self.subTest(command=command):
+                self.settings({"PreCompact": [{"hooks": [{"type": "command", "command": command}]}]})
+                text = self.injected()
+>               self.assertIn(NUDGE, text)
+E               AssertionError: "copies of the kit's hooks" not found in 'Memory Kit context — part 1 of 1 (parts arrive in any order; together they are the whole).\n# Memory Kit — how you work in this repository\n\n> Injected by the `memory-kit` plugin at every session start (and re-injected after compaction).\n> It is versioned with the plugin, so there is nothing to paste into `CLAUDE.md`.\n\n## Two invariants\n\n**1 — The user talks. You write.** The user never opens `MEMORY.md`, a handoff, a rule or a\nconcept article. You propose in conversation, they say "yes", you write the file and say what you\nwrote. If you catch yourself saying "add this to …" — rephrase as "I\'ll write it, confirm?".\n\n**2 — Every memory entry carries a `[YYYY-MM-DD]` tag.** Dates are what make the audit possible:\nwithout them you cannot see that a pattern showed up on three different days, and you cannot tell\na fresh fact from a rotten one. A stored fact about the OUTSIDE world (a price, an open ticket,\n"the client is waiting") older than ~7 days is a hypothesis — re-check before acting on it.\n\n## Where things live (in THIS repository)\n\n| Layer | File | Answers | Loaded |\n|---|---|---|---|\n| Hot cache | `.claude/memory/MEMORY.md` | what repeats · where things stand | injected every session by the hook |\n| Session log | `context/handoffs/<topic>-YYYY-MM-DD.md` | what happened, session by session | newest one injected; the rest on grep |\n| Deep memory | `knowledge/concepts/*.md` + `knowledge/index.md` | facts and rationale by topic | index injected; articles on demand |\n| Hard rules | `.claude/rules/*.md` | what must always / never happen | loaded by Claude Code itself |\n\nThose four are MEMORY, and there is no fifth — no `wisdom/`, `playbooks/`, `patterns/`; a new\nmemory layer is how this system dies.\n\n**The work\'s own documents are not memory.** They live per project in `projects/<name>/`:\n`README.md` (the map of where this project\'s documents live — read it before writing one — and\nthe project\'s **workflow tier**: `prototype · alpha · beta · ga`, how much proof a `done` owes),\n`BACKLOG.md`, `plans/YYYY-MM-DD-<slug>.md` — the spec an executor builds to, which is not\ndelegable without **Goal · Non-goals (what it must NOT do) · Acceptance written before building**,\nplus the exact gate commands once there is something to run (the kit ships the full form as\n`SPEC-TEMPLATE.md`; the skills know its path). Acceptance rows carry stable `AC-n` ids that\nslices, tests, QA runs and findings quote, a `Value sources` table names where every value comes\nfrom, and a spec may be `assumed` — an executor\'s recorded override of a missing source, owed\nratification. The rest of the folder is `research/`, `decisions-log.md`,\n`review-findings.md`, `qa/`. One folder per client or product — a\nsingle-product repo has exactly one. A spec, a backlog or a QA protocol never goes into\n`MEMORY.md`; a dated cross-session pattern never goes into a project folder. If a repo already\nkeeps its documents elsewhere, its project README says so and that mapping wins.\n\n## The caps (why the hook nags)\n\n`MEMORY.md` is a HOT CACHE, not an archive: **180 lines / 32 KB / 3000 chars per line**. Three\ncaps because line count alone lies — content densifies into ever-longer lines while `wc -l` stays\nflat. A tripped cap means run `/memory-kit:memory-audit` BEFORE other work.\n\n- **The header is «current state»**, 2-3 sentences, REPLACED at every close — never a stack of\n  "previous session" paragraphs. History belongs in handoffs.\n- **Overflow flows out by promotion**: a pattern seen on 3+ distinct dates → a\n  `knowledge/concepts/` article (facts + rationale) or a `.claude/rules/` file (a mechanical\n  always/never, only once it is stable). Promoted entries get PRUNED from the cache.\n- **One home per fact.** When a fact changes, grep its restatements and fix them in the same pass.\n  A stale copy that still looks current is the #1 failure mode of agent memory.\n\n## What else ships with the plugin (you have to know it exists to reach it)\n\n**Operators**, all namespaced `/memory-kit:` — bodies load only on invoke: `close-session` ·\n`memory-audit` (when a cap trips) · `system-audit` (the periodic seven-lens sweep) ·\n`session-review` · `second-opinion` · `qa-sweep` · `document` (PR · changelog · release note ·\npostmortem, written from the diff) · `code-sync` (specs reconciled against the code) · `setup` ·\n`tour`.\n\n**Depth, read on demand** from the plugin\'s `reference/` directory — free until you open it:\n`orchestrator-fact-check` (a report is INPUT, never a fact; a number from history carries its\ntime window and build) · `spec-depth` (depth pass, fresh-checked practice, review stake, fail\nbranches written first, outcome over proxy) · `review-loop` (finding triage, the diff gate, the\nfindings-class registry) · `parallel-development` (fan-out, worktree isolation, one integrator) ·\n`doc-governance` (one SSOT per fact, the anti-drift rules) · `decisions-log` (the lean ledger) ·\n`capability-map-sweep` (the "the library already does this" defect class) ·\n`project-extensions` (when a repeated workflow earns a project skill / hook / agent, and what\neach costs when idle). Delegating to\nsubagents? `templates/rules/orchestration.md` is the nine always-loaded invariants — copy it into\n`.claude/rules/` (a plugin cannot ship rules; `/memory-kit:setup` offers this).\nPermissions are speed bumps; hooks are gates, and a gate is proven only through its exact wiring (`reference/harness-measurement.md`).\nNoisy commands: `bash ~/dev/claude-memory-kit-v73-r2/plugins/memory-kit/scripts/quiet.sh <cmd>`.\n\n## What you write freely vs what needs a "yes"\n\n- **Freely (and you say so briefly):** `MEMORY.md` entries, the session handoff.\n- **Ask first:** `.claude/rules/*.md` (always-loaded — every line costs context in every future\n  session), `knowledge/concepts/*.md`, and any promotion. Repetition on 3 dates makes a\n  CANDIDATE, not a rule.\n\n## During the session\n\nObservations happen in conversation; the ones worth keeping become one dated line in the hot\ncache — say "saved" and move on. When context runs long, save state before it is compacted: a\nmanual `/compact` is blocked until `MEMORY.md` is fresh and inside its caps; an automatic one is\nnever blocked (that would fail the user\'s request), and the next context opens with a loud\n"save memory now" if it ran over unsaved state.\n\nReporting to the user: lead with the outcome in one plain sentence, then what you need from them.\nYour working labels (ids, branch and file names, rule numbers) are yours — drop them or say in\nplain words what each is. Full sentences, a technical term glossed the first time.\n\nClose with `/memory-kit:close-session`: capture → audit for 3+-date repetition → promote on the\nuser\'s yes → replace the header → write the handoff the next session opens with.\n\n---\n\n=== SESSION START — 2026-10-22 (session #1) ===\n\n## Memory\nMEMORY.md: 3/180 lines (1% full), 0.0 KB / 32 KB cap, max-line 21 / 3000 cap — updated today\n\n## Git\nworking tree: 0 tracked change(s) (clean — only untracked files)\n\n---\n\n## MEMORY.md (hot cache — durable patterns + current state)\n\n# Hot\n\n- [2026-01-01] CANARY\n\n---\n\n## Latest handoff\n\nNo handoffs yet. `/memory-kit:close-session` writes the first one at the end of this session.\n'
+
+plugins/memory-kit/hooks/tests/test_legacy_hooks.py:206: AssertionError
+_ LegacyHooks.test_a_project_path_with_a_space (command='bash "$CLAUDE_PROJECT_DIR/.claude/hooks/pre-compact.sh"') _
+
+self = <test_legacy_hooks.LegacyHooks testMethod=test_a_project_path_with_a_space>
+
+    def test_a_project_path_with_a_space(self):
+        """A project directory with a space, every quoting form, plus a quoted relative path with a space."""
+        spaced = os.path.join(self.repo, "my project")
+        os.makedirs(spaced)
+        self.addCleanup(shutil.rmtree, self.repo, True)
+        self.repo, self.env["CLAUDE_PROJECT_DIR"] = spaced, spaced
+        self.write(".claude/memory/MEMORY.md", "# Hot\n\n- [2026-01-01] CANARY\n")
+        self.write(".claude/hooks/pre-compact.sh", KIT_PRECOMPACT)
+        self.write(".claude/hooks/save memory.sh", KIT_PRECOMPACT)
+        for command, shown in (('"$CLAUDE_PROJECT_DIR"/.claude/hooks/pre-compact.sh', "pre-compact.sh"),
+                               ('bash "$CLAUDE_PROJECT_DIR/.claude/hooks/pre-compact.sh"', "pre-compact.sh"),
+                               ("bash '.claude/hooks/save memory.sh'", "save memory.sh")):
+            with self.subTest(command=command):
+                self.settings({"PreCompact": [{"hooks": [{"type": "command", "command": command}]}]})
+                text = self.injected()
+>               self.assertIn(NUDGE, text)
+E               AssertionError: "copies of the kit's hooks" not found in 'Memory Kit context — part 1 of 1 (parts arrive in any order; together they are the whole).\n# Memory Kit — how you work in this repository\n\n> Injected by the `memory-kit` plugin at every session start (and re-injected after compaction).\n> It is versioned with the plugin, so there is nothing to paste into `CLAUDE.md`.\n\n## Two invariants\n\n**1 — The user talks. You write.** The user never opens `MEMORY.md`, a handoff, a rule or a\nconcept article. You propose in conversation, they say "yes", you write the file and say what you\nwrote. If you catch yourself saying "add this to …" — rephrase as "I\'ll write it, confirm?".\n\n**2 — Every memory entry carries a `[YYYY-MM-DD]` tag.** Dates are what make the audit possible:\nwithout them you cannot see that a pattern showed up on three different days, and you cannot tell\na fresh fact from a rotten one. A stored fact about the OUTSIDE world (a price, an open ticket,\n"the client is waiting") older than ~7 days is a hypothesis — re-check before acting on it.\n\n## Where things live (in THIS repository)\n\n| Layer | File | Answers | Loaded |\n|---|---|---|---|\n| Hot cache | `.claude/memory/MEMORY.md` | what repeats · where things stand | injected every session by the hook |\n| Session log | `context/handoffs/<topic>-YYYY-MM-DD.md` | what happened, session by session | newest one injected; the rest on grep |\n| Deep memory | `knowledge/concepts/*.md` + `knowledge/index.md` | facts and rationale by topic | index injected; articles on demand |\n| Hard rules | `.claude/rules/*.md` | what must always / never happen | loaded by Claude Code itself |\n\nThose four are MEMORY, and there is no fifth — no `wisdom/`, `playbooks/`, `patterns/`; a new\nmemory layer is how this system dies.\n\n**The work\'s own documents are not memory.** They live per project in `projects/<name>/`:\n`README.md` (the map of where this project\'s documents live — read it before writing one — and\nthe project\'s **workflow tier**: `prototype · alpha · beta · ga`, how much proof a `done` owes),\n`BACKLOG.md`, `plans/YYYY-MM-DD-<slug>.md` — the spec an executor builds to, which is not\ndelegable without **Goal · Non-goals (what it must NOT do) · Acceptance written before building**,\nplus the exact gate commands once there is something to run (the kit ships the full form as\n`SPEC-TEMPLATE.md`; the skills know its path). Acceptance rows carry stable `AC-n` ids that\nslices, tests, QA runs and findings quote, a `Value sources` table names where every value comes\nfrom, and a spec may be `assumed` — an executor\'s recorded override of a missing source, owed\nratification. The rest of the folder is `research/`, `decisions-log.md`,\n`review-findings.md`, `qa/`. One folder per client or product — a\nsingle-product repo has exactly one. A spec, a backlog or a QA protocol never goes into\n`MEMORY.md`; a dated cross-session pattern never goes into a project folder. If a repo already\nkeeps its documents elsewhere, its project README says so and that mapping wins.\n\n## The caps (why the hook nags)\n\n`MEMORY.md` is a HOT CACHE, not an archive: **180 lines / 32 KB / 3000 chars per line**. Three\ncaps because line count alone lies — content densifies into ever-longer lines while `wc -l` stays\nflat. A tripped cap means run `/memory-kit:memory-audit` BEFORE other work.\n\n- **The header is «current state»**, 2-3 sentences, REPLACED at every close — never a stack of\n  "previous session" paragraphs. History belongs in handoffs.\n- **Overflow flows out by promotion**: a pattern seen on 3+ distinct dates → a\n  `knowledge/concepts/` article (facts + rationale) or a `.claude/rules/` file (a mechanical\n  always/never, only once it is stable). Promoted entries get PRUNED from the cache.\n- **One home per fact.** When a fact changes, grep its restatements and fix them in the same pass.\n  A stale copy that still looks current is the #1 failure mode of agent memory.\n\n## What else ships with the plugin (you have to know it exists to reach it)\n\n**Operators**, all namespaced `/memory-kit:` — bodies load only on invoke: `close-session` ·\n`memory-audit` (when a cap trips) · `system-audit` (the periodic seven-lens sweep) ·\n`session-review` · `second-opinion` · `qa-sweep` · `document` (PR · changelog · release note ·\npostmortem, written from the diff) · `code-sync` (specs reconciled against the code) · `setup` ·\n`tour`.\n\n**Depth, read on demand** from the plugin\'s `reference/` directory — free until you open it:\n`orchestrator-fact-check` (a report is INPUT, never a fact; a number from history carries its\ntime window and build) · `spec-depth` (depth pass, fresh-checked practice, review stake, fail\nbranches written first, outcome over proxy) · `review-loop` (finding triage, the diff gate, the\nfindings-class registry) · `parallel-development` (fan-out, worktree isolation, one integrator) ·\n`doc-governance` (one SSOT per fact, the anti-drift rules) · `decisions-log` (the lean ledger) ·\n`capability-map-sweep` (the "the library already does this" defect class) ·\n`project-extensions` (when a repeated workflow earns a project skill / hook / agent, and what\neach costs when idle). Delegating to\nsubagents? `templates/rules/orchestration.md` is the nine always-loaded invariants — copy it into\n`.claude/rules/` (a plugin cannot ship rules; `/memory-kit:setup` offers this).\nPermissions are speed bumps; hooks are gates, and a gate is proven only through its exact wiring (`reference/harness-measurement.md`).\nNoisy commands: `bash ~/dev/claude-memory-kit-v73-r2/plugins/memory-kit/scripts/quiet.sh <cmd>`.\n\n## What you write freely vs what needs a "yes"\n\n- **Freely (and you say so briefly):** `MEMORY.md` entries, the session handoff.\n- **Ask first:** `.claude/rules/*.md` (always-loaded — every line costs context in every future\n  session), `knowledge/concepts/*.md`, and any promotion. Repetition on 3 dates makes a\n  CANDIDATE, not a rule.\n\n## During the session\n\nObservations happen in conversation; the ones worth keeping become one dated line in the hot\ncache — say "saved" and move on. When context runs long, save state before it is compacted: a\nmanual `/compact` is blocked until `MEMORY.md` is fresh and inside its caps; an automatic one is\nnever blocked (that would fail the user\'s request), and the next context opens with a loud\n"save memory now" if it ran over unsaved state.\n\nReporting to the user: lead with the outcome in one plain sentence, then what you need from them.\nYour working labels (ids, branch and file names, rule numbers) are yours — drop them or say in\nplain words what each is. Full sentences, a technical term glossed the first time.\n\nClose with `/memory-kit:close-session`: capture → audit for 3+-date repetition → promote on the\nuser\'s yes → replace the header → write the handoff the next session opens with.\n\n---\n\n=== SESSION START — 2026-10-22 (session #2) ===\n\n## Memory\nMEMORY.md: 3/180 lines (1% full), 0.0 KB / 32 KB cap, max-line 21 / 3000 cap — updated today\n\n## Git\nworking tree: 0 tracked change(s) (clean — only untracked files)\n\n---\n\n## MEMORY.md (hot cache — durable patterns + current state)\n\n# Hot\n\n- [2026-01-01] CANARY\n\n---\n\n## Latest handoff\n\nNo handoffs yet. `/memory-kit:close-session` writes the first one at the end of this session.\n'
+
+plugins/memory-kit/hooks/tests/test_legacy_hooks.py:206: AssertionError
+_ LegacyHooks.test_a_project_path_with_a_space (command="bash '.claude/hooks/save memory.sh'") _
+
+self = <test_legacy_hooks.LegacyHooks testMethod=test_a_project_path_with_a_space>
+
+    def test_a_project_path_with_a_space(self):
+        """A project directory with a space, every quoting form, plus a quoted relative path with a space."""
+        spaced = os.path.join(self.repo, "my project")
+        os.makedirs(spaced)
+        self.addCleanup(shutil.rmtree, self.repo, True)
+        self.repo, self.env["CLAUDE_PROJECT_DIR"] = spaced, spaced
+        self.write(".claude/memory/MEMORY.md", "# Hot\n\n- [2026-01-01] CANARY\n")
+        self.write(".claude/hooks/pre-compact.sh", KIT_PRECOMPACT)
+        self.write(".claude/hooks/save memory.sh", KIT_PRECOMPACT)
+        for command, shown in (('"$CLAUDE_PROJECT_DIR"/.claude/hooks/pre-compact.sh', "pre-compact.sh"),
+                               ('bash "$CLAUDE_PROJECT_DIR/.claude/hooks/pre-compact.sh"', "pre-compact.sh"),
+                               ("bash '.claude/hooks/save memory.sh'", "save memory.sh")):
+            with self.subTest(command=command):
+                self.settings({"PreCompact": [{"hooks": [{"type": "command", "command": command}]}]})
+                text = self.injected()
+>               self.assertIn(NUDGE, text)
+E               AssertionError: "copies of the kit's hooks" not found in 'Memory Kit context — part 1 of 1 (parts arrive in any order; together they are the whole).\n# Memory Kit — how you work in this repository\n\n> Injected by the `memory-kit` plugin at every session start (and re-injected after compaction).\n> It is versioned with the plugin, so there is nothing to paste into `CLAUDE.md`.\n\n## Two invariants\n\n**1 — The user talks. You write.** The user never opens `MEMORY.md`, a handoff, a rule or a\nconcept article. You propose in conversation, they say "yes", you write the file and say what you\nwrote. If you catch yourself saying "add this to …" — rephrase as "I\'ll write it, confirm?".\n\n**2 — Every memory entry carries a `[YYYY-MM-DD]` tag.** Dates are what make the audit possible:\nwithout them you cannot see that a pattern showed up on three different days, and you cannot tell\na fresh fact from a rotten one. A stored fact about the OUTSIDE world (a price, an open ticket,\n"the client is waiting") older than ~7 days is a hypothesis — re-check before acting on it.\n\n## Where things live (in THIS repository)\n\n| Layer | File | Answers | Loaded |\n|---|---|---|---|\n| Hot cache | `.claude/memory/MEMORY.md` | what repeats · where things stand | injected every session by the hook |\n| Session log | `context/handoffs/<topic>-YYYY-MM-DD.md` | what happened, session by session | newest one injected; the rest on grep |\n| Deep memory | `knowledge/concepts/*.md` + `knowledge/index.md` | facts and rationale by topic | index injected; articles on demand |\n| Hard rules | `.claude/rules/*.md` | what must always / never happen | loaded by Claude Code itself |\n\nThose four are MEMORY, and there is no fifth — no `wisdom/`, `playbooks/`, `patterns/`; a new\nmemory layer is how this system dies.\n\n**The work\'s own documents are not memory.** They live per project in `projects/<name>/`:\n`README.md` (the map of where this project\'s documents live — read it before writing one — and\nthe project\'s **workflow tier**: `prototype · alpha · beta · ga`, how much proof a `done` owes),\n`BACKLOG.md`, `plans/YYYY-MM-DD-<slug>.md` — the spec an executor builds to, which is not\ndelegable without **Goal · Non-goals (what it must NOT do) · Acceptance written before building**,\nplus the exact gate commands once there is something to run (the kit ships the full form as\n`SPEC-TEMPLATE.md`; the skills know its path). Acceptance rows carry stable `AC-n` ids that\nslices, tests, QA runs and findings quote, a `Value sources` table names where every value comes\nfrom, and a spec may be `assumed` — an executor\'s recorded override of a missing source, owed\nratification. The rest of the folder is `research/`, `decisions-log.md`,\n`review-findings.md`, `qa/`. One folder per client or product — a\nsingle-product repo has exactly one. A spec, a backlog or a QA protocol never goes into\n`MEMORY.md`; a dated cross-session pattern never goes into a project folder. If a repo already\nkeeps its documents elsewhere, its project README says so and that mapping wins.\n\n## The caps (why the hook nags)\n\n`MEMORY.md` is a HOT CACHE, not an archive: **180 lines / 32 KB / 3000 chars per line**. Three\ncaps because line count alone lies — content densifies into ever-longer lines while `wc -l` stays\nflat. A tripped cap means run `/memory-kit:memory-audit` BEFORE other work.\n\n- **The header is «current state»**, 2-3 sentences, REPLACED at every close — never a stack of\n  "previous session" paragraphs. History belongs in handoffs.\n- **Overflow flows out by promotion**: a pattern seen on 3+ distinct dates → a\n  `knowledge/concepts/` article (facts + rationale) or a `.claude/rules/` file (a mechanical\n  always/never, only once it is stable). Promoted entries get PRUNED from the cache.\n- **One home per fact.** When a fact changes, grep its restatements and fix them in the same pass.\n  A stale copy that still looks current is the #1 failure mode of agent memory.\n\n## What else ships with the plugin (you have to know it exists to reach it)\n\n**Operators**, all namespaced `/memory-kit:` — bodies load only on invoke: `close-session` ·\n`memory-audit` (when a cap trips) · `system-audit` (the periodic seven-lens sweep) ·\n`session-review` · `second-opinion` · `qa-sweep` · `document` (PR · changelog · release note ·\npostmortem, written from the diff) · `code-sync` (specs reconciled against the code) · `setup` ·\n`tour`.\n\n**Depth, read on demand** from the plugin\'s `reference/` directory — free until you open it:\n`orchestrator-fact-check` (a report is INPUT, never a fact; a number from history carries its\ntime window and build) · `spec-depth` (depth pass, fresh-checked practice, review stake, fail\nbranches written first, outcome over proxy) · `review-loop` (finding triage, the diff gate, the\nfindings-class registry) · `parallel-development` (fan-out, worktree isolation, one integrator) ·\n`doc-governance` (one SSOT per fact, the anti-drift rules) · `decisions-log` (the lean ledger) ·\n`capability-map-sweep` (the "the library already does this" defect class) ·\n`project-extensions` (when a repeated workflow earns a project skill / hook / agent, and what\neach costs when idle). Delegating to\nsubagents? `templates/rules/orchestration.md` is the nine always-loaded invariants — copy it into\n`.claude/rules/` (a plugin cannot ship rules; `/memory-kit:setup` offers this).\nPermissions are speed bumps; hooks are gates, and a gate is proven only through its exact wiring (`reference/harness-measurement.md`).\nNoisy commands: `bash ~/dev/claude-memory-kit-v73-r2/plugins/memory-kit/scripts/quiet.sh <cmd>`.\n\n## What you write freely vs what needs a "yes"\n\n- **Freely (and you say so briefly):** `MEMORY.md` entries, the session handoff.\n- **Ask first:** `.claude/rules/*.md` (always-loaded — every line costs context in every future\n  session), `knowledge/concepts/*.md`, and any promotion. Repetition on 3 dates makes a\n  CANDIDATE, not a rule.\n\n## During the session\n\nObservations happen in conversation; the ones worth keeping become one dated line in the hot\ncache — say "saved" and move on. When context runs long, save state before it is compacted: a\nmanual `/compact` is blocked until `MEMORY.md` is fresh and inside its caps; an automatic one is\nnever blocked (that would fail the user\'s request), and the next context opens with a loud\n"save memory now" if it ran over unsaved state.\n\nReporting to the user: lead with the outcome in one plain sentence, then what you need from them.\nYour working labels (ids, branch and file names, rule numbers) are yours — drop them or say in\nplain words what each is. Full sentences, a technical term glossed the first time.\n\nClose with `/memory-kit:close-session`: capture → audit for 3+-date repetition → promote on the\nuser\'s yes → replace the header → write the handoff the next session opens with.\n\n---\n\n=== SESSION START — 2026-10-22 (session #3) ===\n\n## Memory\nMEMORY.md: 3/180 lines (1% full), 0.0 KB / 32 KB cap, max-line 21 / 3000 cap — updated today\n\n## Git\nworking tree: 0 tracked change(s) (clean — only untracked files)\n\n---\n\n## MEMORY.md (hot cache — durable patterns + current state)\n\n# Hot\n\n- [2026-01-01] CANARY\n\n---\n\n## Latest handoff\n\nNo handoffs yet. `/memory-kit:close-session` writes the first one at the end of this session.\n'
+
+plugins/memory-kit/hooks/tests/test_legacy_hooks.py:206: AssertionError
+_ LegacyHooks.test_the_docs_recommended_quoting_is_resolved (command='"$CLAUDE_PROJECT_DIR"/.claude/hooks/pre-compact.sh') _
+
+self = <test_legacy_hooks.LegacyHooks testMethod=test_the_docs_recommended_quoting_is_resolved>
+
+    def test_the_docs_recommended_quoting_is_resolved(self):
+        """`"$CLAUDE_PROJECT_DIR"/.claude/hooks/x.sh` (the form the Claude Code hooks doc recommends) and the
+        braced/unquoted forms resolve to the project's script."""
+        self.write(".claude/hooks/pre-compact.sh", KIT_PRECOMPACT)
+        for command in ('"$CLAUDE_PROJECT_DIR"/.claude/hooks/pre-compact.sh',
+                        'bash "${CLAUDE_PROJECT_DIR}"/.claude/hooks/pre-compact.sh',
+                        "bash $CLAUDE_PROJECT_DIR/.claude/hooks/pre-compact.sh",
+                        "bash ${CLAUDE_PROJECT_DIR}/.claude/hooks/pre-compact.sh"):
+            with self.subTest(command=command):
+                self.settings({"PreCompact": [{"hooks": [{"type": "command", "command": command}]}]})
+                text = self.injected()
+>               self.assertIn(NUDGE, text)
+E               AssertionError: "copies of the kit's hooks" not found in 'Memory Kit context — part 1 of 1 (parts arrive in any order; together they are the whole).\n# Memory Kit — how you work in this repository\n\n> Injected by the `memory-kit` plugin at every session start (and re-injected after compaction).\n> It is versioned with the plugin, so there is nothing to paste into `CLAUDE.md`.\n\n## Two invariants\n\n**1 — The user talks. You write.** The user never opens `MEMORY.md`, a handoff, a rule or a\nconcept article. You propose in conversation, they say "yes", you write the file and say what you\nwrote. If you catch yourself saying "add this to …" — rephrase as "I\'ll write it, confirm?".\n\n**2 — Every memory entry carries a `[YYYY-MM-DD]` tag.** Dates are what make the audit possible:\nwithout them you cannot see that a pattern showed up on three different days, and you cannot tell\na fresh fact from a rotten one. A stored fact about the OUTSIDE world (a price, an open ticket,\n"the client is waiting") older than ~7 days is a hypothesis — re-check before acting on it.\n\n## Where things live (in THIS repository)\n\n| Layer | File | Answers | Loaded |\n|---|---|---|---|\n| Hot cache | `.claude/memory/MEMORY.md` | what repeats · where things stand | injected every session by the hook |\n| Session log | `context/handoffs/<topic>-YYYY-MM-DD.md` | what happened, session by session | newest one injected; the rest on grep |\n| Deep memory | `knowledge/concepts/*.md` + `knowledge/index.md` | facts and rationale by topic | index injected; articles on demand |\n| Hard rules | `.claude/rules/*.md` | what must always / never happen | loaded by Claude Code itself |\n\nThose four are MEMORY, and there is no fifth — no `wisdom/`, `playbooks/`, `patterns/`; a new\nmemory layer is how this system dies.\n\n**The work\'s own documents are not memory.** They live per project in `projects/<name>/`:\n`README.md` (the map of where this project\'s documents live — read it before writing one — and\nthe project\'s **workflow tier**: `prototype · alpha · beta · ga`, how much proof a `done` owes),\n`BACKLOG.md`, `plans/YYYY-MM-DD-<slug>.md` — the spec an executor builds to, which is not\ndelegable without **Goal · Non-goals (what it must NOT do) · Acceptance written before building**,\nplus the exact gate commands once there is something to run (the kit ships the full form as\n`SPEC-TEMPLATE.md`; the skills know its path). Acceptance rows carry stable `AC-n` ids that\nslices, tests, QA runs and findings quote, a `Value sources` table names where every value comes\nfrom, and a spec may be `assumed` — an executor\'s recorded override of a missing source, owed\nratification. The rest of the folder is `research/`, `decisions-log.md`,\n`review-findings.md`, `qa/`. One folder per client or product — a\nsingle-product repo has exactly one. A spec, a backlog or a QA protocol never goes into\n`MEMORY.md`; a dated cross-session pattern never goes into a project folder. If a repo already\nkeeps its documents elsewhere, its project README says so and that mapping wins.\n\n## The caps (why the hook nags)\n\n`MEMORY.md` is a HOT CACHE, not an archive: **180 lines / 32 KB / 3000 chars per line**. Three\ncaps because line count alone lies — content densifies into ever-longer lines while `wc -l` stays\nflat. A tripped cap means run `/memory-kit:memory-audit` BEFORE other work.\n\n- **The header is «current state»**, 2-3 sentences, REPLACED at every close — never a stack of\n  "previous session" paragraphs. History belongs in handoffs.\n- **Overflow flows out by promotion**: a pattern seen on 3+ distinct dates → a\n  `knowledge/concepts/` article (facts + rationale) or a `.claude/rules/` file (a mechanical\n  always/never, only once it is stable). Promoted entries get PRUNED from the cache.\n- **One home per fact.** When a fact changes, grep its restatements and fix them in the same pass.\n  A stale copy that still looks current is the #1 failure mode of agent memory.\n\n## What else ships with the plugin (you have to know it exists to reach it)\n\n**Operators**, all namespaced `/memory-kit:` — bodies load only on invoke: `close-session` ·\n`memory-audit` (when a cap trips) · `system-audit` (the periodic seven-lens sweep) ·\n`session-review` · `second-opinion` · `qa-sweep` · `document` (PR · changelog · release note ·\npostmortem, written from the diff) · `code-sync` (specs reconciled against the code) · `setup` ·\n`tour`.\n\n**Depth, read on demand** from the plugin\'s `reference/` directory — free until you open it:\n`orchestrator-fact-check` (a report is INPUT, never a fact; a number from history carries its\ntime window and build) · `spec-depth` (depth pass, fresh-checked practice, review stake, fail\nbranches written first, outcome over proxy) · `review-loop` (finding triage, the diff gate, the\nfindings-class registry) · `parallel-development` (fan-out, worktree isolation, one integrator) ·\n`doc-governance` (one SSOT per fact, the anti-drift rules) · `decisions-log` (the lean ledger) ·\n`capability-map-sweep` (the "the library already does this" defect class) ·\n`project-extensions` (when a repeated workflow earns a project skill / hook / agent, and what\neach costs when idle). Delegating to\nsubagents? `templates/rules/orchestration.md` is the nine always-loaded invariants — copy it into\n`.claude/rules/` (a plugin cannot ship rules; `/memory-kit:setup` offers this).\nPermissions are speed bumps; hooks are gates, and a gate is proven only through its exact wiring (`reference/harness-measurement.md`).\nNoisy commands: `bash ~/dev/claude-memory-kit-v73-r2/plugins/memory-kit/scripts/quiet.sh <cmd>`.\n\n## What you write freely vs what needs a "yes"\n\n- **Freely (and you say so briefly):** `MEMORY.md` entries, the session handoff.\n- **Ask first:** `.claude/rules/*.md` (always-loaded — every line costs context in every future\n  session), `knowledge/concepts/*.md`, and any promotion. Repetition on 3 dates makes a\n  CANDIDATE, not a rule.\n\n## During the session\n\nObservations happen in conversation; the ones worth keeping become one dated line in the hot\ncache — say "saved" and move on. When context runs long, save state before it is compacted: a\nmanual `/compact` is blocked until `MEMORY.md` is fresh and inside its caps; an automatic one is\nnever blocked (that would fail the user\'s request), and the next context opens with a loud\n"save memory now" if it ran over unsaved state.\n\nReporting to the user: lead with the outcome in one plain sentence, then what you need from them.\nYour working labels (ids, branch and file names, rule numbers) are yours — drop them or say in\nplain words what each is. Full sentences, a technical term glossed the first time.\n\nClose with `/memory-kit:close-session`: capture → audit for 3+-date repetition → promote on the\nuser\'s yes → replace the header → write the handoff the next session opens with.\n\n---\n\n=== SESSION START — 2026-10-22 (session #1) ===\n\n## Memory\nMEMORY.md: 3/180 lines (1% full), 0.0 KB / 32 KB cap, max-line 21 / 3000 cap — updated today\n\n## Git\nworking tree: 0 tracked change(s) (clean — only untracked files)\n\n---\n\n## MEMORY.md (hot cache — durable patterns + current state)\n\n# Hot\n\n- [2026-01-01] CANARY\n\n---\n\n## Latest handoff\n\nNo handoffs yet. `/memory-kit:close-session` writes the first one at the end of this session.\n'
+
+plugins/memory-kit/hooks/tests/test_legacy_hooks.py:188: AssertionError
+_ LegacyHooks.test_the_docs_recommended_quoting_is_resolved (command='bash "${CLAUDE_PROJECT_DIR}"/.claude/hooks/pre-compact.sh') _
+
+self = <test_legacy_hooks.LegacyHooks testMethod=test_the_docs_recommended_quoting_is_resolved>
+
+    def test_the_docs_recommended_quoting_is_resolved(self):
+        """`"$CLAUDE_PROJECT_DIR"/.claude/hooks/x.sh` (the form the Claude Code hooks doc recommends) and the
+        braced/unquoted forms resolve to the project's script."""
+        self.write(".claude/hooks/pre-compact.sh", KIT_PRECOMPACT)
+        for command in ('"$CLAUDE_PROJECT_DIR"/.claude/hooks/pre-compact.sh',
+                        'bash "${CLAUDE_PROJECT_DIR}"/.claude/hooks/pre-compact.sh',
+                        "bash $CLAUDE_PROJECT_DIR/.claude/hooks/pre-compact.sh",
+                        "bash ${CLAUDE_PROJECT_DIR}/.claude/hooks/pre-compact.sh"):
+            with self.subTest(command=command):
+                self.settings({"PreCompact": [{"hooks": [{"type": "command", "command": command}]}]})
+                text = self.injected()
+>               self.assertIn(NUDGE, text)
+E               AssertionError: "copies of the kit's hooks" not found in 'Memory Kit context — part 1 of 1 (parts arrive in any order; together they are the whole).\n# Memory Kit — how you work in this repository\n\n> Injected by the `memory-kit` plugin at every session start (and re-injected after compaction).\n> It is versioned with the plugin, so there is nothing to paste into `CLAUDE.md`.\n\n## Two invariants\n\n**1 — The user talks. You write.** The user never opens `MEMORY.md`, a handoff, a rule or a\nconcept article. You propose in conversation, they say "yes", you write the file and say what you\nwrote. If you catch yourself saying "add this to …" — rephrase as "I\'ll write it, confirm?".\n\n**2 — Every memory entry carries a `[YYYY-MM-DD]` tag.** Dates are what make the audit possible:\nwithout them you cannot see that a pattern showed up on three different days, and you cannot tell\na fresh fact from a rotten one. A stored fact about the OUTSIDE world (a price, an open ticket,\n"the client is waiting") older than ~7 days is a hypothesis — re-check before acting on it.\n\n## Where things live (in THIS repository)\n\n| Layer | File | Answers | Loaded |\n|---|---|---|---|\n| Hot cache | `.claude/memory/MEMORY.md` | what repeats · where things stand | injected every session by the hook |\n| Session log | `context/handoffs/<topic>-YYYY-MM-DD.md` | what happened, session by session | newest one injected; the rest on grep |\n| Deep memory | `knowledge/concepts/*.md` + `knowledge/index.md` | facts and rationale by topic | index injected; articles on demand |\n| Hard rules | `.claude/rules/*.md` | what must always / never happen | loaded by Claude Code itself |\n\nThose four are MEMORY, and there is no fifth — no `wisdom/`, `playbooks/`, `patterns/`; a new\nmemory layer is how this system dies.\n\n**The work\'s own documents are not memory.** They live per project in `projects/<name>/`:\n`README.md` (the map of where this project\'s documents live — read it before writing one — and\nthe project\'s **workflow tier**: `prototype · alpha · beta · ga`, how much proof a `done` owes),\n`BACKLOG.md`, `plans/YYYY-MM-DD-<slug>.md` — the spec an executor builds to, which is not\ndelegable without **Goal · Non-goals (what it must NOT do) · Acceptance written before building**,\nplus the exact gate commands once there is something to run (the kit ships the full form as\n`SPEC-TEMPLATE.md`; the skills know its path). Acceptance rows carry stable `AC-n` ids that\nslices, tests, QA runs and findings quote, a `Value sources` table names where every value comes\nfrom, and a spec may be `assumed` — an executor\'s recorded override of a missing source, owed\nratification. The rest of the folder is `research/`, `decisions-log.md`,\n`review-findings.md`, `qa/`. One folder per client or product — a\nsingle-product repo has exactly one. A spec, a backlog or a QA protocol never goes into\n`MEMORY.md`; a dated cross-session pattern never goes into a project folder. If a repo already\nkeeps its documents elsewhere, its project README says so and that mapping wins.\n\n## The caps (why the hook nags)\n\n`MEMORY.md` is a HOT CACHE, not an archive: **180 lines / 32 KB / 3000 chars per line**. Three\ncaps because line count alone lies — content densifies into ever-longer lines while `wc -l` stays\nflat. A tripped cap means run `/memory-kit:memory-audit` BEFORE other work.\n\n- **The header is «current state»**, 2-3 sentences, REPLACED at every close — never a stack of\n  "previous session" paragraphs. History belongs in handoffs.\n- **Overflow flows out by promotion**: a pattern seen on 3+ distinct dates → a\n  `knowledge/concepts/` article (facts + rationale) or a `.claude/rules/` file (a mechanical\n  always/never, only once it is stable). Promoted entries get PRUNED from the cache.\n- **One home per fact.** When a fact changes, grep its restatements and fix them in the same pass.\n  A stale copy that still looks current is the #1 failure mode of agent memory.\n\n## What else ships with the plugin (you have to know it exists to reach it)\n\n**Operators**, all namespaced `/memory-kit:` — bodies load only on invoke: `close-session` ·\n`memory-audit` (when a cap trips) · `system-audit` (the periodic seven-lens sweep) ·\n`session-review` · `second-opinion` · `qa-sweep` · `document` (PR · changelog · release note ·\npostmortem, written from the diff) · `code-sync` (specs reconciled against the code) · `setup` ·\n`tour`.\n\n**Depth, read on demand** from the plugin\'s `reference/` directory — free until you open it:\n`orchestrator-fact-check` (a report is INPUT, never a fact; a number from history carries its\ntime window and build) · `spec-depth` (depth pass, fresh-checked practice, review stake, fail\nbranches written first, outcome over proxy) · `review-loop` (finding triage, the diff gate, the\nfindings-class registry) · `parallel-development` (fan-out, worktree isolation, one integrator) ·\n`doc-governance` (one SSOT per fact, the anti-drift rules) · `decisions-log` (the lean ledger) ·\n`capability-map-sweep` (the "the library already does this" defect class) ·\n`project-extensions` (when a repeated workflow earns a project skill / hook / agent, and what\neach costs when idle). Delegating to\nsubagents? `templates/rules/orchestration.md` is the nine always-loaded invariants — copy it into\n`.claude/rules/` (a plugin cannot ship rules; `/memory-kit:setup` offers this).\nPermissions are speed bumps; hooks are gates, and a gate is proven only through its exact wiring (`reference/harness-measurement.md`).\nNoisy commands: `bash ~/dev/claude-memory-kit-v73-r2/plugins/memory-kit/scripts/quiet.sh <cmd>`.\n\n## What you write freely vs what needs a "yes"\n\n- **Freely (and you say so briefly):** `MEMORY.md` entries, the session handoff.\n- **Ask first:** `.claude/rules/*.md` (always-loaded — every line costs context in every future\n  session), `knowledge/concepts/*.md`, and any promotion. Repetition on 3 dates makes a\n  CANDIDATE, not a rule.\n\n## During the session\n\nObservations happen in conversation; the ones worth keeping become one dated line in the hot\ncache — say "saved" and move on. When context runs long, save state before it is compacted: a\nmanual `/compact` is blocked until `MEMORY.md` is fresh and inside its caps; an automatic one is\nnever blocked (that would fail the user\'s request), and the next context opens with a loud\n"save memory now" if it ran over unsaved state.\n\nReporting to the user: lead with the outcome in one plain sentence, then what you need from them.\nYour working labels (ids, branch and file names, rule numbers) are yours — drop them or say in\nplain words what each is. Full sentences, a technical term glossed the first time.\n\nClose with `/memory-kit:close-session`: capture → audit for 3+-date repetition → promote on the\nuser\'s yes → replace the header → write the handoff the next session opens with.\n\n---\n\n=== SESSION START — 2026-10-22 (session #2) ===\n\n## Memory\nMEMORY.md: 3/180 lines (1% full), 0.0 KB / 32 KB cap, max-line 21 / 3000 cap — updated today\n\n## Git\nworking tree: 0 tracked change(s) (clean — only untracked files)\n\n---\n\n## MEMORY.md (hot cache — durable patterns + current state)\n\n# Hot\n\n- [2026-01-01] CANARY\n\n---\n\n## Latest handoff\n\nNo handoffs yet. `/memory-kit:close-session` writes the first one at the end of this session.\n'
+
+plugins/memory-kit/hooks/tests/test_legacy_hooks.py:188: AssertionError
+__ ProtectTestsV2.test_missing_state_lib_degrades_the_ledger_never_the_guard ___
+
+self = <test_protect_tests.ProtectTestsV2 testMethod=test_missing_state_lib_degrades_the_ledger_never_the_guard>
+
+    def test_missing_state_lib_degrades_the_ledger_never_the_guard(self):
+        """R2-6: a plugin copy without hooks/lib/statefs.py (a partial install, an old cache) — the session ledger is
+        best-effort, the guard still answers: a new test file is silent, a weakening edit of an existing one asks, a
+        pure addition is silent, and nothing crashes (before r2: ModuleNotFoundError, exit 1)."""
+        broken = tempfile.mkdtemp(prefix="cmk-pt-nolib-")
+        self.addCleanup(shutil.rmtree, broken, True)
+        shutil.copytree(os.path.join(PLUGIN_ROOT, "hooks"), os.path.join(broken, "hooks"))
+        os.remove(os.path.join(broken, "hooks", "lib", "statefs.py"))
+        env = dict(self.env, CLAUDE_PLUGIN_ROOT=broken)
+        new_file = os.path.join(self.root, "tests", "fresh.test.ts")
+>       self.assertEqual(self.run_hook("Write", {"file_path": new_file, "content": "expect(1).toBe(1);"}, env=env),
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                         ("silent", ""))
+
+plugins/memory-kit/hooks/tests/test_protect_tests.py:175: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+plugins/memory-kit/hooks/tests/test_protect_tests.py:66: in run_hook
+    self.assertEqual(r.returncode, 0, r.stderr)
+E   AssertionError: 1 != 0 : Traceback (most recent call last):
+E     File "/var/folders/1v/1p2jytc91_lbgdyz_m1mwlnc0000gn/T/cmk-pt-nolib-1j8nxzjm/hooks/protect-tests.py", line 180, in <module>
+E       main()
+E     File "/var/folders/1v/1p2jytc91_lbgdyz_m1mwlnc0000gn/T/cmk-pt-nolib-1j8nxzjm/hooks/protect-tests.py", line 152, in main
+E       remember_created(project_dir, session_id, file_path)
+E     File "/var/folders/1v/1p2jytc91_lbgdyz_m1mwlnc0000gn/T/cmk-pt-nolib-1j8nxzjm/hooks/protect-tests.py", line 99, in remember_created
+E       statefs().append_line(project_dir, f"{session_id}_created_tests", file_path)
+E       ^^^^^^^^^
+E     File "/var/folders/1v/1p2jytc91_lbgdyz_m1mwlnc0000gn/T/cmk-pt-nolib-1j8nxzjm/hooks/protect-tests.py", line 93, in statefs
+E       import statefs as module
+E   ModuleNotFoundError: No module named 'statefs'
+_ HandoffOpening.test_a_fenced_heading_neither_starts_nor_ends_the_opening_section _
+
+self = <test_session_start_handoff.HandoffOpening testMethod=test_a_fenced_heading_neither_starts_nor_ends_the_opening_section>
+
+    def test_a_fenced_heading_neither_starts_nor_ends_the_opening_section(self):
+        """A fake `## Opening` in a fence before the real one is skipped; a `# comment` in a fence INSIDE the real
+        opening section does not end it."""
+        fake = "```\n## Opening fake\n```\n"
+        rest = "".join("- [2026-10-22] a line of what happened in the session, item %d\n" % k for k in range(120))
+        real = ("## 6. [Opening contract]\n\nRun this first:\n\n```bash\n# reset the stand\nmake reset\n```\n\n"
+                "Then X. OPENING-END-CANARY\n")
+        handoff = "# Handoff\n\n## 1. Done\n\n" + fake + rest + "\n" + real
+        self.assertGreater(len(handoff), HANDOFF_CAP)
+        self.write("context/handoffs/fake-2026-10-22.md", handoff)
+        body = self.body(self.injected())
+>       self.assertIn(real.rstrip(), body)
+E       AssertionError: '## 6. [Opening contract]\n\nRun this first:\n\n```bash\n# reset the stand\nmake reset\n```\n\nThen X. OPENING-END-CANARY' not found in '**Opening section (over the injection cap: injected first and whole; the rest of the handoff follows, truncated):**\n\n## Opening fake\n```\n- [2026-10-22] a line of what happened in the session, item 0\n- [2026-10-22] a line of what happened in the session, item 1\n- [2026-10-22] a line of what happened in the session, item 2\n- [2026-10-22] a line of what happened in the session, item 3\n- [2026-10-22] a line of what happened in the session, item 4\n- [2026-10-22] a line of what happened in the session, item 5\n- [2026-10-22] a line of what happened in the session, item 6\n- [2026-10-22] a line of what happened in the session, item 7\n- [2026-10-22] a line of what happened in the session, item 8\n- [2026-10-22] a line of what happened in the session, item 9\n- [2026-10-22] a line of what happened in the session, item 10\n- [2026-10-22] a line of what happened in the session, item 11\n- [2026-10-22] a line of what happened in the session, item 12\n- [2026-10-22] a line of what happened in the session, item 13\n- [2026-10-22] a line of what happened in the session, item 14\n- [2026-10-22] a line of what happened in the session, item 15\n- [2026-10-22] a line of what happened in the session, item 16\n- [2026-10-22] a line of what happened in the session, item 17\n- [2026-10-22] a line of what happened in the session, item 18\n- [2026-10-22] a line of what happened in the session, item 19\n- [2026-10-22] a line of what happened in the session, item 20\n- [2026-10-22] a line of what happened in the session, item 21\n- [2026-10-22] a line of what happened in the session, item 22\n- [2026-10-22] a line of what happened in the session, item 23\n- [2026-10-22] a line of what happened in the session, item 24\n- [2026-10-22] a line of what happened in the session, item 25\n- [2026-10-22] a line of what happened in the session, item 26\n- [2026-10-22] a line of what happened in the session, item 27\n- [2026-10-22] a line of what happened in the session, item 28\n- [2026-10-22] a line of what happened in the session, item 29\n- [2026-10-22] a line of what happened in the session, item 30\n- [2026-10-22] a line of what happened in the session, item 31\n- [2026-10-22] a line of what happened in the session, item 32\n- [2026-10-22] a line of what happened in the session, item 33\n- [2026-10-22] a line of what happened in the session, item 34\n- [2026-10-22] a line of what happened in the session, item 35\n- [2026-10-22] a line of what happened in the session, item 36\n- [2026-10-22] a line of what happened in the session, item 37\n- [2026-10-22] a line of what happened in the session, item 38\n- [2026-10-22] a line of what happened in the session, item 39\n- [2026-10-22] a line of what happened in the session, item 40\n- [2026-10-22] a line of what happened in the session, item 41\n- [2026-10-22] a line of what happened in the session, item 42\n- [2026-10-22] a line of what happened in the session, item 43\n- [2026-10-22] a line of what happened in the session, item 44\n- [2026-10-22] a line of what happened in the session, item 45\n- [2026-10-22] a line of what happened in the session, item 46\n- [2026-10-22] a line of what happened in the session, item 47\n- [2026-10-22] a line of what happened in the session, item 48\n- [2026-10-22] a line of what happened in the session, item 49\n- [2026-10-22] a line of what happened in the session, item 50\n- [2026-10-22] a line of what happened in the session, item 51\n- [2026-10-22] a line of what happened in the session, item 52\n- [2026-10-22] a line of what happened in the session, item 53\n- [2026-10-22] a line of what happened in the session, item 54\n- [2026-10-22] a line of what happened in the session, item 55\n- [2026-10-22] a line of what happened in the session, item 56\n- [2026-10-22] a line of what happened in the session, item 57\n- [2026-10-22] a line of what happened in the session, item 58\n- [2026-10-22] a line of what happened in the session, item 59\n- [2026-10-22] a line of what happened in the session, item 60\n- [2026-10-22] a line of what happened in the session, item 61\n- [2026-10-22] a line of what happened in the session, item 62\n- [2026-10-22] a line of what happened in the session, item 63\n- [2026-10-22] a line of what happened in the session, item 64\n- [2026-10-22] a line of what happened in the session, item 65\n- [2026-10-22] a line of what happened in the session, item 66\n- [2026-10-22] a line of what happened in the session, item 67\n- [2026-10-22] a line of what happened in the session, item 68\n- [2026-10-22] a line of what happened in the session, item 69\n- [2026-10-22] a line of what happened in the session, item 70\n- [2026-10-22] a line of what happened in the session, item 71\n- [2026-10-22] a line of what happened in the session, item 72\n- [2026-10-22] a line of what happened in the session, item 73\n- [2026-10-22] a line of what happened in the session, item 74\n- [2026-10-22] a line of what happened in the session, item 75\n- [2026-10-22] a line of what happened in the session, item 76\n- [2026-10-22] a line of what happened in the session, item 77\n- [2026-10-22] a line of what happened in the session, item 78\n- [2026-10-22] a line of what happened in the session, item 79\n- [2026-10-22] a line of what happened in the session, item 80\n- [2026-10-22] a line of what happened in the session, item 81\n- [2026-10-22] a line of what happened in the session, item 82\n- [2026-10-22] a line of what happened in the session, item 83\n- [2026-10-22] a line of what happened in the session, item 84\n- [2026-10-22] a line of what happened in the session, item 85\n- [2026-10-22] a line of what happened in the session, item 86\n- [2026-10-22] a line of what happened in the session, item 87\n- [2026-10-22] a line of what happened in the session, item 88\n- [2026-10-22] a line of what happened in the session, item 89\n- [2026-10-22] a line of what happened in the session, item 90\n- [2026-10-22] a line of what happened in the session, item 91\n- [2026-10-22] a line of what happened in the session, item 92\n- [2026-10-22] a line of what happened in the session, item 93\n- [2026-10-22] a line of what happened in the session, item 94\n- [2026-10-22] a line of what happened in the session, item 95\n- [2026-10-22] a line of what happened in the session, item 96\n- [2026-10-22] a line of what happened in the session, item 97\n- [2026-10-22] a line of what happened in the session, item 98\n- [2026-10-22] a line of what happened in the session, item 99\n- [2026-10-22] a line of what happened in the session, item 100\n- [2026-10-22] a line of what happened in the session, item 101\n- [2026-10-22] a line of what happened in the session, item 102\n- [2026-10-22] a line of what happened in the session, item 103\n- [2026-10-22] a line of what happened in the session, item 104\n- [2026-10-22] a line of what happened in the session, item 105\n- [2026-10-22] a line of what happened in the session, item 106\n- [2026-10-22] a line of what happened in the session, item 107\n- [2026-10-22] a line of what happened in the session, item 108\n- [2026-10-22] a line of what happened in the session, item 109\n- [2026-10-22] a line of what happened in the session, item 110\n- [2026-10-22] a line of what happened in the session, item 111\n- [2026-10-22] a line of what happened in the session, item 112\n- [2026-10-22] a line of what happened in the session, item 113\n- [2026-10-22] a line of what happened in the session, item 114\n- [2026-10-22] a line of what happened in the session, item 115\n- [2026-10-22] a line of what happened in the session, item 116\n- [2026-10-22] a line of what happened in the session, item 117\n- [2026-10-22] a line of what happened in the session, item 118\n- [2026-10-22] a line of what happened in the session, item 119\n\n**The rest of the handoff:**\n\n(the rest of the handoff is not injected — read the full file on demand)'
+
+plugins/memory-kit/hooks/tests/test_session_start_handoff.py:178: AssertionError
+_ HandoffOpening.test_a_title_that_contains_opening_is_not_the_opening_section _
+
+self = <test_session_start_handoff.HandoffOpening testMethod=test_a_title_that_contains_opening_is_not_the_opening_section>
+
+    def test_a_title_that_contains_opening_is_not_the_opening_section(self):
+        """Reviewer's probe: a 9,096-char handoff titled `# Handoff — reopening the billing work` (a level-1
+        heading containing «opening») stays within the cap — before r2 the whole file was its «opening section»."""
+        head = "# Handoff — reopening the billing work (2026-10-22)\n\n## 1. What was done\n\n"
+        line = "- [2026-10-22] a line of what happened in the billing session, nothing more\n"
+        handoff = head + line * ((9096 - len(head)) // len(line))
+        handoff += "x" * (9096 - len(handoff) - 1) + "\n"
+        self.assertEqual(len(handoff), 9096)
+        self.write("context/handoffs/billing-2026-10-22.md", handoff)
+        block = self.injected()
+>       self.assertLessEqual(len(self.body(block)), HANDOFF_CAP)
+E       AssertionError: 9316 not less than or equal to 6000
+
+plugins/memory-kit/hooks/tests/test_session_start_handoff.py:136: AssertionError
+__________ HandoffOpening.test_an_oversized_opening_section_is_capped __________
+
+self = <test_session_start_handoff.HandoffOpening testMethod=test_an_oversized_opening_section_is_capped>
+
+    def test_an_oversized_opening_section_is_capped(self):
+        """Reviewer's probe: a 12,000-char `## Opening` section is cut to the cap with the cut marker."""
+        filler = "".join("- [2026-10-22] done item %d\n" % k for k in range(40))
+        opening = "## Opening\n\nOPENING-START-CANARY\n" + "".join(
+            "- step %d of the plan for the next session, with its reason\n" % k for k in range(400))
+        opening = opening[:12000]
+        handoff = "# Handoff\n\n## 1. What was done\n\n" + filler + "\n" + opening + "\n"
+        self.write("context/handoffs/big-opening-2026-10-22.md", handoff)
+        body = self.body(self.injected())
+>       self.assertLessEqual(len(body), HANDOFF_CAP)
+E       AssertionError: 12221 not less than or equal to 6000
+
+plugins/memory-kit/hooks/tests/test_session_start_handoff.py:149: AssertionError
+_________ HandoffOpening.test_headings_inside_fenced_code_are_ignored __________
+
+self = <test_session_start_handoff.HandoffOpening testMethod=test_headings_inside_fenced_code_are_ignored>
+
+    def test_headings_inside_fenced_code_are_ignored(self):
+        """Reviewer's probe: `# reopening port 5432` inside a fenced block is no heading; nor is `## Opening …`
+        inside a fence (the stronger form). No real opening heading → the plain cut."""
+        fence = "```bash\n# reopening port 5432\nlsof -i :5432\n## Opening the tunnel\nssh -L 5432:db:5432 host\n```\n"
+        rest = "".join("- [2026-10-22] a line of what happened in the session, item %d\n" % k for k in range(160))
+        handoff = "# Handoff\n\n## 1. Commands used\n\n" + fence + "\n## 2. What was done\n\n" + rest
+        self.assertGreater(len(handoff), HANDOFF_CAP)
+        self.write("context/handoffs/fence-2026-10-22.md", handoff)
+        block = self.injected()
+>       self.assertNotRegex(block, r"(?i)opening section")
+E       AssertionError: Regex matched: 'Opening section' matches '(?i)opening section' in '## Latest handoff — context/handoffs/fence-2026-10-22.md (updated today)\n\n**Opening section (over the injection cap: injected first and whole; the rest of the handoff follows, truncated):**\n\n# reopening port 5432\nlsof -i :5432\n## Opening the tunnel\nssh -L 5432:db:5432 host\n```\n\n## 2. What was done\n\n- [2026-10-22] a line of what happened in the session, item 0\n- [2026-10-22] a line of what happened in the session, item 1\n- [2026-10-22] a line of what happened in the session, item 2\n- [2026-10-22] a line of what happened in the session, item 3\n- [2026-10-22] a line of what happened in the session, item 4\n- [2026-10-22] a line of what happened in the session, item 5\n- [2026-10-22] a line of what happened in the session, item 6\n- [2026-10-22] a line of what happened in the session, item 7\n- [2026-10-22] a line of what happened in the session, item 8\n- [2026-10-22] a line of what happened in the session, item 9\n- [2026-10-22] a line of what happened in the session, item 10\n- [2026-10-22] a line of what happened in the session, item 11\n- [2026-10-22] a line of what happened in the session, item 12\n- [2026-10-22] a line of what happened in the session, item 13\n- [2026-10-22] a line of what happened in the session, item 14\n- [2026-10-22] a line of what happened in the session, item 15\n- [2026-10-22] a line of what happened in the session, item 16\n- [2026-10-22] a line of what happened in the session, item 17\n- [2026-10-22] a line of what happened in the session, item 18\n- [2026-10-22] a line of what happened in the session, item 19\n- [2026-10-22] a line of what happened in the session, item 20\n- [2026-10-22] a line of what happened in the session, item 21\n- [2026-10-22] a line of what happened in the session, item 22\n- [2026-10-22] a line of what happened in the session, item 23\n- [2026-10-22] a line of what happened in the session, item 24\n- [2026-10-22] a line of what happened in the session, item 25\n- [2026-10-22] a line of what happened in the session, item 26\n- [2026-10-22] a line of what happened in the session, item 27\n- [2026-10-22] a line of what happened in the session, item 28\n- [2026-10-22] a line of what happened in the session, item 29\n- [2026-10-22] a line of what happened in the session, item 30\n- [2026-10-22] a line of what happened in the session, item 31\n- [2026-10-22] a line of what happened in the session, item 32\n- [2026-10-22] a line of what happened in the session, item 33\n- [2026-10-22] a line of what happened in the session, item 34\n- [2026-10-22] a line of what happened in the session, item 35\n- [2026-10-22] a line of what happened in the session, item 36\n- [2026-10-22] a line of what happened in the session, item 37\n- [2026-10-22] a line of what happened in the session, item 38\n- [2026-10-22] a line of what happened in the session, item 39\n- [2026-10-22] a line of what happened in the session, item 40\n- [2026-10-22] a line of what happened in the session, item 41\n- [2026-10-22] a line of what happened in the session, item 42\n- [2026-10-22] a line of what happened in the session, item 43\n- [2026-10-22] a line of what happened in the session, item 44\n- [2026-10-22] a line of what happened in the session, item 45\n- [2026-10-22] a line of what happened in the session, item 46\n- [2026-10-22] a line of what happened in the session, item 47\n- [2026-10-22] a line of what happened in the session, item 48\n- [2026-10-22] a line of what happened in the session, item 49\n- [2026-10-22] a line of what happened in the session, item 50\n- [2026-10-22] a line of what happened in the session, item 51\n- [2026-10-22] a line of what happened in the session, item 52\n- [2026-10-22] a line of what happened in the session, item 53\n- [2026-10-22] a line of what happened in the session, item 54\n- [2026-10-22] a line of what happened in the session, item 55\n- [2026-10-22] a line of what happened in the session, item 56\n- [2026-10-22] a line of what happened in the session, item 57\n- [2026-10-22] a line of what happened in the session, item 58\n- [2026-10-22] a line of what happened in the session, item 59\n- [2026-10-22] a line of what happened in the session, item 60\n- [2026-10-22] a line of what happened in the session, item 61\n- [2026-10-22] a line of what happened in the session, item 62\n- [2026-10-22] a line of what happened in the session, item 63\n- [2026-10-22] a line of what happened in the session, item 64\n- [2026-10-22] a line of what happened in the session, item 65\n- [2026-10-22] a line of what happened in the session, item 66\n- [2026-10-22] a line of what happened in the session, item 67\n- [2026-10-22] a line of what happened in the session, item 68\n- [2026-10-22] a line of what happened in the session, item 69\n- [2026-10-22] a line of what happened in the session, item 70\n- [2026-10-22] a line of what happened in the session, item 71\n- [2026-10-22] a line of what happened in the session, item 72\n- [2026-10-22] a line of what happened in the session, item 73\n- [2026-10-22] a line of what happened in the session, item 74\n- [2026-10-22] a line of what happened in the session, item 75\n- [2026-10-22] a line of what happened in the session, item 76\n- [2026-10-22] a line of what happened in the session, item 77\n- [2026-10-22] a line of what happened in the session, item 78\n- [2026-10-22] a line of what happened in the session, item 79\n- [2026-10-22] a line of what happened in the session, item 80\n- [2026-10-22] a line of what happened in the session, item 81\n- [2026-10-22] a line of what happened in the session, item 82\n- [2026-10-22] a line of what happened in the session, item 83\n- [2026-10-22] a line of what happened in the session, item 84\n- [2026-10-22] a line of what happened in the session, item 85\n- [2026-10-22] a line of what happened in the session, item 86\n- [2026-10-22] a line of what happened in the session, item 87\n- [2026-10-22] a line of what happened in the session, item 88\n- [2026-10-22] a line of what happened in the session, item 89\n- [2026-10-22] a line of what happened in the session, item 90\n- [2026-10-22] a line of what happened in the session, item 91\n- [2026-10-22] a line of what happened in the session, item 92\n- [2026-10-22] a line of what happened in the session, item 93\n- [2026-10-22] a line of what happened in the session, item 94\n- [2026-10-22] a line of what happened in the session, item 95\n- [2026-10-22] a line of what happened in the session, item 96\n- [2026-10-22] a line of what happened in the session, item 97\n- [2026-10-22] a line of what happened in the session, item 98\n- [2026-10-22] a line of what happened in the session, item 99\n- [2026-10-22] a line of what happened in the session, item 100\n- [2026-10-22] a line of what happened in the session, item 101\n- [2026-10-22] a line of what happened in the session, item 102\n- [2026-10-22] a line of what happened in the session, item 103\n- [2026-10-22] a line of what happened in the session, item 104\n- [2026-10-22] a line of what happened in the session, item 105\n- [2026-10-22] a line of what happened in the session, item 106\n- [2026-10-22] a line of what happened in the session, item 107\n- [2026-10-22] a line of what happened in the session, item 108\n- [2026-10-22] a line of what happened in the session, item 109\n- [2026-10-22] a line of what happened in the session, item 110\n- [2026-10-22] a line of what happened in the session, item 111\n- [2026-10-22] a line of what happened in the session, item 112\n- [2026-10-22] a line of what happened in the session, item 113\n- [2026-10-22] a line of what happened in the session, item 114\n- [2026-10-22] a line of what happened in the session, item 115\n- [2026-10-22] a line of what happened in the session, item 116\n- [2026-10-22] a line of what happened in the session, item 117\n- [2026-10-22] a line of what happened in the session, item 118\n- [2026-10-22] a line of what happened in the session, item 119\n- [2026-10-22] a line of what happened in the session, item 120\n- [2026-10-22] a line of what happened in the session, item 121\n- [2026-10-22] a line of what happened in the session, item 122\n- [2026-10-22] a line of what happened in the session, item 123\n- [2026-10-22] a line of what happened in the session, item 124\n- [2026-10-22] a line of what happened in the session, item 125\n- [2026-10-22] a line of what happened in the session, item 126\n- [2026-10-22] a line of what happened in the session, item 127\n- [2026-10-22] a line of what happened in the session, item 128\n- [2026-10-22] a line of what happened in the session, item 129\n- [2026-10-22] a line of what happened in the session, item 130\n- [2026-10-22] a line of what happened in the session, item 131\n- [2026-10-22] a line of what happened in the session, item 132\n- [2026-10-22] a line of what happened in the session, item 133\n- [2026-10-22] a line of what happened in the session, item 134\n- [2026-10-22] a line of what happened in the session, item 135\n- [2026-10-22] a line of what happened in the session, item 136\n- [2026-10-22] a line of what happened in the session, item 137\n- [2026-10-22] a line of what happened in the session, item 138\n- [2026-10-22] a line of what happened in the session, item 139\n- [2026-10-22] a line of what happened in the session, item 140\n- [2026-10-22] a line of what happened in the session, item 141\n- [2026-10-22] a line of what happened in the session, item 142\n- [2026-10-22] a line of what happened in the session, item 143\n- [2026-10-22] a line of what happened in the session, item 144\n- [2026-10-22] a line of what happened in the session, item 145\n- [2026-10-22] a line of what happened in the session, item 146\n- [2026-10-22] a line of what happened in the session, item 147\n- [2026-10-22] a line of what happened in the session, item 148\n- [2026-10-22] a line of what happened in the session, item 149\n- [2026-10-22] a line of what happened in the session, item 150\n- [2026-10-22] a line of what happened in the session, item 151\n- [2026-10-22] a line of what happened in the session, item 152\n- [2026-10-22] a line of what happened in the session, item 153\n- [2026-10-22] a line of what happened in the session, item 154\n- [2026-10-22] a line of what happened in the session, item 155\n- [2026-10-22] a line of what happened in the session, item 156\n- [2026-10-22] a line of what happened in the session, item 157\n- [2026-10-22] a line of what happened in the session, item 158\n- [2026-10-22] a line of what happened in the session, item 159\n\n**The rest of the handoff:**\n\n(the rest of the handoff is not injected — read the full file on demand)\n'
+
+plugins/memory-kit/hooks/tests/test_session_start_handoff.py:163: AssertionError
+_________ HandoffOpening.test_real_shaped_fixture_body_within_the_cap __________
+
+self = <test_session_start_handoff.HandoffOpening testMethod=test_real_shaped_fixture_body_within_the_cap>
+
+    def test_real_shaped_fixture_body_within_the_cap(self):
+        """R2-3: the real-shaped fixture still gets its opening section first and whole, and the whole handoff body,
+        labels and cut note included, is within HANDOFF_INJECT_CAP."""
+        with open(FIXTURE, encoding="utf-8") as fh:
+            handoff = fh.read()
+        self.write("context/handoffs/s143-2026-10-22.md", handoff)
+        body = self.body(self.injected())
+        opening = section(handoff, r"^##\s+.*opening.*$")
+        self.assertIn(opening, body)
+        self.assertLess(body.index(opening), body.index("## 1. What was done"))
+>       self.assertLessEqual(len(body), HANDOFF_CAP)
+E       AssertionError: 6194 not less than or equal to 6000
+
+plugins/memory-kit/hooks/tests/test_session_start_handoff.py:192: AssertionError
+=========================== short test summary info ============================
+FAILED plugins/memory-kit/hooks/tests/test_compaction.py::Compaction::test_a_second_compaction_over_saved_memory_gives_no_warning
+FAILED plugins/memory-kit/hooks/tests/test_compaction.py::Compaction::test_the_writer_never_reads_the_seen_file
+SUBFAILED(script='guard-secrets.py') plugins/memory-kit/hooks/tests/test_guard_failure.py::GuardFailureTest::test_a_python3_that_exists_but_cannot_run_is_a_no_op
+SUBFAILED(script='guard-git.py') plugins/memory-kit/hooks/tests/test_guard_failure.py::GuardFailureTest::test_a_python3_that_exists_but_cannot_run_is_a_no_op
+SUBFAILED(script='guard-zsh-split.py') plugins/memory-kit/hooks/tests/test_guard_failure.py::GuardFailureTest::test_a_python3_that_exists_but_cannot_run_is_a_no_op
+SUBFAILED(mutation='old command -v form') plugins/memory-kit/hooks/tests/test_guard_failure.py::GuardFailureTest::test_check_repo_rejects_a_guard_without_the_runs_check
+SUBFAILED(mutation='no check at all') plugins/memory-kit/hooks/tests/test_guard_failure.py::GuardFailureTest::test_check_repo_rejects_a_guard_without_the_runs_check
+SUBFAILED(script='guard-secrets.py') plugins/memory-kit/hooks/tests/test_guard_failure.py::GuardFailureTest::test_every_guard_checks_that_python3_runs
+SUBFAILED(script='guard-git.py') plugins/memory-kit/hooks/tests/test_guard_failure.py::GuardFailureTest::test_every_guard_checks_that_python3_runs
+SUBFAILED(script='guard-zsh-split.py') plugins/memory-kit/hooks/tests/test_guard_failure.py::GuardFailureTest::test_every_guard_checks_that_python3_runs
+SUBFAILED(cmd='cat .env.example && grep -rn x src') plugins/memory-kit/hooks/tests/test_guard_secrets.py::LiteralAppendIsLazy::test_literal_append_only_on_a_secret_redirect
+SUBFAILED(cmd='cat .env') plugins/memory-kit/hooks/tests/test_guard_secrets.py::LiteralAppendIsLazy::test_literal_append_only_on_a_secret_redirect
+SUBFAILED(cmd='echo x > notes.txt; ls .env') plugins/memory-kit/hooks/tests/test_guard_secrets.py::LiteralAppendIsLazy::test_literal_append_only_on_a_secret_redirect
+SUBFAILED(cmd='MSG="a b" git commit -q; ls $MSG') plugins/memory-kit/hooks/tests/test_guard_zsh_split.py::HookTest::test_a_prefix_assignment_does_not_outlive_its_command
+SUBFAILED(cmd='FLAGS="--a --b" make; ./deploy.sh $FLAGS') plugins/memory-kit/hooks/tests/test_guard_zsh_split.py::HookTest::test_a_prefix_assignment_does_not_outlive_its_command
+SUBFAILED(cmd='X="a b" Y=1 env | grep X; set -- $X') plugins/memory-kit/hooks/tests/test_guard_zsh_split.py::HookTest::test_a_prefix_assignment_does_not_outlive_its_command
+SUBFAILED(cmd='x="a b" y=$(printf %s $x)') plugins/memory-kit/hooks/tests/test_guard_zsh_split.py::HookTest::test_a_substitution_in_an_assignment_sees_the_assignments_before_it
+SUBFAILED(cmd='x="a b" y="$(printf %s $x)" z=1') plugins/memory-kit/hooks/tests/test_guard_zsh_split.py::HookTest::test_a_substitution_in_an_assignment_sees_the_assignments_before_it
+FAILED plugins/memory-kit/hooks/tests/test_guard_zsh_split.py::HookTest::test_nesting_past_the_parser_depth_asks
+SUBFAILED(command='"$CLAUDE_PROJECT_DIR"/.claude/hooks/pre-compact.sh') plugins/memory-kit/hooks/tests/test_legacy_hooks.py::LegacyHooks::test_a_project_path_with_a_space
+SUBFAILED(command='bash "$CLAUDE_PROJECT_DIR/.claude/hooks/pre-compact.sh"') plugins/memory-kit/hooks/tests/test_legacy_hooks.py::LegacyHooks::test_a_project_path_with_a_space
+SUBFAILED(command="bash '.claude/hooks/save memory.sh'") plugins/memory-kit/hooks/tests/test_legacy_hooks.py::LegacyHooks::test_a_project_path_with_a_space
+SUBFAILED(command='"$CLAUDE_PROJECT_DIR"/.claude/hooks/pre-compact.sh') plugins/memory-kit/hooks/tests/test_legacy_hooks.py::LegacyHooks::test_the_docs_recommended_quoting_is_resolved
+SUBFAILED(command='bash "${CLAUDE_PROJECT_DIR}"/.claude/hooks/pre-compact.sh') plugins/memory-kit/hooks/tests/test_legacy_hooks.py::LegacyHooks::test_the_docs_recommended_quoting_is_resolved
+FAILED plugins/memory-kit/hooks/tests/test_protect_tests.py::ProtectTestsV2::test_missing_state_lib_degrades_the_ledger_never_the_guard
+FAILED plugins/memory-kit/hooks/tests/test_session_start_handoff.py::HandoffOpening::test_a_fenced_heading_neither_starts_nor_ends_the_opening_section
+FAILED plugins/memory-kit/hooks/tests/test_session_start_handoff.py::HandoffOpening::test_a_title_that_contains_opening_is_not_the_opening_section
+FAILED plugins/memory-kit/hooks/tests/test_session_start_handoff.py::HandoffOpening::test_an_oversized_opening_section_is_capped
+FAILED plugins/memory-kit/hooks/tests/test_session_start_handoff.py::HandoffOpening::test_headings_inside_fenced_code_are_ignored
+FAILED plugins/memory-kit/hooks/tests/test_session_start_handoff.py::HandoffOpening::test_real_shaped_fixture_body_within_the_cap
+30 failed, 128 passed, 432 subtests passed in 36.37s

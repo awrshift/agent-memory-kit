@@ -1,0 +1,5 @@
+spaces then x 200004 0.0
+punct title 300005 0.025
+ws-run lines 200006 124.351
+
+[exited with code 0]

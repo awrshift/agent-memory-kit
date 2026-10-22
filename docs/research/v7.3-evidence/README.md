@@ -14,3 +14,5 @@ the paths they name and are kept as a record, not as a runnable suite — the ru
 | `hooks/time_session_end.py` | session-end.sh 0.56–0.61 s with stdin left open (was 1.04–1.08 s) against the 1.5 s budget |
 | `hooks/check_real_handoff.py` | a real 6.2k-char handoff: the opening section arrives whole with 7.3, not with 7.2.3 |
 | `zsh/measure.py`, `zsh/diff_selftest.py` | guard-zsh-split: worst case 100k-char inputs 0.03–0.08 s; 0 false positives on the source's 37 self-tests and a 60-command hand corpus (self-made — an estimate) |
+
+| `r2/` | the code-review fix round: `red-run.txt` 30 new tests failing on the pre-fix code, `green-run.txt` 144 passed; worst-case timings before/after; part sizes ≤ 10,000 |

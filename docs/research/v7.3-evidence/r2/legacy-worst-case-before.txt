@@ -1,0 +1,3 @@
+4aca9ec long word 20000 1.166
+4aca9ec long word 40000 4.685
+4aca9ec long word dots 20000 1.999
