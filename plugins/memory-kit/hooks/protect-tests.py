@@ -79,24 +79,32 @@ def ask(reason: str) -> None:
 
 
 def session_created_file(project_dir: Path, session_id: str, file_path: str) -> bool:
-    """Files this session created are its own to iterate on — that is the TDD loop."""
-    text = statefs().read_text(project_dir, f"{session_id}_created_tests")
+    """Files this session created are its own to iterate on — that is the TDD loop. The ledger is best-effort
+    (7.3 r2): without hooks/lib/statefs.py the file counts as not created here, so the change is judged by the
+    weakening rule — the guard itself never dies on its bookkeeping (statefs answers None on an OSError)."""
+    fs = statefs()
+    text = fs.read_text(project_dir, f"{session_id}_created_tests") if fs is not None else None
     return text is not None and file_path in text.splitlines()
 
 
 def statefs():
-    """hooks/lib/statefs.py (7.3): the ledger is never read or written through a symlink."""
+    """hooks/lib/statefs.py (7.3): the ledger is never read or written through a symlink. None when it cannot be
+    imported (7.3 r2) — the ledger degrades, the guard keeps answering."""
     sys.dont_write_bytecode = True
     lib = str(Path(os.environ.get("CLAUDE_PLUGIN_ROOT", Path(__file__).resolve().parent.parent)) / "hooks" / "lib")
     if lib not in sys.path:
         sys.path.insert(0, lib)
-    import statefs as module
-
+    try:
+        import statefs as module
+    except Exception:  # noqa: BLE001 — a missing or broken lib degrades the ledger, never kills the guard
+        return None
     return module
 
 
 def remember_created(project_dir: Path, session_id: str, file_path: str) -> None:
-    statefs().append_line(project_dir, f"{session_id}_created_tests", file_path)
+    fs = statefs()
+    if fs is not None:
+        fs.append_line(project_dir, f"{session_id}_created_tests", file_path)
 
 
 def weakening(old: str, new: str) -> str:

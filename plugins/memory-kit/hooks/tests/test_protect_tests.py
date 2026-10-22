@@ -162,6 +162,23 @@ class ProtectTestsV2(unittest.TestCase):
         r = subprocess.run(WIRING, shell=True, input="not json", capture_output=True, text=True, env=self.env)
         self.assertEqual((r.returncode, r.stdout), (0, ""))
 
+    def test_missing_state_lib_degrades_the_ledger_never_the_guard(self):
+        """R2-6: a plugin copy without hooks/lib/statefs.py (a partial install, an old cache) — the session ledger is
+        best-effort, the guard still answers: a new test file is silent, a weakening edit of an existing one asks, a
+        pure addition is silent, and nothing crashes (before r2: ModuleNotFoundError, exit 1)."""
+        broken = tempfile.mkdtemp(prefix="cmk-pt-nolib-")
+        self.addCleanup(shutil.rmtree, broken, True)
+        shutil.copytree(os.path.join(PLUGIN_ROOT, "hooks"), os.path.join(broken, "hooks"))
+        os.remove(os.path.join(broken, "hooks", "lib", "statefs.py"))
+        env = dict(self.env, CLAUDE_PLUGIN_ROOT=broken)
+        new_file = os.path.join(self.root, "tests", "fresh.test.ts")
+        self.assertEqual(self.run_hook("Write", {"file_path": new_file, "content": "expect(1).toBe(1);"}, env=env),
+                         ("silent", ""))
+        self.assertEqual(self.edit("    expect(sum(x, 3)).toBe(5);", "    expect(sum(x, 3)).toBe(6);", env=env)[0],
+                         "ask")
+        old = "    expect(sum(x, 3)).toBe(5);\n"
+        self.assertEqual(self.edit(old, old + "    expect(sum(x, 0)).toBe(2);\n", env=env), ("silent", ""))
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=1)
