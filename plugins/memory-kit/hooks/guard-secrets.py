@@ -38,8 +38,9 @@ prints `permissionDecision: "ask"` naming the guard and the error, exit 0: the u
 passes silently. hooks.json sets `"onFailure": "block"` (a crash, timeout or invalid output blocks the
 call) and checks `python3` exists first, so a machine without it is an explicit no-op, not a blocked session.
 Known gaps: globs (`cat .e*`), heredoc bodies fed to an interpreter (`python3 - <<EOF`), script
-files, a copy read afterwards (`cp .env x && cat x`), tools outside the matcher (Grep, NotebookEdit),
-an fd path the shell computes (`/dev/f$X/1`) or reaches through a symlink made earlier.
+files, a copy read afterwards (`cp .env x && cat x`), tools outside the matcher (Grep, NotebookEdit).
+Tests: hooks/tests/test_guard_secrets.py (APPEND_* lists: the exempt form and every shape refused),
+test_guard_failure.py (the failure policy), test_cmdparse_fd.py (the fd-prefix reading).
 Search patterns are not paths: the pattern word of grep/egrep/fgrep/rg/ag/ack (`grep -rn '.env' src`, `-e .env`) and
 the value of find's -name/-path/-regex are skipped. `grep x .env` (the FILE operand) is still blocked.
 Python 3.9+, stdlib only; never spawns a process.
