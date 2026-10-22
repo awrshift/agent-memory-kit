@@ -206,6 +206,18 @@ class LegacyHooks(unittest.TestCase):
                 self.assertIn(NUDGE, text)
                 self.assertIn(".claude/hooks/" + shown, text)
 
+    def test_worst_case_command_under_two_seconds(self):
+        """A settings command is text the kit did not write: a 100,000-char word without a script extension (the
+        pre-r2 findall was quadratic: 40,000 chars → 4.7 s, scratchpad evidence legacy-worst-case-before.txt)."""
+        import time
+        for label, command in (("long word", "a" * 100000), ("dots", "a." * 50000), ("separators", ";a" * 50000),
+                               ("unbalanced quote", '"' + "a.s" * 30000)):
+            with self.subTest(case=label):
+                self.settings({"PreCompact": [{"hooks": [{"type": "command", "command": command}]}]})
+                t0 = time.monotonic()
+                self.assertNotIn(NUDGE, self.injected())
+                self.assertLess(time.monotonic() - t0, 2.0, label)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=1)

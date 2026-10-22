@@ -27,6 +27,7 @@ SETTINGS = (".claude/settings.json", ".claude/settings.local.json")
 MAX_READ = 512 * 1024
 MAX_LISTED = 8
 SCRIPT_RE = re.compile(r"""[^\s"'`;|&()<>]+\.(?:sh|bash|py|js|mjs|cjs|ts)\b""")
+PIECE_SPLIT_RE = re.compile(r"""[\s"'`;|&()<>]+""")
 SCRIPT_WORD_RE = re.compile(r"""[^"'`;|&()<>]+\.(?:sh|bash|py|js|mjs|cjs|ts)""")  # one shell word: spaces allowed
 PROJECT_TOKEN = "\x00cmk-project-dir\x00"  # stand-ins without spaces or quotes, replaced after the split
 HOME_TOKEN = "\x00cmk-home\x00"
@@ -69,8 +70,9 @@ def _scripts(command: str, project_dir: Path) -> list[Path]:
     """The script paths a hook command names (7.3 r2): `$CLAUDE_PROJECT_DIR` / `${CLAUDE_PROJECT_DIR}` (and `$HOME`),
     quoted or not, stand for their directory, then the command is split like a POSIX shell (shlex), so
     `"$CLAUDE_PROJECT_DIR"/.claude/hooks/x.sh` and a quoted path with a space resolve whole. A word that is not a
-    script path itself (`bash -c 'python3 x.py'`) is searched for one; an unbalanced quote falls back to that
-    search over the whole command."""
+    script path itself (`bash -c 'python3 x.py'`) is searched for one, per separator-free piece; an unbalanced quote
+    falls back to that search over the whole command. Linear in the command's length (7.3 r2: measured, see
+    tests/test_legacy_hooks.py)."""
     text = re.sub(r"\$(?:CLAUDE_PROJECT_DIR\b|\{CLAUDE_PROJECT_DIR\})", PROJECT_TOKEN, command)
     text = re.sub(r"\$(?:HOME\b|\{HOME\})", HOME_TOKEN, text)
     try:
@@ -80,9 +82,14 @@ def _scripts(command: str, project_dir: Path) -> list[Path]:
     except ValueError:
         words = [text]
     found = []
+    project, home = str(project_dir), str(Path.home())
     for word in words:
-        word = word.replace(PROJECT_TOKEN, str(project_dir)).replace(HOME_TOKEN, str(Path.home()))
-        tokens = [word] if SCRIPT_WORD_RE.fullmatch(word) else SCRIPT_RE.findall(word)
+        if "\x00" in word:
+            word = word.replace(PROJECT_TOKEN, project).replace(HOME_TOKEN, home)
+        if SCRIPT_WORD_RE.fullmatch(word):
+            tokens = [word]
+        else:  # one anchored match per separator-free piece: linear (findall restarts at every char — quadratic)
+            tokens = [m.group(0) for m in map(SCRIPT_RE.match, PIECE_SPLIT_RE.split(word)) if m]
         for token in tokens:
             path = Path(os.path.expanduser(token))
             found.append(path if path.is_absolute() else project_dir / path)
