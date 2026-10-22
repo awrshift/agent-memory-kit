@@ -35,6 +35,11 @@ leave this board.
 
 ## Recently settled
 
+- 7.3.0 (2026-10-22): the kit's `second-opinion` / `idea-validator` stay (most users have no board of their own) and
+  defer to a user-level review setup when one exists — the 2026-09-28 duplicate-skills inbox item, option (a).
+  D13 is half-moved: Anthropic's docs say Cowork loads plugin hooks, the old issues are closed without a fix note,
+  and no probe has run — `docs/specs/cowork.md` says so.
+
 - Multi-platform (v6.3.0, 2026-08-31): the **tier model** — T1 hook enforcement on Claude Code,
   T2 `AGENTS.md` protocol elsewhere, T3 plain files. Canonical source stays the Claude Code
   plugin format in the **nested** layout: Codex and Cursor both verifiably read it natively
