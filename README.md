@@ -4,7 +4,7 @@
 
 **An agent that remembers where you stopped — and a working method for checking its "done".**
 
-Claude Memory Kit is a plugin for Claude Code. Install it in a repository and three things change:
+Claude Memory Kit is a plugin for Claude Code. Install it in a repository and you get three things:
 
 - **Every session opens where the last one ended.** The agent keeps short dated notes and a handoff as plain files in
   your repository and reads them at the next start. You stop re-explaining the project.
