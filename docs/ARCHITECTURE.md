@@ -631,7 +631,8 @@ If you want the role-guidance pattern back for your project, create skills under
 - `plugins/memory-kit/context/identity.md` — what the agent is told every session
 - `plugins/memory-kit/skills/close-session/SKILL.md` — the full end-of-session ritual
 - `plugins/memory-kit/reference/` — depth: fact-check, parallel development, doc governance,
-  decisions log, review loop, the QA protocol template; since 8.2.0 also acceptance, helper roster, window cycle,
+  decisions log, review loop, the QA protocol template; since 8.2.0 also adoption (the index: what to take as is,
+  adapt or skip), acceptance, helper roster, window cycle,
   rules subtraction, review classes, measurement lessons, reporting (each opens with «Applies when:» and tags its
   proof — mostly one project's practice)
 - `plugins/memory-kit/templates/agents/` — role templates (8.2.0), a copy-on-request layer: nothing loads until
