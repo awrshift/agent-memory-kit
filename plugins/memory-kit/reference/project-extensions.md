@@ -33,6 +33,10 @@ themselves (`templates/rule-template.md`).
 3. **Who is the consumer?** A layer nobody reads and nothing invokes is the bloat the
    anti-bloat lens deletes. Name the trigger before you write the file.
 
+Before writing your own, read what one project already wrote, each line with its condition and proof:
+`review-classes.md` (review checklist lines) · `measurement-lessons.md` (rules for counting and model readers) ·
+`reporting.md` (how reports to the user read).
+
 ## Measured and not built — read before adding a gate
 
 One project measured these ideas on its own history in 2026-11 and built none of them. Small samples, one team:
@@ -50,6 +54,17 @@ repeat a study only when your defects look different from the ones described.
 - **A build rule «every stage must be observable».** 18 of 18 diagnosed defects had been named from data already
   stored. No rule.
 - **Moving always-loaded rules out because they «never fire».** 93 % of rule units showed use in the transcripts.
+- **A guard on briefs sent by message to another session** (does the brief carry its depth line, its paid-run
+  source?). Over nine days 35 of 58 sessions that built code edited it inline and never met the spawn hook — yet on
+  that path 64 of 66 specs carried the line and all 6 paid runs named their parameter source. The two misses were
+  short fix-round specs, which the existing hook would have passed too. The rules held without a guard
+  (measured in one project, 2026-11: 2 of 66 specs, 0 of 6 paid runs missed).
+- **A sweep of every hook's regexes.** A grep found no second nested repeat in the project's hooks and scripts; the
+  cheaper rule is the one that caught the first: a regular expression taken into a hook is timed on a hostile line
+  first. A repeat inside a repeat (`(?:[#*>-]+[ \t]*)*`) quadrupled its cost every two characters of a marker run —
+  0.58 s at 24, 2.4 s at 26, against a hook timeout of 10 s — and a file with a run of 66 existed. The linear form
+  `^[ \t#*>-]*Depth pass\b` agreed with it on 79 of 79 texts; one self-test case (a 60-dash line returns at once)
+  now guards it (measured in one project, 2026-11: 0.58 s at 24 characters, 2.4 s at 26).
 
 ## Skeletons
 
@@ -121,3 +136,19 @@ Lens 4 of `/memory-kit:system-audit` asks one question of each of these files: *
 fire?** A rule never matched, a skill never invoked, an agent never spawned across ~5 sessions
 is a drop candidate — and dropping it is a finding, not a failure. Write the extension expecting
 that question.
+
+**Checks rot too.** *Applies when your project keeps check scripts that find their subject in the tree (files by
+path, declarations by folder, a registry by its location).* Three lessons from one restructure of an upstream tree
+(measured in one project, 2026-11: the old checks fired on 17 of 33 canary cases, the repaired ones on 33 of 33):
+
+- **A check that derives its subject from the tree fails on an empty subject** — it never prints «ok» over nothing.
+  After the restructure one check derived 0 tables where it had found 5 thirteen days earlier, and printed «ok».
+  A tool that returns no output for a non-empty input is a FAIL too: a linter given a deleted path exited with no
+  output, and half of a layering check went silent for the run.
+- **Anchor a check by name or by declaration shape, not by a path that can move.** The same move had broken a check
+  once before and was patched by hand, per path; the second time it was fixed at the layer.
+- **Test a proof row by breaking the thing it proves.** One canary row matched the planted file's name, which an
+  unrelated rule also printed; on a copy with the real rule removed it must read NO — after the fix it did (31 of
+  33, exit 1).
+
+When the rule set itself has grown line by line, the procedure for shrinking it is `rules-subtraction.md`.
