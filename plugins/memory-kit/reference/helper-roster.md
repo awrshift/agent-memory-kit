@@ -41,7 +41,7 @@ copy into your `.claude/agents/` (`/memory-kit:setup` offers it); adapt the path
 
 The templates live in `templates/agents/` (`code-reviewer.md`, `prebuild-reader.md`, `tool-builder.md`,
 `web-recon.md`, `labeler.md`). The kit's `recon` keeps facts from your own repositories; `web-recon` splits off the
-web half so each prompt stays narrow (in trial in one project since 2026-11-11; count due 2026-11-18).
+web half so each prompt stays narrow (in trial in one project since 2026-11-11; no count set).
 
 ## 3. A helper may start without the project's rules — so its file carries them
 
@@ -52,7 +52,8 @@ guard still blocked inside such a helper; other guards were not probed, so probe
 
 The saving is large: a do-nothing helper started at 42.8k tokens with every tool and rule, 18.3k without the rule
 files, and 4.9k with a six-tool list on top; one project's seven roles started at 5.3k–7.8k tokens against
-30.9k–58.8k before (measured in one project, 2026-11: first-call usage of each role).
+30.9k–58.8k before (before: real runs with their briefs; the probe's brief was one line) (measured in one project,
+2026-11: first-call usage of each role).
 
 The price: what the helper must know is no longer loaded for it. For every rule a role must obey, decide where it lands
 — the role's body · a file the body tells it to read · the caller's brief · a hook · «not for helpers» (it stays with
@@ -83,6 +84,7 @@ what its acceptance check parses (one project's working practice; no count).
 
 A roster change is a harness change (`harness-measurement.md`): the start context per role from the first call's usage,
 before and after · each guard you rely on probed inside a lean helper · the new reviewer, blind, on past diffs whose
-blocking findings are known. One project's reviewer replay found the known blocking findings on 3 of 3 diffs, with one
-extra valid finding and none false (measured in one project, 2026-11: 3 of 3 diffs). Token savings per build and
-quality per build are counted on the next real builds, not on the probe.
+blocking findings are known. One project's reviewer replay found the one pre-registered blocking finding and the two
+should-fix ones (returned as notes) on three replayed diffs — three findings, not a rate — with one extra valid
+finding and none false (measured in one project, 2026-11: 3 of 3 pre-registered findings). Token savings per build
+and quality per build are counted on the next real builds, not on the probe.

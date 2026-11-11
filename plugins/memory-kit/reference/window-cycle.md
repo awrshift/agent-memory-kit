@@ -64,8 +64,9 @@ stand-ins unnoticed before this line existed (one project's working practice; no
 - **A window takes its next task only while its context plus the task's estimate stays within ~250k** (one project's
   number); main states the estimate in the brief, with a margin. The reasoning behind both numbers: two windows stopped
   near 240k at the draft of a design; a round with a spec, a build, a test lane and a review cost 80–100k; a first step
-  of four took 287k against ~200k estimated, and three of four windows' own estimates were 50–90k under the counter
-  (in trial in one project since 2026-11-11; count due 2026-11-25: windows that ended a task past 250k).
+  of four took 287k against ~200k estimated, and three of four parallel sessions reported an estimate instead of the
+  counter, and one estimate was off by 90k (in trial in one project since 2026-11-11; count due 2026-11-25: windows
+  that ended a task past 250k).
 - **Size the team to the task, not to the slots.** Pieces that share one context stay in one window; parallel windows
   only for separable work; an idle slot is fine. Fact sweeps and review seats go to helpers from the start
   (`helper-roster.md`). The critical path — the measurement a decision waits on — gets the first slot and the first

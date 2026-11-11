@@ -8,7 +8,8 @@ exist yet) reads exactly like a true one. This check is mechanical and narrow: i
 never that the sentence about them is true.
 
 Reads the text file (`-` = stdin). Repositories: every `--repo` (repeatable), else `$CLAUDE_PROJECT_DIR`, else the
-current directory. A reference is found when it exists in ANY of them.
+current directory. A reference is found when it exists in ANY of them. A relative path (`docs/x.md`, `./x`, `../x`, a
+link target) resolves from each repository's root, never from the folder the text file sits in.
 
 Shapes it sees:
   path   a token inside backticks or a relative markdown link target `[x](a/b.md)` that holds a `/` and ends in
@@ -20,7 +21,8 @@ Shapes it sees:
   hash   7–40 lowercase hex characters with at least one letter and one digit, standing alone (not inside a
          word, a path, a URL, a `#colour`, a UUID or a longer hex string; both ends of `a..b` count). Found =
          `git cat-file -e <hash>^{commit}` succeeds.
-Skipped by shape (never flagged): URLs (`scheme://…`, `mailto:`), a token whose first segment is a host name
+Skipped by shape (never flagged): URLs (`scheme://…`, `mailto:`) and e-mail addresses — blanked, query values and
+host names included, before the bare-path and hash passes — a token whose first segment is a host name
 (`example.com/a.html`) unless a repository has that entry, `@scope/name`, globs and placeholders (`*`, `<…>`,
 `{…}`, `…`, `...`), a token with a space or starting with `-`, version strings (`release/v1.2.3` — the extension
 starts with a digit), hex runs over 40 characters (checksums). `--verbose` also prints every reference found and
@@ -28,8 +30,9 @@ every path-like token skipped, with the reason.
 
 What it cannot see: a claim in prose («the test covers X», «nothing else changed», a number) — only that a named
 thing exists; a path written without a `/` (`README.md`) or a bare path under a directory that exists nowhere; a
-hash under 7 characters, in upper case or inside a URL; whether a hash is on the branch the text is about (only
-that git knows it). An ambiguous short hash (two objects share the prefix) counts as missing — lengthen it.
+link target over 200 characters; a hash under 7 characters, in upper case or inside a URL; whether a hash is on the
+branch the text is about (only that git knows it). An ambiguous short hash (two objects share the prefix) counts as
+missing — lengthen it.
 
 Exit 0 = every reference found · 1 = the missing ones are listed (fix the text or create the thing first) · 2 = usage.
 Tests: scripts/tests/test_claim_refs_check.py. Python 3.9+, stdlib only.
@@ -44,7 +47,10 @@ import subprocess
 import sys
 
 TICK_RE = re.compile(r"`([^`\n]+)`")
-LINK_RE = re.compile(r"\]\(([^)\s]+)\)")
+LINK_RE = re.compile(r"\]\(([^)\s]{1,200})\)")  # bounded: a run of `](` with no `)` was quadratic
+# URL and e-mail spans, blanked before the bare-path and hash passes; a match starts only where a run starts
+URL_RE = re.compile(r"(?<![A-Za-z0-9+.-])[A-Za-z][A-Za-z0-9+.-]{0,31}://\S*")
+EMAIL_RE = re.compile(r"(?<![\w.+-])[\w.+-]{1,64}@[\w.-]{1,255}")
 BARE_RE = re.compile(r"(?<![\w/.:@~-])((?:\.\.?/)?[\w.-]+(?:/[\w.-]+)+/?)")
 HASH_RE = re.compile(r"(?:(?<=\.\.)|(?<![0-9A-Za-z_/#.-]))([0-9a-f]{7,40})(?![0-9A-Za-z_-])")
 SUFFIX_RE = re.compile(r"(?::\d+(?:-\d+)?|#[\w.-]*)$")
@@ -71,6 +77,11 @@ def skip_reason(tok: str, top_level: set[str]) -> str | None:
     return None
 
 
+def blank_web(text: str) -> str:
+    """The text with every URL and e-mail span replaced by a space: never a path or a commit of a repository."""
+    return EMAIL_RE.sub(" ", URL_RE.sub(" ", text))
+
+
 def candidates(text: str, top_level: set[str]) -> tuple[set[str], set[str], list[tuple[str, str]]]:
     """(paths, hashes, skipped path-like tokens with the reason)."""
     paths: set[str] = set()
@@ -83,7 +94,7 @@ def candidates(text: str, top_level: set[str]) -> tuple[set[str], set[str], list
             paths.add(tok)
         elif "/" in tok:
             skipped.append((tok, reason))
-    prose = TICK_RE.sub(" ", text)
+    prose = blank_web(TICK_RE.sub(" ", text))
     for m in BARE_RE.finditer(prose):
         tok = SUFFIX_RE.sub("", m.group(1).rstrip(".,;:"))
         if tok in paths or skip_reason(tok, top_level) is not None:
@@ -92,7 +103,7 @@ def candidates(text: str, top_level: set[str]) -> tuple[set[str], set[str], list
             paths.add(tok)
         else:
             skipped.append((tok, "bare, first segment is no top-level entry"))
-    hashes = {h for h in HASH_RE.findall(text) if re.search(r"[a-f]", h) and re.search(r"\d", h)}
+    hashes = {h for h in HASH_RE.findall(blank_web(text)) if re.search(r"[a-f]", h) and re.search(r"\d", h)}
     return paths, hashes, skipped
 
 

@@ -22,7 +22,8 @@ Every entry below: (one project's working practice; no count) — the date is th
    predicate. Incident 2026-09: the downstream reviewer's most repeated flag on that project's PRs.
 2. **A check is named by what it proves.** A test, scorer or gate that re-runs an existing gate proves only that gate.
    Check: label it «re-verified»; its name and report state what it cannot see. Incident 2026-09: a harness reported
-   «0 facts changed» by re-running the system's own checking functions.
+   «0 facts changed» by re-running the system's own checking functions. A check that derives its subject from the
+   tree fails on an empty subject: `project-extensions.md` «Telemetry».
 3. **A text heuristic ships with its false-positive count on your own corpus** — including a heuristic the
    integrator decides in a spec. Check: the count on stored real inputs, both sides, before merge. Incident 2026-09:
    an unmeasured «an all-caps word is a name» rule made titles worse and fixed none.

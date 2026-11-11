@@ -16,7 +16,9 @@ Skipped when the project's settings disable the plugin. Shown on startup and cle
 
 Every case runs the EXACT SessionStart commands from hooks.json (all six parts) against a throwaway repo and
 reads the injected text. What this proves: which wiring the nudge names on these fixtures. Its false-positive
-count over the real adopter repos is a separate measurement (reported with the release).
+count over the real adopter repos is a separate measurement (reported with the release). `ReadSignalBounds` calls
+the SessionStart read signal directly and pins its caps (aliases collected, every quantifier bounded, the line cap) —
+bounds, never a stopwatch.
 """
 
 from __future__ import annotations
@@ -30,6 +32,13 @@ import tempfile
 import unittest
 
 PLUGIN_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, os.path.join(PLUGIN_ROOT, "hooks", "lib"))
+import legacy_hooks  # noqa: E402
+
+try:  # the regex parser: re._parser from Python 3.11, sre_parse before
+    from re import _parser as sre_parse
+except ImportError:  # pragma: no cover
+    import sre_parse
 with open(os.path.join(PLUGIN_ROOT, "hooks", "hooks.json")) as _fh:
     PARTS = [h["command"] for h in json.load(_fh)["hooks"]["SessionStart"][0]["hooks"]]
 NUDGE = "copies of the kit's hooks"
@@ -279,6 +288,81 @@ class LegacyHooks(unittest.TestCase):
                 t0 = time.monotonic()
                 self.assertNotIn(NUDGE, self.injected())
                 self.assertLess(time.monotonic() - t0, 2.0, label)
+
+
+MEM = ".claude/memory/MEMORY.md"
+
+
+def repeats(pattern):
+    """Every (min, max) repeat bound in a compiled pattern, nested groups and branches included."""
+    found = []
+
+    def walk(node):
+        if isinstance(node, (list, tuple, sre_parse.SubPattern)):
+            for item in node:
+                walk(item)
+        if isinstance(node, tuple) and len(node) == 2 and node[0] in (sre_parse.MAX_REPEAT, sre_parse.MIN_REPEAT):
+            found.append(node[1][:2])
+
+    walk(sre_parse.parse(pattern.pattern, pattern.flags))
+    return found
+
+
+class ReadSignalBounds(unittest.TestCase):
+    """The SessionStart read signal runs on text the kit does not write, inside the session start's timeout (8.2 fix
+    round 1: an unbounded `\\w*` around `read` grew with the square of a line's length, and one pattern per assigned
+    name per line multiplied the work by the name count)."""
+
+    def signal(self, text):
+        return legacy_hooks.SIGNALS["SessionStart"][2]("additionalContext\n" + text)
+
+    def test_every_pattern_of_the_read_signal_is_bounded(self):
+        patterns = {"READ_BEFORE_RE": legacy_hooks.READ_BEFORE_RE, "READ_AFTER_RE": legacy_hooks.READ_AFTER_RE,
+                    "ASSIGN_RE": legacy_hooks.ASSIGN_RE, "MEMORY_PATH_RE": legacy_hooks.MEMORY_PATH_RE,
+                    "alias read": legacy_hooks._alias_read_re(["MEMORY_FILE", "MEM"])}
+        for name, pattern in patterns.items():
+            with self.subTest(pattern=name):
+                bounds = repeats(pattern)
+                self.assertTrue(bounds)
+                self.assertEqual([b for b in bounds if b[1] == sre_parse.MAXREPEAT], [])
+                self.assertLessEqual(max(b[1] for b in bounds), 200)  # the window
+
+    def test_at_most_eight_aliases_and_one_pattern_for_them(self):
+        self.assertEqual(legacy_hooks.MAX_ALIASES, 8)
+        head = "".join('a%d = "%s"\n' % (i, MEM) for i in range(9))
+        calls = []
+        real = legacy_hooks._alias_read_re
+
+        def counting(names):
+            calls.append(names)
+            return real(names)
+
+        legacy_hooks._alias_read_re = counting
+        try:
+            self.assertTrue(self.signal(head + "ctx = a7.read_text()\n"))
+            self.assertFalse(self.signal(head + "ctx = a8.read_text()\n"))  # the ninth name is never collected
+        finally:
+            legacy_hooks._alias_read_re = real
+        self.assertEqual(len(calls), 2)  # one alternation per text, not one pattern per name
+        self.assertEqual([len(names) for names in calls], [8, 8])
+
+    def test_a_line_over_the_line_cap_is_skipped(self):
+        line = "ctx = open(%r).read()" % MEM
+        pad = " " * (legacy_hooks.MAX_LINE - len(line))
+        self.assertTrue(self.signal(line + pad + "\n"))
+        self.assertFalse(self.signal(line + pad + " \n"))
+
+    def test_a_read_word_is_bounded(self):
+        """`read` plus at most 40 word characters before `(`: a 4,000-char `read…read` word is no read call."""
+        self.assertTrue(self.signal("ctx = read" + "x" * 40 + "(%r)\n" % MEM))
+        self.assertFalse(self.signal("ctx = read" + "x" * 41 + "(%r)\n" % MEM))
+        self.assertFalse(self.signal("read" * 990 + MEM + "\n"))
+
+    def test_a_size_count_with_wc_is_not_a_read(self):
+        """The shell twin of the stat-only case. A redirect (`wc -c < "$X"`) still counts as a read: a stated limit."""
+        self.assertFalse(self.signal('MEM="$CLAUDE_PROJECT_DIR/%s"\nsize=$(wc -c "$MEM")\n' % MEM))
+        self.assertFalse(self.signal('size=$(wc -c "$CLAUDE_PROJECT_DIR/%s")\n' % MEM))
+        self.assertTrue(self.signal('MEM="$CLAUDE_PROJECT_DIR/%s"\nsize=$(wc -c < "$MEM")\n' % MEM))
 
 
 if __name__ == "__main__":

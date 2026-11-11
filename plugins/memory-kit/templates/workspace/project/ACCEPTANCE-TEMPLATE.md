@@ -12,8 +12,8 @@
 - Head: `<full commit hash of the accepted tree>`
 - Spec: `<path>` (`v<N>` when a redesign made a new spec version)
 - Rounds: <number of fix rounds; 0 = the build only>
-- Build review: `<review record path>` · range `<base>..<head>` — with no fix round
-- Fix-diff review: `<review record path>` · range `<build head>..<fix head>` — after a fix round, replaces Build review
+- Build review: `<base>..<head>` — `<record path>` (with no fix round)
+- Fix-diff review: `<build head>..<fix head>` — `<record path>` (after a fix round; replaces Build review)
 - Gates: re-run by the integrator on this Head: `<each command>` → `<its last line>` | `<receipt for exactly this tree>`
 - Gate ruling: `<gate>` — <why it passes although it failed or timed out> (only when one did)
 

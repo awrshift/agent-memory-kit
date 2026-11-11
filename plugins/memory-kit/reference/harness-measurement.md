@@ -138,20 +138,19 @@ These are Claude Code behaviour, not the kit's: re-check any line after a Claude
   start. The settings edit is the user's: the auto-mode classifier refuses it to the agent (fetched 2026-11-11).
 - **A context budget per session is read from the counter, never estimated.** A session doing one task reports the
   number `/context` prints at each stop; a long task is cut into one step per stop; a plan that gives the main session
-  a reading or labelling job names its size against about 100k. In one project three of four parallel sessions ended
-  50–90k under their budget while one task's first step of four took 287k, and an estimate given to the user said
-  ~270k at 373k (measured in one project, 2026-11: 287k for one step; ~270k guessed at 373k). The cycle that uses
-  these budgets: `window-cycle.md`.
+  a reading or labelling job names its size against about 100k. In one project three of four parallel sessions
+  reported an estimate instead of the counter, and one estimate was off by 90k; one task's first step of four took
+  287k, and an estimate given to the user said ~270k at 373k (measured in one project, 2026-10 and 2026-11: 287k for
+  one step; ~270k guessed at 373k). The cycle that uses these budgets: `window-cycle.md`.
 - **What a helper cannot do.** Roles and briefs: `helper-roster.md`. Harness facts behind them:
   - It cannot be a blind reader inside your session: every level of `CLAUDE.md` and the project's rules load into a
-    helper (docs, fetched 2026-11-11), unless its agent file sets `omitClaudeMd: true` (v2.1.271+; path-scoped
-    rules still load when it touches those files). A fully clean read runs `claude -p` from a folder outside the
+    helper (docs, fetched 2026-11-11), unless its agent file sets `omitClaudeMd: true` (v2.1.271+; what still loads:
+    `helper-roster.md` §3). A fully clean read runs `claude -p` from a folder outside the
     repository with `CLAUDE_CODE_DISABLE_CLAUDE_MDS=1` and `--settings '{"disableAllHooks":true}'`, after a first
     probe question «what is in your context» (one project's working practice; no count).
-  - «Read-only» in a brief is a request: the `tools` list in the agent file is «enforced by Claude Code rather than
-    requested in a prompt» (docs, fetched 2026-11-11). A helper briefed read-only once ran a `git checkout` in the
-    branch's folder — name forbidden commands in the brief and check `git status` after it
-    (one project's working practice; no count).
+  - «Read-only» in a brief is a request; the `tools` list is the limit (`helper-roster.md` §4; docs, fetched
+    2026-11-11). A helper briefed read-only once ran a `git checkout` in the branch's folder — name forbidden
+    commands in the brief and check `git status` after it (one project's working practice; no count).
   - Its report sent as a message lives only in the session transcript: save it to the repository at once. A helper
     can stop mid-task (a sign-in change, a usage limit, a stall): a paid script writes each result as it goes, and the
     restart brief begins «check what is already paid for and saved» (one project's working practice; no count).

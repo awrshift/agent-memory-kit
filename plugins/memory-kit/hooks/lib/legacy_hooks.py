@@ -13,6 +13,14 @@ session-start.py is legitimate):
   PreToolUse    a test-file guard: `Protect test files from modification`, `Test files are protected`,
                 or `CMK_ALLOW_TEST_EDITS`
 
+SessionStart limits (8.2). Reads it misses (none is in a real kit copy: every historical kit session-start.py reads
+through `MEMORY_FILE.read_text(` or `read_file_safe(MEMORY_FILE)`): a keyword argument (`read_file_safe(path=X)`), a
+wrapped name (`open(os.fspath(X))`), an assignment wrapped over lines, `subprocess.run(["cat", X])`, a `python3 -c`
+one-liner on `"$X"`, a path held in a dict, a read of a name past the first MAX_ALIASES assigned the path. Flagged
+though not a read: a redirect into a size count (`wc -c < "$X"` — the `<` counts, `wc` itself is no read word); the
+path in a message on a line that also reads another file, or in a comment after a read word; a call such as
+`start_thread(` on the path line; a short name assigned the path and later reused for another file.
+
 Skipped when the project's settings (`settings.local.json` over `settings.json`) disable the plugin.
 Tests: hooks/tests/test_legacy_hooks.py. Python 3.9+, stdlib only.
 """
@@ -34,48 +42,56 @@ SCRIPT_WORD_RE = re.compile(r"""[^"'`;|&()<>]+\.(?:sh|bash|py|js|mjs|cjs|ts)""")
 PROJECT_TOKEN = "\x00cmk-project-dir\x00"  # stand-ins without spaces or quotes, replaced after the split
 HOME_TOKEN = "\x00cmk-home\x00"
 MEMORY_PATH_RE = re.compile(
-    r"""\.claude/memory/MEMORY\.md|["']\.claude["']\s*/\s*["']memory["']\s*/\s*["']MEMORY\.md["']"""
+    r"""\.claude/memory/MEMORY\.md|["']\.claude["'][ \t]{0,8}/[ \t]{0,8}["']memory["'][ \t]{0,8}/[ \t]{0,8}"""
+    r"""["']MEMORY\.md["']"""
 )
 # A read of the memory file (8.2: the mention alone flagged a project hook that stat()s it for a size nudge): a read
 # call or a shell read command before the path on its line (within 200 chars), a read call right after it, or the same
-# on a name the line assigns the path to. Windows of 200 chars, lines over MAX_LINE skipped: bounded work per line.
-SHELL_READ = r"\b(?:cat|head|tail|grep|sed|awk|wc|jq)\b"
-CALL_READ = r"(?:\bopen|\b\w*[Rr]ead\w*)\s*\("
+# on a name the line assigns the path to. Text the kit does not write, so every quantifier is bounded (a read word at
+# most 40 word chars past `read`, space runs at most 8, windows 200 chars), lines over MAX_LINE are skipped, at most
+# MAX_ALIASES names are collected and their reads are ONE alternation searched over the text once (8.2 fix round 1:
+# `\b\w*read\w*(` backtracked quadratically in a long word, and one pattern per name per line multiplied the work).
+SHELL_READ = r"\b(?:cat|head|tail|grep|sed|awk|jq)\b"
+CALL_READ = r"(?:\bopen|[Rr]ead\w{0,40})[ \t]{0,8}\("
 READ_BEFORE_RE = re.compile(
-    rf"(?:{CALL_READ}[^\n]{{0,200}}|{SHELL_READ}[^|;&\n]{{0,200}}|<\s*[\w{{}}/.\-\"'$]{{0,200}})$"
+    rf"(?:{CALL_READ}[^\n]{{0,200}}|{SHELL_READ}[^|;&\n]{{0,200}}|<[ \t]{{0,8}}[\w{{}}/.\-\"'$]{{0,200}})$"
 )
-READ_AFTER_RE = re.compile(r"^[\"')\s]{0,4}\.(?:read_text|read_bytes|read|open)\s*\(")
+READ_AFTER_RE = re.compile(r"^[\"')\s]{0,4}\.(?:read_text|read_bytes|read|open)[ \t]{0,8}\(")
 ASSIGN_RE = re.compile(
-    r"^\s*(?:export\s+|local\s+|readonly\s+|const\s+|let\s+|var\s+)?([A-Za-z_]\w*)\s*(?::[^=\n]*)?=(?!=)"
+    r"^[ \t]{0,40}(?:(?:export|local|readonly|const|let|var)[ \t]{1,8})?([A-Za-z_]\w{0,60})[ \t]{0,8}"
+    r"(?::[^=\n]{0,200})?=(?!=)"
 )
+MAX_ALIASES = 8
 MAX_LINE = 4000
 
 
-def _alias_read_re(name: str) -> re.Pattern:
-    n = re.escape(name)
+def _alias_read_re(names: list[str]) -> re.Pattern:
+    """One pattern for a read of any of the names (at most MAX_ALIASES), searched once over the joined lines."""
+    n = "(?:" + "|".join(map(re.escape, names)) + ")"
     return re.compile(
-        rf"\b{n}\b\s*\)?\s*\.(?:read_text|read_bytes|read|open)\s*\(|"
-        rf"{CALL_READ}\s*(?:str\s*\(\s*)?{n}\b|"
-        rf"(?:{SHELL_READ}[^|;&\n]{{0,200}}|<\s*[\"']?)\$\{{?{n}\b"
+        rf"\b{n}\b[ \t]{{0,8}}\)?[ \t]{{0,8}}\.(?:read_text|read_bytes|read|open)[ \t]{{0,8}}\(|"
+        rf"{CALL_READ}[ \t]{{0,8}}(?:str[ \t]{{0,8}}\([ \t]{{0,8}})?{n}\b|"
+        rf"(?:{SHELL_READ}[^|;&\n]{{0,200}}|<[ \t]{{0,8}}[\"']?)\$\{{?{n}\b"
     )
 
 
 def reads_memory(text: str) -> bool:
     """True when the text reads the memory file: a read on a line that names its path, or a read of a name that line
-    assigns the path to. A mention with only `stat()` / `exists()` / a message is not a read."""
+    assigns the path to (the first MAX_ALIASES such names). A mention with only `stat()` / `exists()` / a message is
+    not a read."""
     lines = [line for line in text.splitlines() if len(line) <= MAX_LINE]
-    aliases = set()
+    aliases: list[str] = []
     for line in lines:
         match = MEMORY_PATH_RE.search(line)
         if not match:
             continue
         if READ_BEFORE_RE.search(line[: match.start()]) or READ_AFTER_RE.search(line[match.end():]):
             return True
-        assigned = ASSIGN_RE.match(line)
-        if assigned and assigned.end() <= match.start():
-            aliases.add(assigned.group(1))
-    patterns = [_alias_read_re(name) for name in aliases]
-    return any(p.search(line) for p in patterns for line in lines)
+        if len(aliases) < MAX_ALIASES:
+            assigned = ASSIGN_RE.match(line)
+            if assigned and assigned.end() <= match.start() and assigned.group(1) not in aliases:
+                aliases.append(assigned.group(1))
+    return bool(aliases) and _alias_read_re(aliases).search("\n".join(lines)) is not None
 
 
 SIGNALS = {

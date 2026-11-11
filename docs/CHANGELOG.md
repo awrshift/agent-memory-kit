@@ -70,14 +70,16 @@ a yes), and every added practice carries its proof tag — most of it is one pro
   off-switches, skills, live agents and role templates, the method in one screen, every `reference/` file with when to
   open it, what the kit writes, privacy and cost, proof status. The newcomer story is gone. `docs/ASSETS.md` records
   the images removed (`01-system-map-claude-code.png`, `06-whats-inside.png`, now stale) and kept.
-  `docs/ARCHITECTURE.md` — the copy-on-request layer. The one-line descriptions in `plugin.json` and
-  `marketplace.json` follow the README's first paragraph.
+  `docs/ARCHITECTURE.md` — the copy-on-request layer; the stale `06-whats-inside.png` leaves it too. The one-line
+  descriptions in `plugin.json` and `marketplace.json` follow the README's first paragraph.
 
 ### Fixed
 
 - `hooks/lib/legacy_hooks.py` — the «project hook is a copy of the kit's hook» warning no longer fires on a hook that
-  only mentions the memory path without reading it. Test: `hooks/tests/test_legacy_hooks.py`. Reproduced in one
-  project.
+  only mentions the memory path without reading it, nor on a `wc` size count. Its patterns run on text the kit does
+  not write, inside the session start's timeout, so every repeat is bounded, at most 8 names assigned the path are
+  collected and their reads are one pattern searched once. Test: `hooks/tests/test_legacy_hooks.py`. Reproduced in
+  one project.
 - `skills/close-session/SKILL.md` — said nothing on how a project adapts it; now a project's own close list is opened
   FROM the skill's steps, never instead of them. Reproduced in one project.
 - `skills/setup/SKILL.md` — said «Seven invariants» of `templates/rules/orchestration.md`, which holds nine.

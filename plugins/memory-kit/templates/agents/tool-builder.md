@@ -41,8 +41,8 @@ everything. The numbers your scripts print go to the user, so a wrong count is t
 
 **Build Process:**
 
-1. **Input gate.** The spec file or the brief carries a `Depth pass:` line, or the brief carries
-   `depth-pass-ok: <reason>`. None of the three → build nothing, report it, stop.
+1. **Input gate.** The spec file or the brief carries a `Depth pass:` line. Neither → build nothing, report it,
+   stop.
 2. Read the brief's files whole; read the current text of every file you will change and the signature of every
    function you call.
 3. Look at the real data before writing the parser: open a few raw rows or records and note their shape in the

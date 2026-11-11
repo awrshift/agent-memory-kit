@@ -219,8 +219,8 @@ teammate if you commit it, promoted only on your yes. Running both means two wri
 - **Forgot to close the session?** Nothing breaks: the next session still opens with your memory. You lose that
   session's handoff note and the pattern audit.
 - **Cost at session start:** about 6.5–8.5k tokens on three working repositories (measured 2026-09-26), bounded by
-  the memory caps, plus about 2k of skill and agent descriptions. Skill bodies, agent bodies, `reference/` and
-  templates cost nothing until used; each role template you copy adds its description to every start.
+  the memory caps, plus the skill and agent descriptions, which load at every start. Skill bodies, agent bodies,
+  `reference/` and templates cost nothing until used; each role template you copy adds its description to every start.
 
 ## Proof status
 

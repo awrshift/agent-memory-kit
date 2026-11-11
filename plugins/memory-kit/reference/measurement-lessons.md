@@ -65,10 +65,10 @@ model reader, a bar on a counter.
    a repeated charge after a resume on its first run, which neither the tests nor the review had seen — green tests had
    claimed nothing was broken.
    (measured in one project, 2026-10: one repeated charge found on the probe's first run)
-7. **Give a model reader today's date.** Without it a reader called facts dated 2025–2026 «from the future» in 10
-   of 40 cases — false defects. The other side: a rubric reader saw 0 of 11 labelled wrong facts, and 4 of the
-   11 were stale only as of the text's date — staleness is invisible to a reader that does not know the date. Vendor
-   guidance says the same for search tools: «also give it today's date» (checked 2026-10-07).
+7. **Give a model reader today's date.** Without it a reader called something «from the future» in 10 of 40
+   replies, 9 of them about dates — false defects. The other side: a rubric reader saw 0 of 11 labelled wrong
+   facts, and 4 of the 11 were stale only as of the text's date — staleness is invisible to a reader that does not
+   know the date. Vendor guidance says the same for search tools: «also give it today's date» (checked 2026-10-07).
    (measured in one project, 2026-11: 10 of 40 false «future» calls; 4 of 11 wrong facts stale by date)
 
 Related: `orchestrator-fact-check.md` (the history-window rule — a count from history carries its window and build) ·

@@ -60,11 +60,11 @@ repeat a study only when your defects look different from the ones described.
   short fix-round specs, which the existing hook would have passed too. The rules held without a guard
   (measured in one project, 2026-11: 2 of 66 specs, 0 of 6 paid runs missed).
 - **A sweep of every hook's regexes.** A grep found no second nested repeat in the project's hooks and scripts; the
-  cheaper rule is the one that caught the first: a regular expression taken into a hook is timed on a hostile line
-  first. A repeat inside a repeat (`(?:[#*>-]+[ \t]*)*`) quadrupled its cost every two characters of a marker run —
-  0.58 s at 24, 2.4 s at 26, against a hook timeout of 10 s — and a file with a run of 66 existed. The linear form
-  `^[ \t#*>-]*Depth pass\b` agreed with it on 79 of 79 texts; one self-test case (a 60-dash line returns at once)
-  now guards it (measured in one project, 2026-11: 0.58 s at 24 characters, 2.4 s at 26).
+  cheaper rule is the rule that would have caught the first: a regular expression taken into a hook is timed on a
+  hostile line first. A repeat inside a repeat (`(?:[#*>-]+[ \t]*)*`) quadrupled its cost every two characters of a
+  marker run — 0.58 s at 24, 2.4 s at 26, against a hook timeout of 10 s — and a file with a run of 66 existed. The
+  linear form `^[ \t#*>-]*Depth pass\b` agreed with it on 79 of 79 texts; one self-test case (a 60-dash line returns at
+  once) now guards it (measured in one project, 2026-11: 0.58 s at 24 characters, 2.4 s at 26).
 
 ## Skeletons
 

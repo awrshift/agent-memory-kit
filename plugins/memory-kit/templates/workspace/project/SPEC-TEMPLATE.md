@@ -8,8 +8,8 @@
 (What each of these three lines owes, and why: the plugin's `reference/spec-depth.md`. No depth-pass line → an
 executor does not start.)
 **Family:** <slug> · classes so far: <n> · specific input: no | yes — <what> (optional — a fix spec only)
-**Fix layer:** <layer> · owning <layer> · covers <cases|class> (optional — a fix spec only; add
-«· patch — foundation: <what>» when the fix sits below the owning layer)
+**Fix layer:** <layer> · owning <layer> · covers <cases|class> · … (optional — a fix spec only; full form:
+`reference/review-loop.md` §0)
 (Family names the defect family this fix answers and how many classes of it were seen — from the third class, or when
 the fix names a specific input, the spec also states the general rule and the owning layer. Fix layer states where the
 fix sits against the layer that owns the defect, and whether it covers the cases seen or the class. Both: the plugin's

@@ -3,9 +3,11 @@
 
 A throwaway git repo with two commits; each case writes a short text and runs the script on it. What this pins: a
 named path or commit that does not exist fails the check and is named; one that exists passes. The false-positive
-cases covered (never flagged): a URL with a path and a hex segment, a host name without a scheme, version strings
-(`v8.2.0`, `release/v1.2.3`), a UUID, a sha256 checksum, a `#colour`, an `@scope/package`, a glob, a placeholder,
-a command in backticks and a bare `word/word.js` whose first segment is no top-level entry of the repo.
+cases covered (never flagged): a URL with a path and a hex segment, a URL's query values (a path, a hash), an
+e-mail host, a host name without a scheme, version strings (`v8.2.0`, `release/v1.2.3`), a UUID, a sha256 checksum,
+a `#colour`, an `@scope/package`, a glob, a placeholder, a command in backticks and a bare `word/word.js` whose
+first segment is no top-level entry of the repo. Also pinned: the link pattern's bound and the default repository
+(`$CLAUDE_PROJECT_DIR`, else the current directory) when no `--repo` is given.
 """
 
 from __future__ import annotations
@@ -15,9 +17,17 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import importlib.util
 import unittest
 
 SCRIPT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "claim-refs-check.py")
+_spec = importlib.util.spec_from_file_location("claim_refs_check", SCRIPT)
+crc = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(crc)
+try:  # the regex parser: re._parser from Python 3.11, sre_parse before
+    from re import _parser as sre_parse
+except ImportError:  # pragma: no cover
+    import sre_parse
 UNKNOWN = "0badc0de1"
 
 
@@ -117,6 +127,50 @@ class ClaimRefs(unittest.TestCase):
         self.assertEqual(code, 0, out)
         self.assertIn("0 paths", out)
         self.assertIn("0 hashes", out)
+
+    def test_url_query_values_and_mail_hosts_are_not_flagged(self):
+        """A URL's query value (a path, a hash) and an e-mail host: blanked before the bare-path and hash passes."""
+        for text in ("Search: https://example.com/search?path=docs/missing.md here.",
+                     "Pinned: https://example.com/x?sha=abc1234f here.",
+                     "Write to user@deadbee1.com today."):
+            with self.subTest(text=text):
+                code, out = self.check(text + "\n")
+                self.assertEqual(code, 0, out)
+                self.assertIn("0 paths", out)
+                self.assertIn("0 hashes", out)
+
+    def test_a_long_unclosed_link_is_bounded(self):
+        """`](` with no `)` was quadratic: the target is at most 200 characters, so each `](` costs a bounded scan."""
+        bounds = []
+
+        def walk(node):
+            if isinstance(node, (list, tuple, sre_parse.SubPattern)):
+                for item in node:
+                    walk(item)
+            if isinstance(node, tuple) and len(node) == 2 and node[0] in (sre_parse.MAX_REPEAT, sre_parse.MIN_REPEAT):
+                bounds.append(node[1][:2])
+
+        walk(sre_parse.parse(crc.LINK_RE.pattern))
+        self.assertEqual(bounds, [(1, 200)])
+        paths, _, _ = crc.candidates("[x](" * 2000 + " [y](docs/guide.md) [z](" + "a" * 201 + ".md)", {"docs"})
+        self.assertEqual(paths, {"docs/guide.md"})  # the real link after the run is still found; 201 chars is not
+
+    def test_default_repository_without_repo(self):
+        """No `--repo`: `$CLAUDE_PROJECT_DIR`, else the current directory; `../` resolves from that root."""
+        body = os.path.join(self.tmp, "body.md")
+        with open(body, "w", encoding="utf-8") as fh:
+            fh.write("`docs/guide.md`, `docs/missing.md` and [up](../repo/src/app.py)\n")
+        elsewhere = os.path.join(self.tmp, "elsewhere")
+        os.mkdir(elsewhere)
+        for label, cwd, env in (("cwd", self.repo, self.env),
+                                ("CLAUDE_PROJECT_DIR", elsewhere, dict(self.env, CLAUDE_PROJECT_DIR=self.repo))):
+            with self.subTest(source=label):
+                r = subprocess.run([sys.executable, SCRIPT, body], cwd=cwd, env=env, capture_output=True, text=True)
+                self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
+                self.assertIn("3 paths", r.stdout)
+                self.assertIn("MISSING path  docs/missing.md", r.stdout)
+                self.assertNotIn("guide.md", r.stdout.split("\n", 1)[1])
+                self.assertNotIn("app.py", r.stdout.split("\n", 1)[1])
 
     def test_verbose_lists_found_and_skipped(self):
         code, out = self.check("`docs/guide.md` and React/Next.js\n", "--verbose")

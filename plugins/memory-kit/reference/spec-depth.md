@@ -57,8 +57,9 @@ go into a committed file and the integrator rules on each before the build. One 
 build brief; it is mandatory when the mechanism is a queue, a ledger or a lock. The role template: `prebuild-reader`
 (`helper-roster.md`). Why: on one project's queue-and-lock designs the spec read changed the approach on three dates
 within five days; on six later units, a check before the build could have shown a first-round defect in two, and
-both catches were such reads — a library fact sitting in the project's own code at the base commit, and two spec
-lines that contradicted each other (measured in one project, 2026-10 and 2026-11: 3 approach changes; 2 of 6 units).
+both catches were such reads: a library fact sitting in the project's own code at the base commit, and two spec
+lines that contradicted each other — one shown, one argued; in none would it have saved a round (measured in one
+project, 2026-10 and 2026-11: 3 approach changes; 2 of 6 units).
 
 ## 4. Fail branches — written before the run
 

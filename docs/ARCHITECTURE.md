@@ -502,8 +502,6 @@ before writing a plan. Defaults are a default; a working layout outranks them.
 
 ## Hooks (automatic, no user action)
 
-![](../.github/assets/06-whats-inside.png)
-
 Seven hooks, declared in the plugin's `hooks/hooks.json` — nothing to wire in your settings, and nothing you should
 wire again: since 7.3 session start flags a project whose own settings run a COPY of a kit hook (it would fire twice).
 

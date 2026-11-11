@@ -79,15 +79,16 @@ and the acceptance check refuses:
 
 - a receipt for another tree than `Head:`'s, or a tree that was dirty before or after the run;
 - a gate whose recorded command differs from the script's constant, or a mandatory gate skipped;
-- a suite of 0 files or 0 tests — a vacuous pass;
+- a suite of 0 files or 0 tests — a vacuous pass (the general rule, a check fails on an empty subject:
+  `project-extensions.md` «Telemetry»);
 - a failed or timed-out gate without a written line `Gate ruling: <gate> — <why>` by the integrator;
 - a skippable gate skipped without a reason.
 
 Why: one project re-read its eight acceptance files. The gates had been re-run by hand in seven, all green; in two the
-re-run was on a different head than the one accepted, and in the eighth the re-run was skipped and only a prose line
-said so (measured in one project, 2026-11: 2 of 7 hand re-runs on another head). What a receipt closes is the honest
-error — another head, half the gates, a result from memory; a deliberate forgery is outside it
-(in trial in one project since 2026-11-11; count due at its next six acceptances: hand re-runs, wrong refusals).
+re-run was on another head than the one the window's count or the acceptance refers to, and in the eighth the re-run was
+skipped and only a prose line said so (measured in one project, 2026-11: 2 of 7 hand re-runs on another head). What a
+receipt closes is the honest error — another head, half the gates, a result from memory; a deliberate forgery is outside
+it (in trial in one project since 2026-11-11; count due at its next six acceptances: hand re-runs, wrong refusals).
 
 Until your own count says otherwise, run the receipt script yourself — a receipt a helper wrote and you did not
 check is a helper's «green» in another format.

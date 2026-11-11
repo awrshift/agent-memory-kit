@@ -58,7 +58,7 @@ own piece of work, with the field's practice checked first (`spec-depth.md` §2)
 
 ## 5. A plan is counted in rounds and dependencies, not calendar days
 
-Agent work does not follow the calendar: in one project a single day held 10–20 working sessions. Name a term as a
+Agent work does not follow the calendar: a day can hold many sessions. Name a term as a
 number of rounds (build, review, fix) and what the next step waits on — a review, a measurement, the user's answer —
 never «tomorrow» or «the day after» without a reason that is itself a date (someone else's schedule, a release).
 (one project's working practice; no count)
