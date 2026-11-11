@@ -76,6 +76,11 @@ what actually happened this session:
 - How did the orchestration go — right agents, good-enough briefs, honest adjudication?
   (`reference/parallel-development.md` for the fan-out defaults and stop-conditions.)
 
+What happened comes from the session logs, counted by a script — waits, refused or failed tool calls,
+re-runs, what filled the context — not from recall: a model asked how it worked tells a smoother story than
+its logs and recalls its errors selectively. When a day holds many sessions, one retro a day covers every
+session since the last one. (one project's working practice; no count)
+
 A CONFIRMED finding is worth a row in the findings-class registry, and a class recurring three
 times earns promotion into the cheapest layer that prevents it — `reference/review-loop.md`.
 

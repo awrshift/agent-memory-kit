@@ -156,6 +156,7 @@ Candidate classes:
 - **Premature generality** — abstraction, config, or a pipeline built for a scale that hasn't arrived. The tell: one caller, ever.
 - **Zombie state** — closed experiments, dead branches/worktrees, superseded docs still in the reading path, archived-but-not-labelled files.
 - **Instruction overload** — an instruction file so long that its own rules compete for attention. If everything is a rule, nothing is.
+  The method for the instruction set itself: `reference/rules-subtraction.md`.
 
 For each: `what · evidence it's dead · what it costs to keep (attention, tokens, drift surface) · what breaks if removed · removal = delete | merge | label as historical`.
 
