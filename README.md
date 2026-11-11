@@ -39,8 +39,9 @@ small sample from one project — a reason to look at your own fixes, not a prov
    a rule?»), writes what you approve, and leaves a handoff note.
 3. **The next session starts already knowing** — memory, the handoff and the list of knowledge articles are loaded
    by a hook.
-4. **When you delegate,** the work goes through a spec file, a review of every diff and a record of what was accepted
-   and why. This half is optional: take it when you hand work to helper agents or run several sessions at once.
+4. **When you delegate,** the kit gives the agent a method to follow: a spec file first, a review of every diff, a
+   record of what was accepted and why. This half is optional: take it when you hand work to helper agents or run
+   several sessions at once.
 
 ## Install
 
