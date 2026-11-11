@@ -77,6 +77,9 @@ claude -p --model sonnet --output-format json "Reply with exactly: OK" \
   system prompt, tool and skill descriptions, `CLAUDE.md`, always-loaded rules, SessionStart output.
 - **Bar:** the after-number is not higher than the before-number plus what the change meant to add.
   A jump you did not intend names a layer that grew — find it before shipping.
+- **Trust the usage totals, not the `/context` panel, for what a start costs.** Measured 2026-11-10 in one project:
+  `/context` listed deferred tools at their full schema size (tens of thousands of tokens), while the usage totals
+  of the first prompt showed that only the tool NAMES were sent. Harness behaviour — re-measure before relying on it.
 
 ## M3 — behaviour scenarios (does the agent still follow its procedures?)
 

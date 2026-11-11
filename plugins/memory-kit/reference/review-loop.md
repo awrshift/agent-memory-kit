@@ -1,6 +1,6 @@
 ---
 created: 2026-07-17
-last-reviewed: 2026-10-22
+last-reviewed: 2026-11-11
 ---
 
 # Review Loop — triage, the diff gate, the findings-class registry
@@ -40,6 +40,11 @@ a status line or a fix list shown to the user, write ONE line for it:
   person's review (a PR, a release). (Adjust the trigger list to your project's risk map, but keep one.)
 - Review findings are INPUT (see `orchestrator-fact-check.md`) — the integrator adjudicates
   each on merits before applying; never auto-apply, never count votes.
+- **A fix round is a diff too.** The diff a review round produces is reviewed by an agent that did not write it
+  before the work is accepted, and the integrator rules on each finding. Measured in one project over six units
+  (2026-11): the fix diff reached acceptance unreviewed in five; reviewed afterwards, two of five carried a
+  blocking defect, and 69 of 72 blocking findings of later rounds had been made by a fix or sat in code a fix
+  round redesigned. The fix rounds — not the first review's recall — were where the defects came from.
 - Skip the gate for doc-only / trivial diffs — it's a gate, not a tax.
 
 ## 2. The findings-class registry (`projects/<name>/review-findings.md`)
@@ -80,6 +85,14 @@ mark the promotion in its row. Promote at sub-family granularity, or a coarse fa
 4. a `knowledge/concepts/` entry (last resort — knowledge nobody is forced to read is the
    weakest layer).
 
-**The drop rule:** a promoted rule WITH a firing signal (a hook, a grep gate) that has printed no hit for ~5 sessions is
-DROPPED. A checklist line prevents silently — no row is expected — so it is judged at a rules revision by its stake, not
-by its hits. A registry that only grows becomes noise.
+**Every new rule line names its family and what fires it.** The line (or its evidence note) carries the family slug
+it was written for and its firing mechanism — a script, a hook, a test, or the brief or checklist that a named step
+reads. A line with no mechanism is a HYPOTHESIS: it gets a recount date, and on that date its family's escapes are
+counted — kept, moved to a stronger layer, or dropped. Without the slug the question «did this line lower escapes?»
+cannot be counted at all: in one project 5 of 21 checklist lines recorded their family, and for none of the families
+that could be measured did escapes fall after the line was written (2026-11).
+
+**The drop rule:** a promoted rule WITH a firing signal (a hook, a grep gate) that has printed no hit over ~5 sessions
+in which its trigger occurred (a commit of its kind, a send) is DROPPED — sessions where the trigger never happened
+say nothing about it. A checklist line prevents silently — no row is expected — so it is judged at a rules revision
+by its stake, not by its hits. A registry that only grows becomes noise.

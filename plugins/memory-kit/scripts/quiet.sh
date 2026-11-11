@@ -6,7 +6,20 @@
 # Usage: bash .claude/scripts/quiet.sh <command> [args...]
 #   e.g. bash .claude/scripts/quiet.sh git commit -m "…" -- <paths>
 #        bash .claude/scripts/quiet.sh npx vitest run
+#
+# A `git commit` is PROVEN to have landed. A pre-commit hook that re-formats the staged files can leave NO commit
+# while the summary looks clean (three commits silently missing in one day in a kit project, 2026-11-10). So for
+# `git commit` the LAST line printed is always `landed: <hash> <subject>` or `COMMIT NOT LANDED …`, and a commit that
+# did not move HEAD exits non-zero whatever git returned. Read that line — never only the tail of a longer pipeline.
+# Not covered: `git -C <dir> commit` (HEAD is read in the current directory) and `--dry-run` (skipped on purpose).
 set -uo pipefail
+
+is_commit=""
+if [ "${1:-}" = "git" ] && [ "${2:-}" = "commit" ]; then
+  is_commit=1
+  for arg in "$@"; do [ "${arg}" = "--dry-run" ] && is_commit=""; done
+fi
+[ -n "${is_commit}" ] && head_before="$(git rev-parse -q --verify HEAD 2>/dev/null || echo none)"
 
 LOG_DIR="${QUIET_LOG_DIR:-${TMPDIR:-/tmp}/quiet-logs}"
 mkdir -p "${LOG_DIR}"
@@ -26,5 +39,15 @@ if [ "${code}" -ne 0 ]; then
   plain | grep -nE -A12 '(FAIL |✗|Error:|error TS|AssertionError|BLOCKED|OVERLAP|COPY|RETURN TYPE)' | head -120
   echo "--- tail"
   plain | tail -20
+fi
+
+if [ -n "${is_commit}" ]; then
+  head_after="$(git rev-parse -q --verify HEAD 2>/dev/null || echo none)"
+  if [ "${head_after}" = "${head_before}" ]; then
+    echo "COMMIT NOT LANDED (git exit=${code}, HEAD still ${head_before:0:9}) — nothing was committed; read ${LOG}"
+    [ "${code}" -eq 0 ] && code=1
+  else
+    echo "landed: $(git log -1 --format='%h %s' | cut -c1-120)"
+  fi
 fi
 exit "${code}"

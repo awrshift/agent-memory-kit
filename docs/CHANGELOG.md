@@ -2,6 +2,34 @@
 
 All notable changes to Claude Memory Kit are documented here. Breaking changes marked **BREAKING**.
 
+<a id="v810"></a>
+
+## [8.1.0] — 2026-11-11 — a commit is proven to have landed; four measured lines from a project's method study
+
+Nothing to migrate. Everything below was measured in one kit project on 2026-11-10/11; each line names its numbers.
+
+### Added
+
+- **`scripts/quiet.sh` proves a `git commit` landed.** A pre-commit hook that re-formats staged files left no commit
+  while the summary looked clean — three commits silently missing in one day. For `git commit` the last line is now
+  always `landed: <hash> <subject>` or `COMMIT NOT LANDED …`, and a commit that did not move HEAD exits non-zero
+  whatever git returned. Tests: `scripts/tests/test_quiet_commit.py` (a fake `git` that answers `commit` with exit 0).
+  Not covered: `git -C <dir> commit`; `--dry-run` is skipped on purpose.
+- `reference/project-extensions.md` — **«Measured and not built»**: six ideas a project measured on its own history
+  and did not build (a tests-first step, a claim gate, patch detectors, a fix-round counter, an observability rule,
+  moving «silent» rules out), each with its count, so the study is not repeated.
+
+### Changed
+
+- `reference/review-loop.md` §1 — **the diff gate covers fix rounds**: a fix round's diff is reviewed by an agent
+  that did not write it before acceptance (five of six fix diffs had reached acceptance unreviewed; two of five
+  carried a blocking defect).
+- `reference/review-loop.md` §2 — **every new rule line names its family and what fires it**; a line with no
+  mechanism is a hypothesis with a recount date. **The drop rule** counts only sessions in which the rule's trigger
+  occurred.
+- `reference/harness-measurement.md` M2 — what a session start costs is read from the usage totals, not from the
+  `/context` panel (it listed deferred tools at full schema size while only their names were sent).
+
 <a id="v800"></a>
 
 ## [8.0.0] — 2026-10-22 — Claude Code only

@@ -1,6 +1,6 @@
 ---
 created: 2026-08-27
-last-reviewed: 2026-10-22
+last-reviewed: 2026-11-11
 ---
 
 # Project extensions — when a repeated workflow earns a file
@@ -32,6 +32,24 @@ themselves (`templates/rule-template.md`).
    LLM context and fires forever. Automation beats instruction whenever the check is decidable.
 3. **Who is the consumer?** A layer nobody reads and nothing invokes is the bloat the
    anti-bloat lens deletes. Name the trigger before you write the file.
+
+## Measured and not built — read before adding a gate
+
+One project measured these ideas on its own history in 2026-11 and built none of them. Small samples, one team:
+repeat a study only when your defects look different from the ones described.
+
+- **A separate «write the tests and checks before the code» step.** Six units: a proof list written blind from the
+  spec could have detected the first-return defect in 2 of 6 and would have saved 0 of 6 review rounds. Both catches
+  were READS — the spec against the code at its base, the spec against itself — so the cheap form is that read.
+- **A script gate on «a claim made without its check».** 98 registered rows of that kind: a script could have caught
+  12, and only 1 of those was found by the outside reviewer. Most are semantic.
+- **Detecting a patch from the code.** «The same place was edited again» flagged 16 of 20 correct fixes; «the diff
+  holds a literal» missed 3 of 9 known patches. What did work is a line the fix spec must carry: its defect family,
+  and from the third class the general rule and the layer that owns it (`review-loop.md` §0, the stop signal).
+- **Stopping on the count of fix rounds per defect family.** It flagged 18 of 24 correct fixes.
+- **A build rule «every stage must be observable».** 18 of 18 diagnosed defects had been named from data already
+  stored. No rule.
+- **Moving always-loaded rules out because they «never fire».** 93 % of rule units showed use in the transcripts.
 
 ## Skeletons
 

@@ -134,7 +134,7 @@ A plugin cannot install rules, so `setup` offers these and copies them only on y
   executor's recorded override, owed your ratification).
 - **Other:** `EXPERIMENT-TEMPLATE.md` and `experiments-README.md` (a sandbox for throwaway work), `ONBOARDING-BACKLOG.md` (a first
   day in five tasks), and the four `document` templates (`pr.md`, `changelog.md`, `release-note.md`, `postmortem.md`).
-- **Scripts:** `scripts/quiet.sh` (runs a noisy command, keeps the full log in a file, prints a summary),
+- **Scripts:** `scripts/quiet.sh` (runs a noisy command, keeps the full log in a file, prints a summary, and proves a `git commit` landed),
   `scripts/permission-probes.sh` (checks that your permission rules stop what they should); `system-audit` carries
   `collect.sh`, `gates.py` and `usage.py`.
 - **The working agreement:** `context/identity.md`, injected at every session start. It is the kit's only always-on
