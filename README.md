@@ -2,22 +2,41 @@
 
 # Claude Memory Kit
 
-A Claude Code plugin for developers who run Claude Code on a real repository and delegate to helper agents or run
-several sessions at once. It keeps memory as plain dated files in the repository — injected at every session start,
-held under size caps, promoted into knowledge or rules only on your yes — guards git, secrets and the test suite with
-hooks, and ships a method for agent-orchestrated development (spec → build → review → acceptance → findings registry)
-as on-demand reference files and copy-on-request templates. No database, no service, no API key.
+**An agent that remembers where you stopped — and whose "done" is checked before you hear it.**
+
+Claude Memory Kit is a plugin for Claude Code. Install it in a repository and three things change:
+
+- **Every session opens where the last one ended.** The agent keeps short dated notes and a handoff as plain files in
+  your repository and reads them at the next start. You stop re-explaining the project.
+- **Dangerous commands are stopped before they run.** A force push, `reset --hard`, a read of `.env`, an edit that
+  weakens a test — blocked or asked about first.
+- **Delegated work is checked before it is called done.** Helper agents build from a written spec, their reports are
+  treated as claims, every fix is reviewed by an agent that did not write it, and a mistake seen three times becomes
+  an automatic check.
+
+Nothing becomes a rule without your yes. No database, no service, no API key — text files you can read and diff.
 An independent project, not made or endorsed by Anthropic.
+
+**Why the third point matters.** In one project, five of six fix rounds reached acceptance with nobody reviewing the
+fix; reviewed afterwards, two of five carried a blocking defect. The kit's method exists to close gaps like that one.
 
 [![Version](https://img.shields.io/github/v/release/awrshift/agent-memory-kit?label=version&color=CFEF4A&cacheSeconds=1800)](https://github.com/awrshift/agent-memory-kit/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-55503E?labelColor=55503E&color=55503E)](LICENSE)
 [![Claude Code plugin](https://img.shields.io/badge/Claude_Code-plugin-CFEF4A)](#install)
 
-**On this page:** [Install](#install) · [Fires by itself](#what-fires-by-itself-hooks) ·
-[Skills](#what-you-invoke-skills) · [Agents and roles](#agents-and-role-templates) ·
-[The method](#the-method-in-one-screen) · [Reference](#reference--read-on-demand) ·
-[Templates and scripts](#templates-and-scripts) · [What it writes](#what-it-writes-in-your-repository) ·
-[Privacy and cost](#privacy-and-cost) · [Proof status](#proof-status)
+**On this page:** [How it works](#how-it-works) · [Install](#install) · [The method](#the-method-in-one-screen) ·
+[What is inside](#what-is-inside) · [Reference](#reference--read-on-demand) ·
+[What it writes](#what-it-writes-in-your-repository) · [Privacy and cost](#privacy-and-cost) ·
+[Proof status](#proof-status)
+
+## How it works
+
+1. **You work as usual.** When something is worth keeping, the agent writes one dated line and tells you.
+2. **You close the session.** It looks for patterns across days («you rejected this on four different days — make it
+   a rule?»), writes what you approve, and leaves a handoff note.
+3. **The next session starts already knowing** — memory, the handoff and the knowledge index are loaded by a hook.
+4. **When you delegate,** the work goes through a spec file, a review of every diff and a record of what was accepted
+   and why. This half is optional: take it when you hand work to helper agents or run several sessions at once.
 
 ## Install
 
@@ -34,7 +53,27 @@ Git is optional. To upgrade later: `claude plugin marketplace update memory-kit`
 `claude plugin update memory-kit@memory-kit` (the full id is needed), and restart the session. Upgrades never touch
 your files. In a repository that never ran `setup`, the hooks inject one pointer line and write nothing.
 
-## What fires by itself (hooks)
+## The method in one screen
+
+![Agent-orchestrated work: the main session writes a spec file, the agents work from it, and a report is input, never a fact](.github/assets/07-orchestrated-work-v73.png)
+
+The main session designs, decides and integrates; helpers build or gather facts from a spec file. The always-loaded
+invariants live in `templates/rules/orchestration.md` (a plugin cannot ship rules; `setup` offers to copy it).
+
+| Step | What happens | Open |
+|---|---|---|
+| 1. Spec file | Goal, non-goals, acceptance `AC-n` written first, value sources, gates; a depth pass, a practice line and a review line before hand-over; a reader who did not write it checks it against the code | `SPEC-TEMPLATE.md` · `reference/spec-depth.md` |
+| 2. Build | `executor` (or your own builder) in a worktree, one integrator; several sessions → one main and windows working from brief files | `reference/parallel-development.md` · `reference/window-cycle.md` · `WINDOW-BRIEF-TEMPLATE.md` |
+| 3. Review, fix rounds included | Every nontrivial diff, and every fix round's diff, reviewed by an agent that did not write it; findings triaged to the owning layer; a fix round may not redesign | `reference/review-loop.md` §0–§1 · `reference/review-classes.md` · `reference/acceptance.md` |
+| 4. Acceptance record | One file per accepted head: spec, rounds, review, gates re-run on that tree, one ruling per finding | `reference/acceptance.md` · `ACCEPTANCE-TEMPLATE.md` · `reference/orchestrator-fact-check.md` |
+| 5. Findings registry | Each confirmed finding logged by class and family; a family seen three times is promoted into a check | `reference/review-loop.md` §2 |
+
+## What is inside
+
+The rest of this page is the full inventory, for when you need to know exactly what runs: what fires by itself, what
+you call, what you copy, what it writes and what it costs.
+
+### What fires by itself (hooks)
 
 Wired in `hooks/hooks.json`. What each injects or blocks, and how to turn it off:
 
@@ -54,7 +93,7 @@ Code 2.1.295 or later). Shared code in `hooks/lib/`: `cmdparse.py` (one shell-co
 project's own copy of a kit hook), `statefs.py` and `state.sh` (state writes: never through a symlink, never outside
 the project). Profiles and limits in detail: [`plugins/memory-kit/README.md`](plugins/memory-kit/README.md).
 
-## What you invoke (skills)
+### What you invoke (skills)
 
 All are `/memory-kit:<name>` and also trigger from plain words; until a skill runs only its description is in context.
 
@@ -71,7 +110,7 @@ All are `/memory-kit:<name>` and also trigger from plain words; until a skill ru
 | `code-sync` | After a merge: spec statuses reconciled with what the code shows |
 | `tour` | A walkthrough of the kit on your own files |
 
-## Agents and role templates
+### Agents and role templates
 
 **Live agents** — listed in every session once the plugin is installed (`agents/`):
 
@@ -94,22 +133,7 @@ the roster and the rule «judges → the stronger model, collects or counts → 
 | `web-recon.md` | Sonnet | A decision rests on an outside fact that may have moved (vendor, library, limit) |
 | `labeler.md` | Opus | Rows are labelled by a written rubric, blind to the hypothesis |
 
-## The method in one screen
-
-![Agent-orchestrated work: the main session writes a spec file, the agents work from it, and a report is input, never a fact](.github/assets/07-orchestrated-work-v73.png)
-
-The main session designs, decides and integrates; helpers build or gather facts from a spec file. The always-loaded
-invariants live in `templates/rules/orchestration.md` (a plugin cannot ship rules; `setup` offers to copy it).
-
-| Step | What happens | Open |
-|---|---|---|
-| 1. Spec file | Goal, non-goals, acceptance `AC-n` written first, value sources, gates; a depth pass, a practice line and a review line before hand-over; a reader who did not write it checks it against the code | `SPEC-TEMPLATE.md` · `reference/spec-depth.md` |
-| 2. Build | `executor` (or your own builder) in a worktree, one integrator; several sessions → one main and windows working from brief files | `reference/parallel-development.md` · `reference/window-cycle.md` · `WINDOW-BRIEF-TEMPLATE.md` |
-| 3. Review, fix rounds included | Every nontrivial diff, and every fix round's diff, reviewed by an agent that did not write it; findings triaged to the owning layer; a fix round may not redesign | `reference/review-loop.md` §0–§1 · `reference/review-classes.md` · `reference/acceptance.md` |
-| 4. Acceptance record | One file per accepted head: spec, rounds, review, gates re-run on that tree, one ruling per finding | `reference/acceptance.md` · `ACCEPTANCE-TEMPLATE.md` · `reference/orchestrator-fact-check.md` |
-| 5. Findings registry | Each confirmed finding logged by class and family; a family seen three times is promoted into a check | `reference/review-loop.md` §2 |
-
-## Reference — read on demand
+### Reference — read on demand
 
 `reference/` costs nothing until opened. Proof tags inside each file say what a line rests on.
 
@@ -133,7 +157,7 @@ invariants live in `templates/rules/orchestration.md` (a plugin cannot ship rule
 | `reference/capability-map-sweep.md` | Code duplicates what an installed library already does |
 | `reference/qa-PROTOCOL-TEMPLATE.md` · `reference/qa-mcp.json.example` | Setting up `qa-sweep` for a product |
 
-## Templates and scripts
+### Templates and scripts
 
 Copied on request by `setup` or a skill; none loads by itself.
 
