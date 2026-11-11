@@ -186,6 +186,11 @@ already available — the only thing that needs a decision is the always-loaded 
   into `.claude/rules/`. Seven invariants, always loaded, ~30 lines — that is the entire cost.
   The agents (`executor`, `recon`, `idea-validator`) and `/memory-kit:session-review` +
   `/memory-kit:second-opinion` work without it; the rule is what makes the discipline binding.
+  Then offer the role templates in `${CLAUDE_PLUGIN_ROOT}/templates/agents/` (`code-reviewer`, `prebuild-reader`,
+  `tool-builder`, `web-recon`, `labeler`): copy into `.claude/agents/` only the roles the project will use, each after
+  a yes, and fill their `<placeholders>`. Two workspace templates go with them, copied when first needed:
+  `templates/workspace/WINDOW-BRIEF-TEMPLATE.md` (a brief for a parallel window) and
+  `templates/workspace/project/ACCEPTANCE-TEMPLATE.md` (the record of accepting a built block).
 - **Shipping a product with a UI?** `/memory-kit:qa-sweep` needs a protocol first: copy
   `${CLAUDE_PLUGIN_ROOT}/reference/qa-PROTOCOL-TEMPLATE.md` → `projects/<name>/qa/README.md`,
   fill every `<placeholder>`, and merge `reference/qa-mcp.json.example` into the project
