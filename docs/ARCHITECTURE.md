@@ -53,6 +53,15 @@ documented at `code.claude.com/docs`.
 ║      research/ · decisions-log.md · review-findings.md ·     ║
 ║      qa/ · materials/ — loaded when the project is named     ║
 ╠══════════════════════════════════════════════════════════════╣
+║  COPY-ON-REQUEST (nothing loads until copied)                ║
+║  ──────────────────────────────────────────────────────────  ║
+║  templates/agents/*.md   — role templates; setup copies the  ║
+║                            ones you say yes to into          ║
+║                            .claude/agents/, where each is a  ║
+║                            project agent listed every start  ║
+║  templates/workspace/…   — WINDOW-BRIEF, ACCEPTANCE (with    ║
+║                            SPEC and the rest), copied on use ║
+╠══════════════════════════════════════════════════════════════╣
 ║  HANDOFF HISTORY (grep-on-demand, not auto-loaded wholesale) ║
 ║  ──────────────────────────────────────────────────────────  ║
 ║  context/handoffs/<topic>-YYYY-MM-DD.md                      ║
@@ -624,7 +633,11 @@ If you want the role-guidance pattern back for your project, create skills under
 - `plugins/memory-kit/context/identity.md` — what the agent is told every session
 - `plugins/memory-kit/skills/close-session/SKILL.md` — the full end-of-session ritual
 - `plugins/memory-kit/reference/` — depth: fact-check, parallel development, doc governance,
-  decisions log, review loop, the QA protocol template
+  decisions log, review loop, the QA protocol template; since 8.2.0 also acceptance, helper roster, window cycle,
+  rules subtraction, review classes, measurement lessons, reporting (each opens with «Applies when:» and tags its
+  proof — mostly one project's practice)
+- `plugins/memory-kit/templates/agents/` — role templates (8.2.0), a copy-on-request layer: nothing loads until
+  `/memory-kit:setup` copies a role on a yes
 - `docs/specs/claude-code.md` — what Claude Code honours, empirically (probes with dates)
 - `docs/CHANGELOG.md` — version history including the v6.0 plugin pivot
 - Anthropic docs: `code.claude.com/docs/en/skills`, `code.claude.com/docs/en/memory`, `code.claude.com/docs/en/best-practices`

@@ -2,41 +2,26 @@
 
 # Claude Memory Kit
 
-**Built-in memory decides what to remember. This one asks.**
-
-Claude Memory Kit is a Claude Code plugin that gives your coding agent a memory made of plain text files in your own
-folder. Session two opens with *"you were on Nestlé, the client hates em-dashes, next step: the Q3 brief"* — without
-you explaining anything again. The agent notes small facts as dated lines and tells you; nothing becomes a rule or a
-knowledge article until you say yes. No database, no service, no API key.
+A Claude Code plugin for developers who run Claude Code on a real repository and delegate to helper agents or run
+several sessions at once. It keeps memory as plain dated files in the repository — injected at every session start,
+held under size caps, promoted into knowledge or rules only on your yes — guards git, secrets and the test suite with
+hooks, and ships a method for agent-orchestrated development (spec → build → review → acceptance → findings registry)
+as on-demand reference files and copy-on-request templates. No database, no service, no API key.
 An independent project, not made or endorsed by Anthropic.
-
-**Optional second half, for people who delegate to subagents:** a method that ships with it — specs written as files
-before work starts, a subagent's report treated as a claim until checked, review findings that turn into checks.
 
 [![Version](https://img.shields.io/github/v/release/awrshift/agent-memory-kit?label=version&color=CFEF4A&cacheSeconds=1800)](https://github.com/awrshift/agent-memory-kit/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-55503E?labelColor=55503E&color=55503E)](LICENSE)
 [![Claude Code plugin](https://img.shields.io/badge/Claude_Code-plugin-CFEF4A)](#install)
 
-**On this page:** [How it works](#how-it-works) · [Install](#install) · [What is inside the plugin](#what-is-inside-the-plugin) ·
-[What it creates in your folder](#what-it-creates-in-your-folder) · [The method](#the-method-for-work-with-subagents) ·
-[Why not built-in memory](#why-not-the-built-in-memory) · [Privacy and cost](#privacy-and-cost)
-
-## How it works
-
-![How Claude Memory Kit works: you talk, the agent writes plain files in your folder, hooks load them at the next start](.github/assets/01-system-map-claude-code.png)
-
-1. **You talk.** "We're working on Nestlé." "The client hates em-dashes." You never open a memory file.
-2. **The agent writes.** Something worth keeping becomes one dated line in `MEMORY.md`, and the agent tells you
-   ("saved", with the line).
-   The work itself (backlog, specs, research, decisions) goes into that client's own folder, `projects/<client>/`.
-3. **You close the day.** Say "we're done for today". The agent looks for patterns across dates ("you rejected
-   em-dashes on four different days, make it a rule?"), writes what you approve, and leaves a handoff note.
-4. **Tomorrow starts already knowing.** At the next session start a hook loads the memory, the newest handoff and the
-   knowledge index. Nothing becomes a rule without your yes, and every line carries its date, so a stale fact looks stale.
+**On this page:** [Install](#install) · [Fires by itself](#what-fires-by-itself-hooks) ·
+[Skills](#what-you-invoke-skills) · [Agents and roles](#agents-and-role-templates) ·
+[The method](#the-method-in-one-screen) · [Reference](#reference--read-on-demand) ·
+[Templates and scripts](#templates-and-scripts) · [What it writes](#what-it-writes-in-your-repository) ·
+[Privacy and cost](#privacy-and-cost) · [Proof status](#proof-status)
 
 ## Install
 
-Inside the folder you work in, in Claude Code:
+Inside the repository, in Claude Code:
 
 ```shell
 /plugin marketplace add awrshift/agent-memory-kit
@@ -44,182 +29,161 @@ Inside the folder you work in, in Claude Code:
 /memory-kit:setup
 ```
 
-`setup` reads what the folder already has and **proposes before writing anything**; your `CLAUDE.md` stays yours.
+`setup` reads what the repository already has and **proposes before writing anything**; your `CLAUDE.md` stays yours.
 Git is optional. To upgrade later: `claude plugin marketplace update memory-kit`, then
 `claude plugin update memory-kit@memory-kit` (the full id is needed), and restart the session. Upgrades never touch
-your files.
+your files. In a repository that never ran `setup`, the hooks inject one pointer line and write nothing.
 
-## What is inside the plugin
+## What fires by itself (hooks)
 
-A plugin install hides its file tree, so here is all of it.
+Wired in `hooks/hooks.json`. What each injects or blocks, and how to turn it off:
 
-![What is inside the plugin: seven hooks, ten skills, four agents](.github/assets/06-whats-inside.png)
+| Event (matcher) | Script | Injects or blocks | Off-switch / knob |
+|---|---|---|---|
+| SessionStart (startup · clear · resume · compact · fork) | `session-start.py`, run as `--part 1..6` (each part under Claude Code's 10,000-character cap on one hook's context) | Injects the working agreement `context/identity.md`, the nudges that fire (memory over its caps, session-headed blocks, a path in memory that no longer exists, specs `assumed` or `building` too long, a «Rails:» line for missing permission rails, a project hook that is a copy of a kit hook), session stats, `MEMORY.md`, the newest handoff and `knowledge/index.md`. `compact` gets back what compaction dropped; `resume` gets only nudges and stats | `CMK_INJECT_BUDGET` (48000) · `CMK_MEMORY_LINE_CAP` (180) · `CMK_MEMORY_BYTE_CAP` (32768) · `CMK_MEMORY_MAXLINE_CAP` (3000) · `CMK_SPEC_STALE_DAYS` (14) |
+| PreCompact | `pre-compact.sh` | A manual `/compact` is blocked until `MEMORY.md` was written in the last 2 minutes and sits inside its caps. An automatic compaction is never blocked; when it ran over unsaved memory, the next context opens with «save memory now» | none (no-op in an unadopted repository) |
+| PreToolUse (Edit · Write) | `protect-tests.py` | Asks before an edit that can weaken an existing test (an assertion changed or removed, `.skip` / `.only` added) and before any hand edit of a `.snap`. Files created in this session pass | `CMK_ALLOW_TEST_EDITS=1` |
+| PreToolUse (Bash) | `guard-git.py` | Blocks force push, `push --mirror`, `reset --hard`, `clean -f`, `branch -D`, `checkout .`, `restore .` in a real git command; `--force-with-lease` passes | `CMK_GIT_GUARD=off` |
+| PreToolUse (Bash) | `guard-zsh-split.py` | zsh only: blocks a command that relies on bash word-splitting of an unquoted variable, or an unbraced `$NAME:` that zsh reads as a history modifier | `# zsh-split-ok` in the command · `CMK_ZSH_GUARD=off` |
+| PreToolUse (Read · Edit · Write · Bash) | `guard-secrets.py` | Blocks reading or writing `.env` files, keys and certificates by a file tool, a shell command or a redirection; one literal `echo` / `printf` appending a line to `.env` passes | `CMK_SECRETS_GUARD=off` |
+| SessionEnd | `session-end.sh` | Appends one timestamp line to `.claude/state/session-end.log` | none |
 
-### Hooks — run by themselves
+The git and secrets guards carry `"onFailure": "block"`: a guard that crashes or times out blocks the call (Claude
+Code 2.1.295 or later). Shared code in `hooks/lib/`: `cmdparse.py` (one shell-command parser for every guard),
+`rails.py` (permission-settings facts), `stale-refs.py` (paths in memory that no longer exist), `legacy_hooks.py` (a
+project's own copy of a kit hook), `statefs.py` and `state.sh` (state writes: never through a symlink, never outside
+the project). Profiles and limits in detail: [`plugins/memory-kit/README.md`](plugins/memory-kit/README.md).
 
-| Hook | When | What it does |
-|---|---|---|
-| `session-start.py` | every session start, and after a compaction | Loads the working agreement, your `MEMORY.md`, the newest handoff and the knowledge index. Warns when memory is over its caps, when a path in memory no longer exists, when a spec is waiting for your ratification, and when your project wires its own copy of a kit hook (it would run twice). |
-| `pre-compact.sh` | before the conversation is compacted | A manual `/compact` waits until memory is saved and inside its caps. An automatic compaction is never blocked (that would fail your request); if it ran over unsaved memory, the next context opens with "save memory now". |
-| `protect-tests.py` | before a file edit | Asks before an edit that could weaken an existing test: an assertion changed or removed, a `.skip` or `.only` added. New tests pass silently. |
-| `guard-git.py` | before a shell command | Stops force push, `push --mirror`, `reset --hard`, `clean -f`, `branch -D`, `checkout .`. `--force-with-lease` passes. |
-| `guard-secrets.py` | before a read, edit or shell command | Keeps `.env` files, keys and certificates out of the transcript, whether by a file tool, a shell command or a redirection. One exception: a single literal `echo` or `printf` appending a line to `.env`. |
-| `guard-zsh-split.py` | before a shell command, in zsh only | Catches a variable that zsh will NOT split into words the way bash does, before the command silently does the wrong thing. |
-| `session-end.sh` | when the session ends | Writes one timestamp line, nothing else. |
+## What you invoke (skills)
 
-The guards for git and secrets block the action if they crash or time out, instead of letting it through (Claude Code
-2.1.295 or later; older versions accept the setting but let the action through). Each guard
-names its opt-out variable. In a folder that never ran `setup`, the hooks write nothing.
-Shared code in `hooks/lib/`: `cmdparse.py` (one shell-command parser for every guard), `rails.py` (permission settings
-facts), `stale-refs.py` (finds paths in memory that no longer exist), `legacy_hooks.py` (spots a project's own copy of a
-kit hook), `statefs.py` and `state.sh` (write the kit's state files safely: never through a symlink, never outside the
-project).
-
-### Skills — you call them, or just say what you want
-
-All are named `/memory-kit:<name>`, and each one also triggers from plain words. Until a skill runs, only its one-line
-description sits in the context.
+All are `/memory-kit:<name>` and also trigger from plain words; until a skill runs only its description is in context.
 
 | Skill | What it does |
 |---|---|
-| `close-session` | The end-of-day ritual: capture what is new, look for patterns on 3+ dates, promote on your yes, refresh the memory header, write the handoff. |
-| `memory-audit` | When memory trips a cap: a table of moves (to the knowledge base, to a rule, or out) for your approval, then the moves. |
-| `system-audit` | The periodic health check of the whole setup through seven lenses; it measures which layers actually fired and proves each guard through its real wiring. |
-| `setup` | Adopts the kit in this folder, settles how it coexists with Claude Code's own auto memory, and offers safe permission rails. |
-| `tour` | A walkthrough of the kit on your own files. |
-| `session-review` | An adversarial review of a session's work by an isolated reviewer that reads the actual files. |
-| `second-opinion` | Independent reviewers on one high-stakes decision before it reaches you. If you already run your own review board, use that instead. |
-| `qa-sweep` | A multi-lens QA pass over your running product, every finding with repro steps. |
-| `document` | A PR description, changelog entry, release note or postmortem, written only from the actual `git diff`. |
-| `code-sync` | After a merge, reconciles each spec's status with what the code now shows. |
+| `setup` | Adopts the kit here, settles coexistence with Claude Code's auto memory, offers permission rails, the orchestration rule and the role templates — each on a yes. `setup rails` re-runs only the rails |
+| `close-session` | End of session: capture, look for a pattern on 3+ dates, promote on a yes, write the handoff. Says how a project adapts it, begins below the compaction point, merges memory lines at write time |
+| `memory-audit` | When memory trips a cap: a move plan for your approval, then the moves |
+| `system-audit` | Periodic health check of the whole setup through its lenses; measures which layers fired, proves each guard through its exact wiring |
+| `session-review` | Adversarial review of a session's work by an isolated reviewer that reads the files; a retro's facts come from the session logs by script, at most three changes |
+| `second-opinion` | Independent reviewers on one high-stakes decision before it reaches you |
+| `qa-sweep` | Multi-lens QA of the running product by `qa` agents, every finding with repro steps |
+| `document` | PR body, changelog entry, release note or postmortem, written only from `git diff` / `git log`; runs the claim-refs check on the draft |
+| `code-sync` | After a merge: spec statuses reconciled with what the code shows |
+| `tour` | A walkthrough of the kit on your own files |
 
-### Agents — workers your agent delegates to
+## Agents and role templates
 
-| Agent | Model | What it does |
+**Live agents** — listed in every session once the plugin is installed (`agents/`):
+
+| Agent | Model | Role |
 |---|---|---|
-| `executor` | Opus | Builds to a decided spec in its own git worktree. Never redesigns; any deviation is reported. Stops if a value it must produce has no source in the spec. |
-| `recon` | Sonnet | Read-only fact gatherer: raw facts with file and line, official sources for anything outside the repo. Never designs. |
-| `idea-validator` | Opus | An isolated critic with none of your conversation, so it cannot anchor on your framing. |
-| `qa` | Sonnet | One QA lens on the running product (user flow, edge states, honesty, contract, UX). Observes, never fixes. |
+| `executor` | Opus | Builds to a decided spec in its own worktree; never redesigns, reports any deviation, stops on a value with no source |
+| `recon` | Sonnet | Read-only facts with file and line; official sources for anything outside the repo |
+| `idea-validator` | Opus | Isolated critic with none of your conversation |
+| `qa` | Sonnet | One QA lens on the running product; observes, never fixes |
 
-### Rule templates — the always-loaded part you opt into
+**Role templates** — `templates/agents/`, copied into your `.claude/agents/` only on a yes (`setup` offers them), then
+filled. Each starts with `omitClaudeMd: true`, so the file carries what the helper must know. In trial in one project;
+the roster and the rule «judges → the stronger model, collects or counts → the cheaper»: `reference/helper-roster.md`.
 
-A plugin cannot install rules, so `setup` offers these and copies them only on your yes.
+| Template | Model | Use when |
+|---|---|---|
+| `code-reviewer.md` | Opus | A built diff, or a fix round's diff, is reviewed against its spec by someone who did not write it |
+| `prebuild-reader.md` | Opus | A spec is read against the code at its base commit before the build |
+| `tool-builder.md` | Opus | A measurement, gate or harness script is built to a decided brief |
+| `web-recon.md` | Sonnet | A decision rests on an outside fact that may have moved (vendor, library, limit) |
+| `labeler.md` | Opus | Rows are labelled by a written rubric, blind to the hypothesis |
 
-| Template | What it holds |
+## The method in one screen
+
+![Agent-orchestrated work: the main session writes a spec file, the agents work from it, and a report is input, never a fact](.github/assets/07-orchestrated-work-v73.png)
+
+The main session designs, decides and integrates; helpers build or gather facts from a spec file. The always-loaded
+invariants live in `templates/rules/orchestration.md` (a plugin cannot ship rules; `setup` offers to copy it).
+
+| Step | What happens | Open |
+|---|---|---|
+| 1. Spec file | Goal, non-goals, acceptance `AC-n` written first, value sources, gates; a depth pass, a practice line and a review line before hand-over; a reader who did not write it checks it against the code | `SPEC-TEMPLATE.md` · `reference/spec-depth.md` |
+| 2. Build | `executor` (or your own builder) in a worktree, one integrator; several sessions → one main and windows working from brief files | `reference/parallel-development.md` · `reference/window-cycle.md` · `WINDOW-BRIEF-TEMPLATE.md` |
+| 3. Review, fix rounds included | Every nontrivial diff, and every fix round's diff, reviewed by an agent that did not write it; findings triaged to the owning layer; a fix round may not redesign | `reference/review-loop.md` §0–§1 · `reference/review-classes.md` · `reference/acceptance.md` |
+| 4. Acceptance record | One file per accepted head: spec, rounds, review, gates re-run on that tree, one ruling per finding | `reference/acceptance.md` · `ACCEPTANCE-TEMPLATE.md` · `reference/orchestrator-fact-check.md` |
+| 5. Findings registry | Each confirmed finding logged by class and family; a family seen three times is promoted into a check | `reference/review-loop.md` §2 |
+
+## Reference — read on demand
+
+`reference/` costs nothing until opened. Proof tags inside each file say what a line rests on.
+
+| File | Open it when |
 |---|---|
-| `templates/rules/orchestration.md` | Nine invariants for working with subagents ([listed below](#the-method-for-work-with-subagents)). |
-| `templates/rule-template.md` | The shape of a good rule: one checkable always/never, scoped by `paths:` so it loads only where it applies. |
+| `reference/spec-depth.md` | Writing a spec: depth pass, fresh-checked practice, review by stake, the pre-build read, paid runs with a cap |
+| `reference/orchestrator-fact-check.md` | Accepting anyone's report, or telling the user how things are now: the claim → check table |
+| `reference/review-loop.md` | Handling findings: triage and the fix spec's family line, the diff gate, the findings registry |
+| `reference/acceptance.md` | You accept a helper's build after a review round (in trial) |
+| `reference/review-classes.md` | Reviewing a diff or writing a checklist: defect classes one backend project met, each with its check (one project's practice) |
+| `reference/parallel-development.md` | Fanning work out: worktrees, one integrator, held work that drifts, flow limits |
+| `reference/window-cycle.md` | You run more than one interactive session on one repository (one project's practice) |
+| `reference/helper-roster.md` | You delegate to helpers often: a role and an explicit model per call (in trial) |
+| `reference/measurement-lessons.md` | Before a bar on a count or a model's judgment deciding a change (counts from one project) |
+| `reference/reporting.md` | Writing a status, a close report or an answer to the user's comment (one project's practice) |
+| `reference/rules-subtraction.md` | Your always-loaded instructions grew one line per incident and need cutting |
+| `reference/doc-governance.md` | Keeping docs true: one home per fact, derived state not kept by hand, archive moves |
+| `reference/decisions-log.md` | Recording a product or architecture decision in a lean ledger |
+| `reference/project-extensions.md` | Adding your own rule, skill, hook or agent; what each costs idle; ideas measured and not built |
+| `reference/harness-measurement.md` | Changing settings, hooks or rules: probes before and after; dated harness notes |
+| `reference/capability-map-sweep.md` | Code duplicates what an installed library already does |
+| `reference/qa-PROTOCOL-TEMPLATE.md` · `reference/qa-mcp.json.example` | Setting up `qa-sweep` for a product |
 
-### Reference — depth, read only when needed
+## Templates and scripts
 
-| Doc | Read it when |
+Copied on request by `setup` or a skill; none loads by itself.
+
+| Kind | Files |
 |---|---|
-| `reference/spec-depth.md` | Writing a spec: the depth pass, checking outside facts fresh, review by stake, failure branches written first, measuring the outcome rather than a proxy. |
-| `reference/orchestrator-fact-check.md` | Accepting anyone's report: how a claim becomes a fact, and the cheapest decisive check per kind of claim. |
-| `reference/review-loop.md` | Handling findings: triage to the layer that owns them, the review gate on diffs, the registry that turns a repeated mistake into a check. |
-| `reference/parallel-development.md` | Fanning work out: worktrees, one integrator, when to go sequential. |
-| `reference/doc-governance.md` | Keeping docs true: one home per fact, dated status, nothing cited from a temp folder. |
-| `reference/decisions-log.md` | Recording a product or architecture decision in a lean ledger. |
-| `reference/project-extensions.md` | Adding your own rule, skill, hook or agent, and what each costs while idle. |
-| `reference/harness-measurement.md` | Changing settings or hooks: prove it with a fixed probe set before and after. |
-| `reference/capability-map-sweep.md` | Code duplicates what an installed library already does. |
-| `reference/qa-PROTOCOL-TEMPLATE.md`, `reference/qa-mcp.json.example` | Setting up `qa-sweep` for a product. |
+| Memory | `templates/MEMORY-TEMPLATE.md` · `templates/HANDOFF-TEMPLATE.md` · `templates/workspace/knowledge-index.md` |
+| Rules | `templates/rules/orchestration.md` (the invariants for work with helpers) · `templates/rule-template.md` (one checkable always/never, scoped by `paths:`) |
+| Per project | `templates/workspace/project/README-TEMPLATE.md` (map and workflow tier) · `BACKLOG-TEMPLATE.md` · `SPEC-TEMPLATE.md` (the contract) · `ASSUMED-SPEC-TEMPLATE.md` (an executor's override owed your ratification) · `ACCEPTANCE-TEMPLATE.md` (in trial) |
+| Parallel work | `templates/workspace/WINDOW-BRIEF-TEMPLATE.md` (in trial) |
+| Sandbox, onboarding | `templates/workspace/EXPERIMENT-TEMPLATE.md` · `experiments-README.md` · `ONBOARDING-BACKLOG.md` |
+| `document` | `pr.md` · `changelog.md` · `release-note.md` · `postmortem.md` |
+| Scripts | `scripts/quiet.sh` (a noisy command: full log to a file, a summary, proof that a `git commit` landed) · `scripts/permission-probes.sh` (do your permission rules stop what they should) · `scripts/claim-refs-check.py` (every path and commit an outgoing text names exists; run before a PR body or release note leaves — one project's practice) · `system-audit` carries `collect.sh`, `gates.py`, `usage.py` |
 
-### Templates, scripts and the agreement
-
-- **Memory files:** `templates/MEMORY-TEMPLATE.md`, `templates/HANDOFF-TEMPLATE.md`, `templates/workspace/knowledge-index.md`.
-- **Per project:** `templates/workspace/project/README-TEMPLATE.md` (the project's map and workflow tier),
-  `BACKLOG-TEMPLATE.md`, `SPEC-TEMPLATE.md` (the contract an executor builds to), `ASSUMED-SPEC-TEMPLATE.md` (an
-  executor's recorded override, owed your ratification).
-- **Other:** `EXPERIMENT-TEMPLATE.md` and `experiments-README.md` (a sandbox for throwaway work), `ONBOARDING-BACKLOG.md` (a first
-  day in five tasks), and the four `document` templates (`pr.md`, `changelog.md`, `release-note.md`, `postmortem.md`).
-- **Scripts:** `scripts/quiet.sh` (runs a noisy command, keeps the full log in a file, prints a summary, and proves a `git commit` landed),
-  `scripts/permission-probes.sh` (checks that your permission rules stop what they should); `system-audit` carries
-  `collect.sh`, `gates.py` and `usage.py`.
-- **The working agreement:** `context/identity.md`, injected at every session start. It is the kit's only always-on
-  instruction text, about 1.6k tokens.
+The working agreement, `context/identity.md`, is the kit's only always-on instruction text, injected at every start.
 
 ```
 plugins/memory-kit/
-├── hooks/        hooks.json · session-start.py · pre-compact.sh · protect-tests.py · guard-git.py
-│                 guard-secrets.py · guard-zsh-split.py · session-end.sh · lib/ · tests/
-├── skills/       close-session · memory-audit · system-audit · setup · tour · session-review
-│                 second-opinion · qa-sweep · document · code-sync
-├── agents/       executor · recon · idea-validator · qa
-├── reference/    the depth docs above
-├── templates/    memory · rules · workspace · project
-├── scripts/      quiet.sh · permission-probes.sh
-└── context/      identity.md
+├── hooks/       hooks.json · the scripts above · lib/ · tests/
+├── skills/      one folder per skill
+├── agents/      the live agents
+├── reference/   the files above
+├── templates/   memory · rules · agents · workspace · project
+├── scripts/     the scripts above · tests/
+└── context/     identity.md
 ```
 
-## What it creates in your folder
+## What it writes in your repository
 
 Only state, and only after `setup`:
 
 ```
-your-folder/
-├── .claude/memory/MEMORY.md     hot cache: dated one-liners, capped at 180 lines / 32 KB / 3000 chars a line
-├── context/handoffs/            one note per session; the newest is loaded at the next start
-├── knowledge/                   the wiki: one article per settled topic, written after your yes
-├── .claude/rules/               always / never, only what you promoted
-└── projects/<client>/           each client's own documents: README (the map), BACKLOG, plans/, research/
+your-repo/
+├── .claude/memory/MEMORY.md   hot cache: dated one-liners, capped at 180 lines / 32 KB / 3000 chars a line
+├── .claude/state/             session counter, logs (kit-owned)
+├── context/handoffs/          one note per session; the newest is injected at the next start
+├── knowledge/                 index.md + concepts/: one article per settled topic, written after your yes
+├── .claude/rules/             always / never: what you promoted, plus any template you copied
+└── projects/<name>/           README (the map) · BACKLOG · plans/ · research/ · decisions-log.md ·
+                               review-findings.md · qa/ — past the first two, created on first use
 ```
 
-```mermaid
-flowchart LR
-    T([you talk]) --> H["MEMORY.md<br/>dated one-liners"]
-    H -->|"/close-session"| N["handoffs/<br/>one note per session"]
-    H -->|"same pattern on 3+ dates<br/>and you say yes"| K["knowledge/<br/>facts + rationale"]
-    K -->|"stable, mechanical"| R["rules/<br/>always / never"]
-    N -->|"newest one loaded"| S([next session])
-    H -->|"loaded in full"| S
-```
+A pattern's path: a dated line → (seen on 3+ dates, with your yes) a knowledge article → (stable, mechanical) a rule.
+`setup` writes `.claude/settings.json` only after you approve its diff (`autoMemoryEnabled: false` if the kit owns
+memory; `Read` / `Edit` deny rules for root `.env` files). `document` writes where a human looks: `CHANGELOG.md`,
+`docs/releases/`, `docs/postmortems/`. Role templates and rule templates land in `.claude/agents/` and
+`.claude/rules/` only when you say yes.
 
-A pattern's path: a dated line, then (seen on 3+ dates, with your yes) a knowledge article, then (stable and
-mechanical) a rule. **Memory vs paperwork:** what the agent
-learned is shared across your work; what the work produced belongs to one client's folder. Say "now IKEA" and the
-agent reads that folder only.
-
-## The method for work with subagents
-
-![Agent-orchestrated work: the main session writes a spec file, four agents work from it, and a report is input, never a fact](.github/assets/07-orchestrated-work-v73.png)
-
-The main session designs and decides; subagents build or gather facts from a spec written as a file before anyone
-starts. The nine invariants in `templates/rules/orchestration.md`, in plain words:
-
-1. A report from a subagent or reviewer is input, not a fact. Re-run the check, read the line, look at one real
-   output yourself.
-2. Subagents build to a decided spec file and never redesign; a deviation is reported, not absorbed.
-3. A value with no named source stops the build as an owed decision; nothing is invented.
-4. The main session alone writes memory and project documents, merges, and re-runs every check on the merged result.
-5. A failing test means the code is wrong, not the test.
-6. Reviewers are judged on merits, never by counting votes.
-7. A subagent is resumed only for a short follow-up; new work gets a fresh one with a brief that points at files.
-8. Every number in a report comes from a script or command shown next to it.
-9. Scope, anything others will see, irreversible data changes and spending are yours to decide; technical choices are
-   the agent's, explained as "decision, why it is correct, what would prove it wrong".
-
-A spec also carries three lines before it is handed over (`reference/spec-depth.md`): a **depth pass** (what a top
-expert in the field would do that nobody asked for), a **practice** line (outside facts checked against official
-sources today, with the date), and a **review** line (who reviews it, by stake). Failure branches are written before
-the run, and success is judged by what reaches the user, not by a counter.
-
-## Why not the built-in memory?
-
-Claude Code ships its own auto memory, on by default. It is effortless, and it lives outside your folder.
-
-| | Claude Code auto memory | Claude Memory Kit |
-|---|---|---|
-| Who decides what is remembered | the agent, silently | the agent proposes, **you approve** |
-| Where it lives | `~/.claude/projects/`, on this machine only | **plain files in your folder** |
-| Can you read it, diff it, fix a wrong belief | partly | **yes, it is text** |
-| One memory per client | no | **yes**, `projects/<client>/` |
-| Shared with a teammate or a second machine | no | **yes**, it is in the repo |
-| How staleness shows | it doesn't | **every line is dated**; caps force a prune |
-| Cost at session start | up to 200 lines / 25 KB (Claude Code docs) | about 6.5–8.5k tokens on three working repositories (measured 2026-09-26), bounded by the caps, plus ~2k of skill and agent descriptions |
-
-Running both means two writers and two truths, so `setup` asks you to pick one.
+**Versus Claude Code's own auto memory:** that one is on by default, written by the agent, and lives in
+`~/.claude/projects/` on one machine. The kit's memory is text in the repository — diffable, dated, shared with a
+teammate if you commit it, promoted only on your yes. Running both means two writers, so `setup` asks you to pick one.
 
 ## Privacy and cost
 
@@ -230,16 +194,19 @@ Running both means two writers and two truths, so `setup` asks you to pick one.
   machines or with a teammate? Say so at `setup` and the hot cache gets committed instead.
 - **Forgot to close the session?** Nothing breaks: the next session still opens with your memory. You lose that
   session's handoff note and the pattern audit.
+- **Cost at session start:** about 6.5–8.5k tokens on three working repositories (measured 2026-09-26), bounded by
+  the memory caps, plus about 2k of skill and agent descriptions. Skill bodies, agent bodies, `reference/` and
+  templates cost nothing until used; each role template you copy adds its description to every start.
 
-## Origin
+## Proof status
 
-Built and used daily by one operator since March 2026, across marketing, research and product work, and the method
-behind several production agent setups. Layers that quietly rotted were retired (a daily journal, a rolling status
-file, a staging layer), and CI now checks on every push that the memory actually reaches the model and that this page
-lists every part of the plugin.
-
-A 68-second recording of a real session: [demo video](.github/assets/demo-full-session.mp4).
-**Tell me how your first week went:** [open a note](https://github.com/awrshift/agent-memory-kit/issues/new?template=first-week.md).
+Built and used daily by its maintainer since March 2026; layers that rotted were retired (`docs/ARCHITECTURE.md`,
+«What's NOT in the architecture»). Most of the method added in 8.2.0 is **one project's practice**, not a standard:
+each practice in those files carries its tag — `(measured in one project, 2026-11: <count>)`, `(in trial in one
+project since <date>; count due <date>)` or `(one project's working practice; no count)` — and each new file or
+section opens with an «Applies when:» condition you can test on your repository. Take what your condition matches;
+what changed in each release and for whom: [`docs/CHANGELOG.md`](docs/CHANGELOG.md).
 
 [Architecture](docs/ARCHITECTURE.md) · [Claude Code facts](docs/specs/claude-code.md) · [Changelog](docs/CHANGELOG.md) ·
-[Contributing](docs/CONTRIBUTING.md) · [Open decisions](docs/DECISIONS.md) · MIT, see [LICENSE](LICENSE).
+[Contributing](docs/CONTRIBUTING.md) · [Open decisions](docs/DECISIONS.md) · [Assets](docs/ASSETS.md) ·
+[Issues](https://github.com/awrshift/agent-memory-kit/issues) · MIT, see [LICENSE](LICENSE).

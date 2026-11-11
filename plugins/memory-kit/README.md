@@ -1,7 +1,9 @@
 # Claude Memory Kit (`memory-kit` plugin)
 
-Built-in memory decides what to remember. This one asks. Persistent memory for Claude Code as
-plain files in a folder you already have. An independent project, not made or endorsed by Anthropic.
+For developers who run Claude Code on a real repository and delegate to helper agents or run several sessions:
+memory as plain dated files in the repository (injected every session, size-capped, promoted only on your yes),
+guards on git, secrets and tests, and a method for agent-orchestrated development as on-demand `reference/` files and
+copy-on-request templates. An independent project, not made or endorsed by Anthropic.
 
 ```shell
 /plugin marketplace add awrshift/agent-memory-kit
@@ -21,11 +23,12 @@ claude plugin update memory-kit@memory-kit
 
 - **SessionStart — `session-start.py`** — injects the working agreement (`context/identity.md`), the discipline nudges
   that fire, session stats and per-project spec flags (`assumed` · `building > 14 d`), **the hot cache itself**, the
-  newest handoff (its opening-note section first) and the knowledge index. Profile depends on `source`:
+  newest handoff (its opening-note section first) and the knowledge index. A spec counts as `building` too long after
+  `CMK_SPEC_STALE_DAYS` days. Profile depends on `source`:
   `compact` gets back exactly what compaction dropped, plus a loud "save memory now" when the compaction ran over unsaved
   memory; `resume` gets only the nudges and stats. It flags a project that wires its own copy of a kit hook (it would
   run twice), and one «Rails:» line while a root env file has no `Read` deny or an allow hands over a whole tool. Runs as
-  six parts (`--part 1..6`), each under Claude Code's 10,000-character cap on one hook's context.
+  `--part 1..6`, each under Claude Code's 10,000-character cap on one hook's context.
 - **PreCompact — `pre-compact.sh`** — a manual `/compact` waits until `MEMORY.md` is fresh and inside its three caps
   (180 lines / 32 KB / 3000 chars per line). An automatic compaction is never blocked: Claude Code would fail the
   request (on a context-limit recovery) or skip the compaction.
@@ -39,8 +42,9 @@ claude plugin update memory-kit@memory-kit
   `.env.*.local`, `.env.production` (and development/test/staging), `*.pem`, `id_rsa*`, `*.p12` — by the file tools or by
   a shell command, inline script or redirection; one literal `echo`/`printf` appending a line (`>> .env`) passes; `source` / `.`, `cp`/`ln`/`mv`, `ls`,
   `test`, `git`, `rm` pass, and `.env.example` is never secret; `CMK_SECRETS_GUARD=off` opts out.
-- **PreToolUse(Bash) — `guard-zsh-split.py`** — in zsh only: catches an unquoted variable that zsh will not split into
-  words the way bash does, before the command silently gets one argument instead of several.
+- **PreToolUse(Bash) — `guard-zsh-split.py`** — in zsh only: blocks an unquoted variable that zsh will not split into
+  words the way bash does (the command would silently get one argument instead of several), and an unbraced `$NAME:`
+  that zsh reads as a history modifier; `# zsh-split-ok` in the command passes it, `CMK_ZSH_GUARD=off` opts out.
 - **SessionEnd — `session-end.sh`** — appends one timestamp line to `.claude/state/session-end.log` (Claude Code gives
   plugin SessionEnd hooks a 1.5-second budget).
 
@@ -71,17 +75,23 @@ nothing.
 
 | Skill | For |
 |---|---|
-| `close-session` | the end-of-session ritual: capture → audit for 3+-date repetition → promote on a yes → handoff |
+| `close-session` | the end-of-session ritual: capture → audit for 3+-date repetition → promote on a yes → handoff; a project's own close list is opened from its steps, never instead of them; the close begins below the compaction point; a memory line is merged into its topic at write time, never stacked |
 | `memory-audit` | cap-trip surgery on the hot cache, by an approved move plan |
-| `system-audit` | the periodic seven-lens sweep of the whole system, every finding evidence-backed — including the transcript profiler that answers "did this layer ever fire" and `gates.py`, which proves every PreToolUse hook through its exact wiring |
+| `system-audit` | the periodic sweep of the whole system through its lenses (`skills/system-audit/references/lenses.md`), every finding evidence-backed — including the transcript profiler that answers "did this layer ever fire" and `gates.py`, which proves every PreToolUse hook through its exact wiring |
 | `setup` · `tour` | adopt the kit here (`setup rails`: only the permission rails, on an adopted repo) · walk through it on your own files |
-| `session-review` · `second-opinion` | adversarial review of a session · of one high-stakes decision |
+| `session-review` · `second-opinion` | adversarial review of a session (a retro's facts come from the session logs by script, at most three changes) · of one high-stakes decision |
 | `qa-sweep` | multi-lens agent QA of a running product (needs `projects/<name>/qa/README.md`, template in `reference/`), every finding and run record bound to the spec's `AC-n` |
-| `document` | the human record of a change — PR body · changelog entry · release note · postmortem — drafted only from `git diff` / `git log`, never from what the model remembers building |
+| `document` | the human record of a change — PR body · changelog entry · release note · postmortem — drafted only from `git diff` / `git log`, never from what the model remembers building; the draft passes `scripts/claim-refs-check.py` (every path and commit it names exists) |
 | `code-sync` | after a merge: specs reconciled against the code — `building → done` on a gate you ran, `stale` with the reason, `assumed` specs listed as owed ratification, the project map and `Last verified` refreshed. Surgical edits only |
 
-Agents: `executor` (builds to a spec file in a worktree) · `recon` (read-only facts) ·
+Agents, listed in every session: `executor` (builds to a spec file in a worktree) · `recon` (read-only facts) ·
 `idea-validator` (isolated critic) · `qa` (one adversarial lens on the running app).
+
+Role templates, copied into `.claude/agents/` only on a yes (`setup` offers them; in trial in one project):
+`templates/agents/` — `code-reviewer` · `prebuild-reader` · `tool-builder` · `web-recon` · `labeler`; the roster and
+how each call picks a role and a model: `reference/helper-roster.md`. The method's depth — spec, review, acceptance,
+the findings registry, parallel windows, measurement — lives in `reference/`; the root README's table says when to open
+each file, and the proof tag inside each line says what it rests on.
 
 ![Orchestrated work: a spec, executors, one integrator](https://raw.githubusercontent.com/awrshift/agent-memory-kit/main/.github/assets/07-orchestrated-work-v73.png)
 ![Agent QA and per-project documents](https://raw.githubusercontent.com/awrshift/agent-memory-kit/main/.github/assets/09-agent-qa-projects.png)
@@ -100,7 +110,8 @@ project README's map already sends that class.
 ## Environment knobs
 
 `CMK_INJECT_BUDGET` (48000) · `CMK_MEMORY_LINE_CAP` (180) · `CMK_MEMORY_BYTE_CAP` (32768) ·
-`CMK_MEMORY_MAXLINE_CAP` (3000) · `CMK_ALLOW_TEST_EDITS`.
+`CMK_MEMORY_MAXLINE_CAP` (3000) · `CMK_SPEC_STALE_DAYS` (14) · `CMK_ALLOW_TEST_EDITS=1` · `CMK_GIT_GUARD=off` ·
+`CMK_SECRETS_GUARD=off` · `CMK_ZSH_GUARD=off`.
 
 Architecture and rationale: the kit repository's
 [`docs/ARCHITECTURE.md`](https://github.com/awrshift/agent-memory-kit/blob/main/docs/ARCHITECTURE.md).

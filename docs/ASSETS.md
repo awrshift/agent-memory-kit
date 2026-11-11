@@ -4,6 +4,20 @@ Nine diagrams and five demo clips in `.github/assets/` carry the visual story. T
 the product. The rule: **a diagram that states a fact is a fact that has to be swept like any
 other** — same discipline as the docs, and a stale panel is a lie in the most-read file.
 
+## 8.2.0 readme sweep (2026-11-11) — the four images the README used, opened and read
+
+The README was rewritten for developers in 8.2.0; an image stayed only if every claim on it is true of the tree and it
+serves a developer.
+
+| Asset | 8.2.0 |
+|---|---|
+| `01-system-map-claude-code.png` | **removed from the README.** It retells the newcomer story the README dropped («you only talk», invented client folders and client quotes). Its structural claims are still true; not regenerated, not deleted. Its only embed is now this line: ![system map](../.github/assets/01-system-map-claude-code.png) |
+| `06-whats-inside.png` | **removed from the README; STALE.** The footer «Nothing leaves your machine» is false — Claude Code sends what it reads, memory included, to the model (README «Privacy and cost»); `session-start.py` «loads … the rules» is wrong — Claude Code loads `.claude/rules/`, the hook injects the working agreement. The hook, skill and agent lists are still the tree's; the role templates and `reference/` are not on it. Still embedded in `docs/ARCHITECTURE.md` — regenerate or drop it there |
+| `07-orchestrated-work-v73.png` | **kept** (README «The method in one screen», plugin README). Every string read against the tree: the four live agents, the spec fields (`SPEC-TEMPLATE.md`), «the integrator re-runs the gates on the merged tree». Incomplete, not false: nothing on the review round, the acceptance record, the findings registry or the role templates |
+| `og-banner-claude-code.png` | **kept.** The four layers it draws (`MEMORY.md`, `handoffs/`, `concepts/`, `rules/`) are the tree's; the headline is the slogan, true of promotion (only on a yes) |
+| `09-agent-qa-projects.png` | **kept** in the plugin README (not on the root README). Five lenses, isolated Playwright servers, `browser_verify_*`, seeded-defect recall, the `qa/README.md` protocol — all in `agents/qa.md`, `skills/qa-sweep/`, `reference/qa-*` |
+| `demo-full-session.mp4` | **link removed from the README** (the recorded session is the newcomer story). Linked from «The demo recording» below |
+
 ## State (full sweep 2026-08-31 for v6.4.0 — every asset opened and read after the rebrand;
 five regenerated, four kept)
 
@@ -36,7 +50,8 @@ undo the cap. If you ever switch to real PNGs, rename the files to match, and ex
 Removed in v6: `01-before-after.png` — the before/after table in the README says the same thing,
 and it was the one asset drawn in a different (emoji-face) style. Still in git history.
 
-**Embed homes (2026-09-02; names updated for 8.0):** the root README carries `og-banner-claude-code`, `01-system-map-claude-code`
+**Embed homes — since 8.2.0** the root README carries `og-banner-claude-code` and `07-orchestrated-work-v73` only;
+`01` lives in the 8.2.0 table above, the video in the demo section. **Before (2026-09-02; names updated for 8.0):** the root README carried `og-banner-claude-code`, `01-system-map-claude-code`
 (after "The problem"), the four demo clips (`demo-1` under "A day with it", `demo-3` + `demo-4`
 under the comparison table, `demo-2` under "Many clients"), and `07` + `09` inside the collapsed
 "For builders" block; `02` moved to `docs/ARCHITECTURE.md` (the audit-ritual section) when the
@@ -84,7 +99,7 @@ table plus the copy already visible in each asset.
 ## The demo recording (`demo-1…4-*.gif` + `demo-full-session.mp4`)
 
 Since 7.3 the clips are off the README (they slowed reading; the front page now shows the whole plugin instead) and
-live here for the launch post; the README links the full video once.
+live here for the launch post. Since 8.2.0 the README no longer links the full video either: [demo video](../.github/assets/demo-full-session.mp4).
 
 ![demo 1](../.github/assets/demo-1-open-already-knowing.gif)
 ![demo 2](../.github/assets/demo-2-two-clients.gif)
@@ -142,5 +157,5 @@ Lessons, each paid for once (2026-09-02):
 
 ## Style notes
 
-- The Mermaid diagram in the README ("Where memory lives") can never go stale — it renders from
-  text. Prefer Mermaid for structure, PNGs for the pitch.
+- Mermaid can never go stale — it renders from text. Prefer it for structure, PNGs for the pitch. (The README's
+  «Where memory lives» Mermaid diagram left with the 8.2.0 rewrite; a text tree took its place.)

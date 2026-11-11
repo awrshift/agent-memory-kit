@@ -1,8 +1,8 @@
 {
   "name": "memory-kit",
   "displayName": "Memory Kit",
-  "version": "8.1.0",
-  "description": "Persistent memory for Claude Code as plain files in your folder: a hot cache injected every session and held under three size caps, per-session handoffs, and promotion into knowledge articles and rules only on your yes. Carries the builder's layers too — executor/recon/idea-validator agents, session review, second opinion, agent QA and a system audit — all lazy-loaded skills you only pay for on use. Installs into any existing repository.",
+  "version": "8.2.0",
+  "description": "A Claude Code plugin for developers who delegate to helper agents or run several sessions on a real repository: memory as plain dated files in the repository — injected every session, held under size caps, promoted into knowledge or rules only on your yes — hooks that guard git, secrets and the test suite, and a method for agent-orchestrated development (spec, build, review, acceptance, findings registry) as on-demand reference files and copy-on-request role templates. No database, no service.",
   "author": {
     "name": "awrshift",
     "url": "https://github.com/awrshift"

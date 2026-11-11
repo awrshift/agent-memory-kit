@@ -2,6 +2,115 @@
 
 All notable changes to Claude Memory Kit are documented here. Breaking changes marked **BREAKING**.
 
+<a id="v820"></a>
+
+## [8.2.0] — 2026-11-11 — the method for delegated and parallel work, as files and templates; a readme for developers
+
+Nothing to migrate. No new always-on layer: no new hook or skill, no edit of `context/identity.md`,
+`hooks/hooks.json`, `hooks/session-start.py` or `agents/`; the one change to code that runs at every start is the fix
+in `hooks/lib/legacy_hooks.py` below. Everything new sits in `reference/` (read on demand) or `templates/` (copied on
+a yes), and every added practice carries its proof tag — most of it is one project's practice, not a standard.
+
+### Added
+
+- `reference/acceptance.md` + `templates/workspace/project/ACCEPTANCE-TEMPLATE.md` — **the acceptance record**: one
+  file per accepted head (spec, rounds, build or fix-diff review, gates, one ruling per finding), «blocking» defined
+  before the round, a fix round may not redesign, the gates as a receipt bound to the tree as an option; the kit's
+  «re-run the gates yourself» invariant stays. Measured (why) · in trial since 2026-11-10 (the record and the receipt).
+- `reference/helper-roster.md` + `templates/agents/` (`code-reviewer.md`, `prebuild-reader.md`, `tool-builder.md`,
+  `web-recon.md`, `labeler.md`) — **a named role and an explicit model on every helper call**; «judges → the stronger
+  model, collects or counts → the cheaper»; what a role file carries when its helper starts without the project's
+  rules. Roles ship as templates, not as listed agents. In trial since 2026-11-11, count due 2026-11-18.
+- `reference/window-cycle.md` + `templates/workspace/WINDOW-BRIEF-TEMPLATE.md` — **one main session and several
+  windows**: the cycle and its close order, one task per window by a brief file, «files carry the work, messages
+  point», size and stop points, resource slots, takeover. One project's practice, with its counts; the brief template
+  in trial, count due 2026-11-25.
+- `reference/rules-subtraction.md` — **shrinking an instruction set without losing an obligation**: the contradictions
+  table, one home per directive, edits applied as data, a behaviour check before and after. Measured (sizes,
+  contradictions) · in trial since 2026-11-11 (the effect).
+- `reference/review-classes.md` — **defect classes one backend project kept meeting**, each with its check. One
+  project's practice; each line dated by its incident.
+- `reference/measurement-lessons.md` — **the calibrated panel**, the one exception to «a model judge is an estimate»
+  (one project's practice), and the measurement lessons, each with the count its source holds (measured).
+- `reference/reporting.md` — **reporting to the user**: the outcome in the user's units, a comment is not a decision,
+  plans in rounds. One project's practice.
+- `scripts/claim-refs-check.py` + `scripts/tests/test_claim_refs_check.py` — **every path and commit an outgoing text
+  names must exist**; run before a PR body or a release note is handed over. One project's practice.
+
+### Changed
+
+- `reference/review-loop.md` §0 — **the stop signal fires at the spec**: a fix spec names its family and class count,
+  and its fix layer against the owning layer; `templates/workspace/project/SPEC-TEMPLATE.md` carries both as optional
+  lines. In trial since 2026-11-10, count due 2026-12-10. §2 — process incidents are registry rows that name the rule
+  which should have fired. One project's practice.
+- `reference/spec-depth.md` §3 — **a reader who did not write the spec reads it before the build**, mandatory for a
+  queue, a ledger or a lock (measured); §4 — **paid runs**: «N units, ~cost, cap» before the run, one money line
+  (one project's practice).
+- `reference/orchestrator-fact-check.md` — **«A statement carries its check»** (measured, three dates); pointers to
+  the calibrated panel and the gate receipt.
+- `reference/parallel-development.md` — **held work drifts**: re-base held lines at session start, an acceptance names
+  the other held tops (measured drift · rules in trial since 2026-11-10); flow limits (one project's practice);
+  pointers to the roster and the window cycle.
+- `reference/doc-governance.md` R1 — state that code or git can derive is not kept by hand (one project's practice);
+  R3 — an archive move rewrites live references and gates every consumer (measured, one reorganisation).
+- `reference/project-extensions.md` — «Telemetry»: **checks rot too** (measured); «Measured and not built»: two more
+  notes (measured).
+- `reference/harness-measurement.md` — **dated harness notes**: what a start is made of, tool servers loaded per
+  task, switching off one agent, context budgets, what a helper cannot do (measured start sizes · docs facts fetched
+  2026-11-11, one marked UNVERIFIED).
+- `templates/rules/orchestration.md` — the pointer list names the new reference files (no new invariant).
+- `skills/setup/SKILL.md` — offers the role templates and the two new workspace templates, each on a yes.
+- `skills/close-session/SKILL.md` — the close begins below the compaction point; a memory line is merged into its
+  topic at write time, never stacked. One project's practice.
+- `skills/session-review/SKILL.md` — a retro's facts come from the session logs, counted by a script, not from
+  recall; on a day of many sessions, one retro covers every session since the last. One project's practice.
+- `skills/document/SKILL.md` — runs `scripts/claim-refs-check.py` on a draft. `skills/system-audit/references/lenses.md`
+  — lens 7 points at `reference/rules-subtraction.md`.
+- `README.md` and `plugins/memory-kit/README.md` — **rewritten for developers**: install, hooks by event with their
+  off-switches, skills, live agents and role templates, the method in one screen, every `reference/` file with when to
+  open it, what the kit writes, privacy and cost, proof status. The newcomer story is gone. `docs/ASSETS.md` records
+  the images removed (`01-system-map-claude-code.png`, `06-whats-inside.png`, now stale) and kept.
+  `docs/ARCHITECTURE.md` — the copy-on-request layer. The one-line descriptions in `plugin.json` and
+  `marketplace.json` follow the README's first paragraph.
+
+### Fixed
+
+- `hooks/lib/legacy_hooks.py` — the «project hook is a copy of the kit's hook» warning no longer fires on a hook that
+  only mentions the memory path without reading it. Test: `hooks/tests/test_legacy_hooks.py`. Reproduced in one
+  project.
+- `skills/close-session/SKILL.md` — said nothing on how a project adapts it; now a project's own close list is opened
+  FROM the skill's steps, never instead of them. Reproduced in one project.
+- `skills/setup/SKILL.md` — said «Seven invariants» of `templates/rules/orchestration.md`, which holds nine.
+
+### Is it for you?
+
+One condition per practice. Open the file only when the condition holds in your repository.
+
+| When | Open |
+|---|---|
+| You accept a helper's or another session's build after a review round | `reference/acceptance.md` · `ACCEPTANCE-TEMPLATE.md` |
+| You delegate to helper agents more than a few times a session | `reference/helper-roster.md` · `templates/agents/` |
+| You run more than one interactive session on one repository, and one integrates | `reference/window-cycle.md` · `WINDOW-BRIEF-TEMPLATE.md` |
+| A spec goes to a builder who did not write it, or its mechanism is a queue, a ledger or a lock | `reference/spec-depth.md` §3 · `templates/agents/prebuild-reader.md` |
+| A run costs money | `reference/spec-depth.md` §4 |
+| You write a fix spec for a defect of a kind seen before | `reference/review-loop.md` §0 · `SPEC-TEMPLATE.md` (Family, Fix layer) |
+| You review code that takes outside input, runs queued or retried work, or acts on model output | `reference/review-classes.md` |
+| Finished work waits unsent while the branch it targets moves | `reference/parallel-development.md` «Held work drifts» |
+| You tell the user how the code, the data or a run is now, or act on a premise handed to you | `reference/orchestrator-fact-check.md` «A statement carries its check» |
+| You set a bar on a count, or let a model's judgment decide a change | `reference/measurement-lessons.md` |
+| The user reads your messages without having watched the work, or answers with comments | `reference/reporting.md` |
+| Your always-loaded instructions grew one line per incident | `reference/rules-subtraction.md` |
+| More than one document tracks progress, or you archive many files at once | `reference/doc-governance.md` R1, R3 |
+| Your project keeps check scripts that find their subject in the tree | `reference/project-extensions.md` «Telemetry» |
+| You size a session start, run sessions in parallel, or decide what to give a helper | `reference/harness-measurement.md` «Harness notes» |
+| A PR body, release note or message you hand over names paths or commits | `scripts/claim-refs-check.py` |
+| Your project has its own session-close list | `/memory-kit:close-session` |
+| You run a retro over past sessions | `/memory-kit:session-review` |
+
+`plugins/memory-kit/reference/`: 766 lines in 11 files before (main), 1,538 lines in 18 files after. Command:
+`git ls-tree -r --name-only main -- plugins/memory-kit/reference/ | while read f; do git show "main:$f"; done | wc -l`
+vs `cat plugins/memory-kit/reference/* | wc -l`.
+
 <a id="v810"></a>
 
 ## [8.1.0] — 2026-11-11 — a commit is proven to have landed; four measured lines from a project's method study
