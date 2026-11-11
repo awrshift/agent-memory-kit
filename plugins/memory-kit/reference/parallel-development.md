@@ -1,6 +1,6 @@
 ---
 created: 2026-07-17
-last-reviewed: 2026-07-17
+last-reviewed: 2026-11-11
 ---
 
 # Parallel development — desired, not merely tolerated
@@ -32,6 +32,8 @@ integrator-owned: executors read it, never edit it.
 - **Subagents are executors only:** they build to a decided spec or gather facts; design
   belongs to the integrator. A forced deviation is REGISTERED in the report and adjudicated
   at merge — never silently applied.
+- **Every helper call names a role and an explicit model;** the roster, the role templates and what a helper that
+  starts without the project's rules must be told: `helper-roster.md`.
 
 ## Level 2 — multi-session tracks (two genuinely independent tracks)
 
@@ -39,11 +41,39 @@ Only with ALL of: (1) disjoint modules/files/migrations · (2) an own branch/wor
 session · (3) decoupled test state (separate DBs, or serialize the runs) · (4) decisions
 written to per-session shard files, folded into shared docs by the LAST finisher.
 
+**One integrating session and several windows** is the other shape: one main session owns decisions, merges and shared
+docs, the others build one task each from a brief file and report. Its cycle, close order, brief lines, size limits and
+resource slots: `window-cycle.md`.
+
+## Held work drifts
+
+**Applies when:** finished work waits unsent — for a review, a merge, a release — while the branch it targets moves.
+
+- **Re-base held lines at the session's start.** Fetch the target, dry-run a merge of each top of the held work; a top
+  with a conflict, or one that should be built on another top and is not, makes the first task of the session: re-base
+  each line's root and the heads stacked on it, re-run the gates on the result; the next build starts from the
+  re-based top (in trial in one project since 2026-11-10; count due at its next six acceptances).
+  Why: every held line of one project conflicted with its target within 0.4–1.2 days, with 5–10 textual conflicts each;
+  the conflicts sat at each line's shared base, so one re-base of the root clears every block stacked on it. Re-basing
+  only at acceptance leaves the next acceptance on the same line a day behind again
+  (measured in one project, 2026-11: every held top conflicted within 1.2 days).
+- **An acceptance names every other held top it does not contain** — under a heading «Other tops», one line each:
+  hash and one word (parallel · to merge · merged · dropped · sent). A small script at the acceptance commit can refuse
+  one that does not; compare by commit subject when re-bases rewrite hashes (in trial in one project since 2026-11-10;
+  count due at its next six acceptances).
+  Why: two accepted slices in one project rode on no line — every later build and test run went without them — and
+  a helper's table had claimed one of them contained; only a containment run found it
+  (measured in one project, 2026-11: 2 accepted slices on no line).
+
 ## Stop-conditions (go sequential instead)
 
 Overlapping files or schema · a pending one-way-door decision that steers both tracks · a task
 smaller than the coordination cost · never split one slice's acceptance criteria across
 sessions.
+
+**Flow limits.** An item whose actual time passes twice its estimate goes to the user as «continue / reshape / stop»,
+with the evidence — not silently continued. Work waiting for someone else's review gets a cap (open requests at one
+reviewer), so the waiting work is taken sooner instead of piling up (one project's working practice; no count).
 
 **Invariants that never bend for speed:** the per-change definition of done · pre-registered
 acceptance ("what will prove this worked", written BEFORE building) · one SSOT per fact /

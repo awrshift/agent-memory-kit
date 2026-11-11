@@ -27,6 +27,22 @@ a status line or a fix list shown to the user, write ONE line for it:
 - **Stop signal:** the 3rd fix round on one feature or one defect family → stop, write the general rule the cases share,
   show it to the user before round 4. A fix that names a specific input (a domain, a provider, a phrase) → ask which
   general property it violates.
+- **The stop signal fires at the spec, not at round 4.** A rule that no step reads when a fix is chosen does not fire.
+  Every fix spec carries `Family: <slug> · classes so far: <n> · specific input: no | yes — <what>` (or `Family: none —
+  <why it fixes no defect>`); from the 3rd class, or when the fix names a specific input, also `General rule:` and
+  `Owning layer:`. A small check at the spec's commit can refuse a spec without them. Beside it the layer line:
+  `Fix layer: <layer> · owning <layer> · covers class · at owning layer`, or for anything weaker or narrower
+  `Fix layer: <layer> · owning <layer> · covers <cases|class> · patch — foundation: <what>; cost: <what>; class rounds:
+  <n>; trigger: <an open task id | a recount date>`. «Covers cases» = the rule lists the cases seen (a form, a phrase,
+  one site, one value); «covers class» = it holds for a property every case shares. A patch is labelled a patch, with
+  its foundation and the cost of the next rounds, and its deferral names a checked trigger — never «if it shows up
+  again». The same line goes into a fix brief and into a message to the user that recommends a fix; the fix-diff
+  reviewer answers it on its own (`acceptance.md` §2). The spec template carries both lines as optional for a fix spec
+  (in trial in one project since 2026-11-10; count due 2026-12-10).
+  Why: in one project a third lexical rule of one family was briefed, built and ruled «build» while the stop signal
+  stood here with no step that read it; and in 7 of 14 of the user's «patch or foundation?» questions an agent had
+  named the foundation first — in 3 of those the patch was still recommended, the foundation's cost stated and the
+  next rounds' cost not (measured in one project, 2026-11: 3 of 14 foundation named, patch recommended).
 - **Direction review:** the 3rd lever on one track that misses its pre-registered bar → review the DIRECTION, not the
   next spec: independent reviewers get the evidence files plus a list of what you suspect is weak in your own plan, then
   a free decisive check with bars written first.
@@ -45,6 +61,8 @@ a status line or a fix list shown to the user, write ONE line for it:
   (2026-11): the fix diff reached acceptance unreviewed in five; reviewed afterwards, two of five carried a
   blocking defect, and 69 of 72 blocking findings of later rounds had been made by a fix or sat in code a fix
   round redesigned. The fix rounds — not the first review's recall — were where the defects came from.
+  The record of that review, «blocking» defined, «a fix round may not redesign» and the gates of the accepted tree:
+  `acceptance.md`.
 - Skip the gate for doc-only / trivial diffs — it's a gate, not a tax.
 
 ## 2. The findings-class registry (`projects/<name>/review-findings.md`)
@@ -56,6 +74,12 @@ repoint the row in `projects/<name>/README.md`.
 Every integrator-CONFIRMED finding from a code review, QA sweep, or design review appends ONE
 row. Refuted findings are NOT logged — the ledger tracks real defect classes only. Counts are
 derived by grep, never hand-tallied.
+
+**Process incidents are rows too.** A slip of the process itself — a step skipped, a rule that did not stop a mistake —
+is a row with `found-by` «self, process», and it names the existing rule or mechanism that should have caught it (its
+file) and whether it fired: «fired late», «not followed» or «none». The outcome of «not followed» is a change that makes
+it fire; «none» is a candidate rule, counted like any family. The retro that finds them: `/memory-kit:session-review`
+(one project's working practice; no count).
 
 Row: `date · class-slug (family: <family>) · owning layer · found-by · where (file) · AC · outcome`
 
