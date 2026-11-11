@@ -36,5 +36,8 @@
 Deeper procedure: `orchestrator-fact-check` (acceptance layers + claim→check table),
 `spec-depth` (depth pass, practice, review stake, fail branches, outcome over proxy),
 `parallel-development` (fan-out defaults, stop-conditions), `review-loop` (triage, diff gate,
-findings registry), `doc-governance` (one SSOT per fact), `decisions-log` (the lean ledger) — all
-in the plugin's `reference/` directory.
+findings registry), `doc-governance` (one SSOT per fact), `decisions-log` (the lean ledger),
+`acceptance` (the acceptance record), `helper-roster` (a role and a model per helper), `window-cycle` (one main
+session, several windows), `rules-subtraction` (pruning an instruction set), `review-classes` (defect classes and
+their checks), `measurement-lessons` (counts before bars), `reporting` (reporting to the user) — all in the plugin's
+`reference/` directory.
