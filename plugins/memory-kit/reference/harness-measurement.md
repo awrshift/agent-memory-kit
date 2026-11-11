@@ -114,3 +114,44 @@ branch», «review this planted diff with two known defects». Save each run as
 Long, noisy commands (commit hooks, test suites, type checks) eat context. Run them through
 `bash "${CLAUDE_PLUGIN_ROOT}/scripts/quiet.sh" <cmd>`: the full output goes to a log file, the screen
 gets the exit code and the summary lines, and the failing blocks plus the tail only on failure.
+
+## Harness notes — dated and volatile (checked 2026-11-10 / 2026-11-11)
+
+**Applies when:** you size what a session start costs, run several sessions at once, or decide what to give a helper.
+These are Claude Code behaviour, not the kit's: re-check any line after a Claude Code update before relying on it.
+
+- **What a start is made of.** Measure it with M2 (the usage totals of the first answer), then split it by part from
+  the transcript at a character-per-token rate you calibrate on your own starts — not an assumed one. One project's
+  split: 74k tokens without the skill / agent / tool-name listings, 92k with them; tool schemas about 34k (the
+  harness's); instructions about 21k; hook context about 15k; the skill listing about 7.6k for 40 skills; deferred
+  tool names about 4.9k. Of the 92k, about 53k was the project's to change
+  (measured in one project, 2026-11: 10 starts on one day, 3.04 characters per token calibrated).
+- **A tool server that one task uses loads for that task, not at every start.** In that project three
+  browser-automation servers supplied 198 of 267 deferred tool names, about 3.5k tokens a start, and only one sweep
+  used them. Enable such servers from a configuration that task starts with
+  (measured in one project, 2026-11: 198 of 267 names, about 3.5k tokens).
+- **Switching off one agent.** `permissions.deny` with `Agent(<name>)` in a settings file «prevents Claude from using
+  specific subagents» (https://code.claude.com/docs/en/sub-agents «Disable specific subagents»;
+  https://code.claude.com/docs/en/permissions «Agent (subagents)»); a plugin's agent is addressed by its scoped name,
+  `my-plugin:reviewer` (https://code.claude.com/docs/en/hooks «SubagentStart»). UNVERIFIED — the docs do not say
+  whether a deny rule accepts the scoped name, nor whether a denied agent also leaves the listing sent at every
+  start. The settings edit is the user's: the auto-mode classifier refuses it to the agent (fetched 2026-11-11).
+- **A context budget per session is read from the counter, never estimated.** A session doing one task reports the
+  number `/context` prints at each stop; a long task is cut into one step per stop; a plan that gives the main session
+  a reading or labelling job names its size against about 100k. In one project three of four parallel sessions ended
+  50–90k under their budget while one task's first step of four took 287k, and an estimate given to the user said
+  ~270k at 373k (measured in one project, 2026-11: 287k for one step; ~270k guessed at 373k). The cycle that uses
+  these budgets: `window-cycle.md`.
+- **What a helper cannot do.** Roles and briefs: `helper-roster.md`. Harness facts behind them:
+  - It cannot be a blind reader inside your session: every level of `CLAUDE.md` and the project's rules load into a
+    helper (docs, fetched 2026-11-11), unless its agent file sets `omitClaudeMd: true` (v2.1.271+; path-scoped
+    rules still load when it touches those files). A fully clean read runs `claude -p` from a folder outside the
+    repository with `CLAUDE_CODE_DISABLE_CLAUDE_MDS=1` and `--settings '{"disableAllHooks":true}'`, after a first
+    probe question «what is in your context» (one project's working practice; no count).
+  - «Read-only» in a brief is a request: the `tools` list in the agent file is «enforced by Claude Code rather than
+    requested in a prompt» (docs, fetched 2026-11-11). A helper briefed read-only once ran a `git checkout` in the
+    branch's folder — name forbidden commands in the brief and check `git status` after it
+    (one project's working practice; no count).
+  - Its report sent as a message lives only in the session transcript: save it to the repository at once. A helper
+    can stop mid-task (a sign-in change, a usage limit, a stall): a paid script writes each result as it goes, and the
+    restart brief begins «check what is already paid for and saved» (one project's working practice; no count).
