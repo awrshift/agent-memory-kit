@@ -10,6 +10,8 @@ last-reviewed: 2026-11-11
 > `orchestrator-fact-check.md`. This file is about how the message reads.
 
 **Applies when:** the user reads your messages without having watched the work, or reacts to it with comments.
+**Take as is:** re-read what is decided before asking (measured); outcome first; a comment is input, not a decision.
+**Adapt:** the units (the user's own page or gauge), when you report, the time zone — one project's practice.
 
 ## 1. Lead with the outcome, in the user's words
 

@@ -78,7 +78,7 @@ nothing.
 | `close-session` | the end-of-session ritual: capture → audit for 3+-date repetition → promote on a yes → handoff; a project's own close list is opened from its steps, never instead of them; the close begins below the compaction point; a memory line is merged into its topic at write time, never stacked |
 | `memory-audit` | cap-trip surgery on the hot cache, by an approved move plan |
 | `system-audit` | the periodic sweep of the whole system through its lenses (`skills/system-audit/references/lenses.md`), every finding evidence-backed — including the transcript profiler that answers "did this layer ever fire" and `gates.py`, which proves every PreToolUse hook through its exact wiring |
-| `setup` · `tour` | adopt the kit here (`setup rails`: only the permission rails, on an adopted repo) · walk through it on your own files |
+| `setup` · `tour` | adopt the kit here (`setup rails`: only the permission rails, on an adopted repo; `setup adopt` sorts the kit's practices for this repository) · walk through it on your own files |
 | `session-review` · `second-opinion` | adversarial review of a session (a retro's facts come from the session logs by script, at most three changes) · of one high-stakes decision |
 | `qa-sweep` | multi-lens agent QA of a running product (needs `projects/<name>/qa/README.md`, template in `reference/`), every finding and run record bound to the spec's `AC-n` |
 | `document` | the human record of a change — PR body · changelog entry · release note · postmortem — drafted only from `git diff` / `git log`, never from what the model remembers building; the draft passes `scripts/claim-refs-check.py` (every path and commit it names exists) |

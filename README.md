@@ -99,7 +99,7 @@ All are `/memory-kit:<name>` and also trigger from plain words; until a skill ru
 
 | Skill | What it does |
 |---|---|
-| `setup` | Adopts the kit here, settles coexistence with Claude Code's auto memory, offers permission rails, the orchestration rule and the role templates — each on a yes. `setup rails` re-runs only the rails |
+| `setup` | Adopts the kit here, settles coexistence with Claude Code's auto memory, offers permission rails, the orchestration rule and the role templates — each on a yes. `setup rails` re-runs only the rails; `setup adopt` sorts the kit's practices for this repository |
 | `close-session` | End of session: capture, look for a pattern on 3+ dates, promote on a yes, write the handoff. Says how a project adapts it, begins below the compaction point, merges memory lines at write time |
 | `memory-audit` | When memory trips a cap: a move plan for your approval, then the moves |
 | `system-audit` | Periodic health check of the whole setup through its lenses; measures which layers fired, proves each guard through its exact wiring |
@@ -139,6 +139,7 @@ the roster and the rule «judges → the stronger model, collects or counts → 
 
 | File | Open it when |
 |---|---|
+| `reference/adoption.md` | After an install or upgrade: what to take as is, what to adapt, what to skip |
 | `reference/spec-depth.md` | Writing a spec: depth pass, fresh-checked practice, review by stake, the pre-build read, paid runs with a cap |
 | `reference/orchestrator-fact-check.md` | Accepting anyone's report, or telling the user how things are now: the claim → check table |
 | `reference/review-loop.md` | Handling findings: triage and the fix spec's family line, the diff gate, the findings registry |
@@ -230,6 +231,8 @@ each practice in those files carries its tag — `(measured in one project, 2026
 project since <date>; count due <date>)` or `(one project's working practice; no count)` — and each new file or
 section opens with an «Applies when:» condition you can test on your repository. Take what your condition matches;
 what changed in each release and for whom: [`docs/CHANGELOG.md`](docs/CHANGELOG.md).
+After an install or an upgrade, `/memory-kit:setup adopt` sorts these practices for your repository — take, adapt
+or skip, each with its reason (`reference/adoption.md`).
 
 [Architecture](docs/ARCHITECTURE.md) · [Claude Code facts](docs/specs/claude-code.md) · [Changelog](docs/CHANGELOG.md) ·
 [Contributing](docs/CONTRIBUTING.md) · [Open decisions](docs/DECISIONS.md) · [Assets](docs/ASSETS.md) ·

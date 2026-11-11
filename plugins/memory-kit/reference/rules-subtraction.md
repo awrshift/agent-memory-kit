@@ -10,6 +10,8 @@ last-reviewed: 2026-11-11
 
 **Applies when:** your always-loaded instructions (`CLAUDE.md`, `.claude/rules/`, process docs a session must follow)
 grew by one line per incident for months, or a newer model is about to read them.
+**Take as is:** the contradictions table, a destination for every unit of the before-text, one home per directive.
+**Adapt:** your bars' targets, the notes file's layout, the sessions you count the effect over — the effect is in trial.
 
 ## Why — a literal reader
 

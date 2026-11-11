@@ -39,5 +39,5 @@ Deeper procedure: `orchestrator-fact-check` (acceptance layers + claim→check t
 findings registry), `doc-governance` (one SSOT per fact), `decisions-log` (the lean ledger),
 `acceptance` (the acceptance record), `helper-roster` (a role and a model per helper), `window-cycle` (one main
 session, several windows), `rules-subtraction` (pruning an instruction set), `review-classes` (defect classes and
-their checks), `measurement-lessons` (counts before bars), `reporting` (reporting to the user) — all in the plugin's
-`reference/` directory.
+their checks), `measurement-lessons` (counts before bars), `reporting` (reporting to the user), `adoption` (take,
+adapt or skip each practice) — all in the plugin's `reference/` directory.

@@ -1,6 +1,6 @@
 ---
 name: setup
-description: Adopt the Memory Kit in THIS repository — scaffold the memory layers, decide how the kit coexists with Claude Code's native auto memory, and install safe permission rails (`/memory-kit:setup rails` re-runs only the rails step on an adopted repo). Use when the user says "/memory-kit:setup", "/memory-kit:setup rails", "set up the memory kit", "adopt the kit here", "настрой кит", or when a session starts in a repo where the kit plugin is installed but no .claude/memory/MEMORY.md exists.
+description: Adopt the Memory Kit in THIS repository — scaffold the memory layers, decide how the kit coexists with Claude Code's native auto memory, and install safe permission rails (`/memory-kit:setup rails` re-runs only the rails step on an adopted repo; `/memory-kit:setup adopt` after an upgrade sorts the kit's practices into take / adapt / skip). Use when the user says "/memory-kit:setup", "/memory-kit:setup rails", "/memory-kit:setup adopt", "set up the memory kit", "adopt the kit here", "настрой кит", or when a session starts in a repo where the kit plugin is installed but no .claude/memory/MEMORY.md exists.
 allowed-tools: Read, Glob, Grep
 ---
 
@@ -198,6 +198,14 @@ already available — the only thing that needs a decision is the always-loaded 
 - **Adding your own skills, hooks or agents to this repo?** `${CLAUDE_PLUGIN_ROOT}/reference/project-extensions.md`
   is the decision table for which shape a repeated workflow takes and what it costs when idle.
 - Depth for the rest lives in `${CLAUDE_PLUGIN_ROOT}/reference/` and is read on demand.
+
+## Step 5b — sort the kit's practices (`setup adopt`)
+
+**`/memory-kit:setup adopt`** (the argument `adopt`, after an install or an upgrade) runs THIS step alone: skip every
+other step. Walk `${CLAUDE_PLUGIN_ROOT}/reference/adoption.md` row by row, test each row's condition on this
+repository (with the row's command where it gives one), and show the user ONE table: practice · take / adapt / skip ·
+the reason. Apply only what the user approves, by the rule in `adoption.md`; end with the took / adapted / skipped
+report. A full setup offers this step, never runs it unasked. Headless: write nothing, report the table.
 
 ## Step 6 — verify, then hand back
 

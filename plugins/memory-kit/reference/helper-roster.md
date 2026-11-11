@@ -6,6 +6,8 @@ last-reviewed: 2026-11-11
 # Helper roster — a named role and an explicit model on every helper call
 
 **Applies when:** you delegate to helper agents (subagents) more than a few times a session.
+**Take as is:** a model named on every helper call; a helper cannot call helpers; a lean helper's file holds its rules.
+**Adapt:** which roles you keep, their models, paths and gates; the twice-seen gap signal; the count date — in trial.
 
 The always-loaded invariants (`templates/rules/orchestration.md`) say a helper executes a decided spec, its report is
 input, and a long-lived helper is replaced by a fresh one. `project-extensions.md` gives the skeleton of one agent file.

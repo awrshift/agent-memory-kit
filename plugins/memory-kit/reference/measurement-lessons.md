@@ -13,6 +13,8 @@ last-reviewed: 2026-11-11
 
 **Applies when:** the same judgment task (is this text on the brief, is this claim supported, which of two outputs is
 better) recurs often enough that reading every item yourself is not an option.
+**Take as is:** a panel counts only for its task: two model families, direct calls, order swapped, re-calibrated.
+**Adapt:** the rubric and the models; the sample and the agreement bar may only rise — ≥ 30 items, ≥ 85 % are floors.
 
 A panel's number counts as the measurement for THAT task only when all of these hold:
 
@@ -35,6 +37,8 @@ prefer the first slot, the longer answer and their own family — swap the order
 
 **Applies when:** you count or judge a system's output to decide a change — a classifier, a rule on model output, a
 model reader, a bar on a counter.
+**Take as is:** each lesson whose situation you meet — they are measured; the counts in them are one project's.
+**Adapt:** the labelled rows (≥ 20 is a floor), the canary job and the control probe your paid runs need.
 
 1. **Compare a classifier with the constant answer first.** The constant «verified» on every item agreed with the
    truth 50.4 % of the time, the live checker 54.4 % — while the constant caught 0 of 26 real conflicts. Agreement had

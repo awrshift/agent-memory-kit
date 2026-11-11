@@ -36,6 +36,11 @@ a yes), and every added practice carries its proof tag — most of it is one pro
   plans in rounds. One project's practice.
 - `scripts/claim-refs-check.py` + `scripts/tests/test_claim_refs_check.py` — **every path and commit an outgoing text
   names must exist**; run before a PR body or a release note is handed over. One project's practice.
+- `reference/adoption.md` + `/memory-kit:setup adopt` — **what to take as is, what to adapt, what to skip**: one row
+  per practice of this release (its condition, with a command where one tests it · the file · its strength) and the
+  rule for reading it; each new reference file opens with «Take as is» and «Adapt» lines under its «Applies when».
+  `setup adopt` walks the index with the user and applies only what the user approves; it is a mode of `setup`, not
+  a new skill (its description names the mode — a few words more in the listing at every start).
 
 ### Changed
 
@@ -86,7 +91,9 @@ a yes), and every added practice carries its proof tag — most of it is one pro
 
 ### Is it for you?
 
-One condition per practice. Open the file only when the condition holds in your repository.
+One condition per practice. Open the file only when the condition holds in your repository. The full version — the
+take / adapt / skip rule, a command per condition where one exists — is `reference/adoption.md`;
+`/memory-kit:setup adopt` walks it with you.
 
 | When | Open |
 |---|---|
@@ -109,7 +116,7 @@ One condition per practice. Open the file only when the condition holds in your 
 | Your project has its own session-close list | `/memory-kit:close-session` |
 | You run a retro over past sessions | `/memory-kit:session-review` |
 
-`plugins/memory-kit/reference/`: 766 lines in 11 files before (main), 1,538 lines in 18 files after. Command:
+`plugins/memory-kit/reference/`: 766 lines in 11 files before (main), 1,616 lines in 19 files after. Command:
 `git ls-tree -r --name-only main -- plugins/memory-kit/reference/ | while read f; do git show "main:$f"; done | wc -l`
 vs `cat plugins/memory-kit/reference/* | wc -l`.
 

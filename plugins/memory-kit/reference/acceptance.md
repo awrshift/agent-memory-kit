@@ -6,6 +6,8 @@ last-reviewed: 2026-11-11
 # Acceptance — the record a block of work is accepted on
 
 **Applies when:** you accept a helper's or another session's build after at least one review round.
+**Take as is:** a fix round's diff is reviewed by an agent that did not write it; the gates ran on the head you accept.
+**Adapt:** the record's fields, «blocking» for your bars, the gate receipt — in trial: write when you judge them.
 
 The kit already says the three acceptance layers (`orchestrator-fact-check.md`) and that a fix round's diff is
 reviewed like any diff (`review-loop.md` §1, with the counts behind it). This file adds the RECORD that makes both

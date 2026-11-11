@@ -36,6 +36,7 @@ themselves (`templates/rule-template.md`).
 Before writing your own, read what one project already wrote, each line with its condition and proof:
 `review-classes.md` (review checklist lines) · `measurement-lessons.md` (rules for counting and model readers) ·
 `reporting.md` (how reports to the user read).
+After an install or an upgrade, which of the kit's practices to take as is, adapt or skip: `adoption.md`.
 
 ## Measured and not built — read before adding a gate
 
