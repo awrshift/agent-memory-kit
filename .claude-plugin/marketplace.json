@@ -9,7 +9,7 @@
     {
       "name": "memory-kit",
       "source": "./plugins/memory-kit",
-      "description": "Claude Code agent that remembers where you stopped and whose \"done\" is checked: memory as plain dated files in your repository (nothing becomes a rule without your yes), guards for git, secrets and tests, and a method for delegating to helper agents — spec file, review of every diff, acceptance record, findings registry.",
+      "description": "Claude Code agent that remembers where you stopped, plus a working method for checking its \"done\": memory as plain dated files in your repository (nothing becomes a rule without your yes), guards for git, secrets and tests, and a method for delegated work — spec file, review of every diff, acceptance record, findings registry.",
       "version": "8.2.0",
       "author": {
         "name": "awrshift"

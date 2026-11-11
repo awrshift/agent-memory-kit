@@ -17,8 +17,10 @@ Skipped when the project's settings disable the plugin. Shown on startup and cle
 Every case runs the EXACT SessionStart commands from hooks.json (all six parts) against a throwaway repo and
 reads the injected text. What this proves: which wiring the nudge names on these fixtures. Its false-positive
 count over the real adopter repos is a separate measurement (reported with the release). `ReadSignalBounds` calls
-the SessionStart read signal directly and pins its caps (aliases collected, every quantifier bounded, the line cap) —
-bounds, never a stopwatch.
+the SessionStart read signal directly and pins its caps (aliases collected, every quantifier bounded, the line cap);
+`InputBounds` pins the two bounds at the input (the first 64 KB of a script examined, 8 scripts read per event) —
+bounds, never a stopwatch. The quantifier test reads CPython's private regex parser through `regex_bounds.py` and
+skips, with the reason, on a Python without it.
 """
 
 from __future__ import annotations
@@ -30,15 +32,14 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from pathlib import Path
 
 PLUGIN_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, os.path.join(PLUGIN_ROOT, "hooks", "lib"))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import legacy_hooks  # noqa: E402
+import regex_bounds  # noqa: E402
 
-try:  # the regex parser: re._parser from Python 3.11, sre_parse before
-    from re import _parser as sre_parse
-except ImportError:  # pragma: no cover
-    import sre_parse
 with open(os.path.join(PLUGIN_ROOT, "hooks", "hooks.json")) as _fh:
     PARTS = [h["command"] for h in json.load(_fh)["hooks"]["SessionStart"][0]["hooks"]]
 NUDGE = "copies of the kit's hooks"
@@ -293,21 +294,6 @@ class LegacyHooks(unittest.TestCase):
 MEM = ".claude/memory/MEMORY.md"
 
 
-def repeats(pattern):
-    """Every (min, max) repeat bound in a compiled pattern, nested groups and branches included."""
-    found = []
-
-    def walk(node):
-        if isinstance(node, (list, tuple, sre_parse.SubPattern)):
-            for item in node:
-                walk(item)
-        if isinstance(node, tuple) and len(node) == 2 and node[0] in (sre_parse.MAX_REPEAT, sre_parse.MIN_REPEAT):
-            found.append(node[1][:2])
-
-    walk(sre_parse.parse(pattern.pattern, pattern.flags))
-    return found
-
-
 class ReadSignalBounds(unittest.TestCase):
     """The SessionStart read signal runs on text the kit does not write, inside the session start's timeout (8.2 fix
     round 1: an unbounded `\\w*` around `read` grew with the square of a line's length, and one pattern per assigned
@@ -316,15 +302,16 @@ class ReadSignalBounds(unittest.TestCase):
     def signal(self, text):
         return legacy_hooks.SIGNALS["SessionStart"][2]("additionalContext\n" + text)
 
+    @unittest.skipIf(regex_bounds.PARSER is None, regex_bounds.SKIP_REASON)
     def test_every_pattern_of_the_read_signal_is_bounded(self):
         patterns = {"READ_BEFORE_RE": legacy_hooks.READ_BEFORE_RE, "READ_AFTER_RE": legacy_hooks.READ_AFTER_RE,
                     "ASSIGN_RE": legacy_hooks.ASSIGN_RE, "MEMORY_PATH_RE": legacy_hooks.MEMORY_PATH_RE,
                     "alias read": legacy_hooks._alias_read_re(["MEMORY_FILE", "MEM"])}
         for name, pattern in patterns.items():
             with self.subTest(pattern=name):
-                bounds = repeats(pattern)
+                bounds = regex_bounds.repeats(pattern)
                 self.assertTrue(bounds)
-                self.assertEqual([b for b in bounds if b[1] == sre_parse.MAXREPEAT], [])
+                self.assertEqual([b for b in bounds if b[1] == regex_bounds.UNBOUNDED], [])
                 self.assertLessEqual(max(b[1] for b in bounds), 200)  # the window
 
     def test_at_most_eight_aliases_and_one_pattern_for_them(self):
@@ -363,6 +350,91 @@ class ReadSignalBounds(unittest.TestCase):
         self.assertFalse(self.signal('MEM="$CLAUDE_PROJECT_DIR/%s"\nsize=$(wc -c "$MEM")\n' % MEM))
         self.assertFalse(self.signal('size=$(wc -c "$CLAUDE_PROJECT_DIR/%s")\n' % MEM))
         self.assertTrue(self.signal('MEM="$CLAUDE_PROJECT_DIR/%s"\nsize=$(wc -c < "$MEM")\n' % MEM))
+
+
+class InputBounds(unittest.TestCase):
+    """8.2 fix round 2: the bounds sit at the input — how much of one script the SessionStart signal examines and how
+    many scripts one event reads — so the work is capped whatever the shape of the text (the per-pattern bounds above
+    are secondary). Each test places the deciding text just inside and just past the cap."""
+
+    READ = "ctx = open(%r).read()\n" % MEM
+
+    def setUp(self):
+        self.repo = tempfile.mkdtemp(prefix="cmk-legacy-bounds-")
+        self.addCleanup(shutil.rmtree, self.repo, True)
+
+    def test_the_session_start_signal_examines_the_first_64_kb(self):
+        cap = legacy_hooks.READ_SIGNAL_TEXT
+        self.assertEqual(cap, 64 * 1024)
+        signal = legacy_hooks.SIGNALS["SessionStart"][2]
+        head = "additionalContext\n"
+        inside = head + "#\n" * ((cap - len(head) - len(self.READ)) // 2)  # the read ends at or before the cap
+        self.assertLessEqual(len(inside) + len(self.READ), cap)
+        self.assertTrue(signal(inside + self.READ))
+        self.assertTrue(legacy_hooks.reads_memory(inside + self.READ))
+        past = head + "#\n" * ((cap - len(head)) // 2)  # the read starts at the cap: not examined
+        self.assertEqual(len(past), cap)
+        self.assertFalse(legacy_hooks.reads_memory(past + self.READ))
+        self.assertFalse(signal(past + self.READ))
+        # the signal's other half, `additionalContext`, is held to the same prefix
+        late = self.READ + "#" * (cap - len(self.READ)) + "\nadditionalContext\n"
+        self.assertTrue(legacy_hooks.reads_memory(late))
+        self.assertFalse(signal(late))
+
+    def wire(self, rel, event, names):
+        hooks = {event: [{"hooks": [{"type": "command", "command": "python3 .claude/hooks/%s" % name}
+                                    for name in names]}]}
+        path = os.path.join(self.repo, rel)
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "w", encoding="utf-8") as fh:
+            json.dump({"hooks": hooks}, fh)
+
+    def script(self, name, body):
+        path = os.path.join(self.repo, ".claude", "hooks", name)
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "w", encoding="utf-8") as fh:
+            fh.write(body)
+
+    def copies(self):
+        """find_copies, and the name of every script it read, in order."""
+        seen = []
+        real = legacy_hooks._read
+
+        def counting(path):
+            seen.append(path.name)
+            return real(path)
+
+        legacy_hooks._read = counting
+        try:
+            return legacy_hooks.find_copies(Path(self.repo)), seen
+        finally:
+            legacy_hooks._read = real
+
+    def test_at_most_eight_scripts_are_read_per_event(self):
+        self.assertEqual(legacy_hooks.MAX_SCRIPTS_PER_EVENT, 8)
+        names = ["s%d.py" % i for i in range(1, 13)]
+        for name in names:
+            self.script(name, SLIM_SESSION_START)
+        self.script("s8.py", KIT_SESSION_START)
+        self.script("s9.py", KIT_SESSION_START)
+        self.wire(".claude/settings.json", "SessionStart", names)
+        found, seen = self.copies()
+        self.assertEqual(seen, names[:8])  # the 9th script and later are never read
+        self.assertEqual([script for _, _, script, _ in found], [os.path.join(".claude", "hooks", "s8.py")])
+
+    def test_the_cap_is_per_event_over_both_settings_files(self):
+        names = ["s%d.py" % i for i in range(1, 7)]
+        for name in names + ["c1.sh"]:
+            self.script(name, KIT_PRECOMPACT if name.endswith(".sh") else SLIM_SESSION_START)
+        self.wire(".claude/settings.json", "SessionStart", names[:5])
+        local = {"SessionStart": [{"hooks": [{"type": "command", "command": "python3 .claude/hooks/%s" % n}
+                                             for n in names[:5]]}],
+                 "PreCompact": [{"hooks": [{"type": "command", "command": "bash .claude/hooks/c1.sh"}]}]}
+        with open(os.path.join(self.repo, ".claude", "settings.local.json"), "w", encoding="utf-8") as fh:
+            json.dump({"hooks": local}, fh)
+        found, seen = self.copies()
+        self.assertEqual(seen, names[:5] + names[:3] + ["c1.sh"])  # 5 + 3 under SessionStart; PreCompact its own 8
+        self.assertEqual([event for _, event, _, _ in found], ["PreCompact"])
 
 
 if __name__ == "__main__":

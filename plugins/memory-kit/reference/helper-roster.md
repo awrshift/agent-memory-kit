@@ -54,8 +54,8 @@ guard still blocked inside such a helper; other guards were not probed, so probe
 
 The saving is large: a do-nothing helper started at 42.8k tokens with every tool and rule, 18.3k without the rule
 files, and 4.9k with a six-tool list on top; one project's seven roles started at 5.3k–7.8k tokens against
-30.9k–58.8k before (before: real runs with their briefs; the probe's brief was one line) (measured in one project,
-2026-11: first-call usage of each role).
+30.9k–58.8k for three agents before (real runs with their briefs; the probe's brief was one line) (measured in one
+project, 2026-11: first-call usage of each role).
 
 The price: what the helper must know is no longer loaded for it. For every rule a role must obey, decide where it lands
 — the role's body · a file the body tells it to read · the caller's brief · a hook · «not for helpers» (it stays with

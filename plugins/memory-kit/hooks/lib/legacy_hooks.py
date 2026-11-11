@@ -19,7 +19,16 @@ wrapped name (`open(os.fspath(X))`), an assignment wrapped over lines, `subproce
 one-liner on `"$X"`, a path held in a dict, a read of a name past the first MAX_ALIASES assigned the path. Flagged
 though not a read: a redirect into a size count (`wc -c < "$X"` — the `<` counts, `wc` itself is no read word); the
 path in a message on a line that also reads another file, or in a comment after a read word; a call such as
-`start_thread(` on the path line; a short name assigned the path and later reused for another file.
+`start_thread(` on the path line; a short name assigned the path and later reused for another file. Missed by the
+pattern bounds (8.2 fix round 1; no historical kit copy uses one): a read word over 40 characters past `read`
+(`read_memory_file_contents_with_fallback_and_cache(X)`), a gap of more than 8 spaces or tabs where a pattern allows
+one (`open(         X)`, `export` and 9 spaces), an assigned name over 61 characters, an assignment indented over 40
+columns or annotated over 200 characters.
+
+Bounds at the input (8.2 fix round 2): the SessionStart signal examines only the first READ_SIGNAL_TEXT characters
+(64 KB) of a script — a read or an `additionalContext` placed after them is not seen; at most MAX_SCRIPTS_PER_EVENT
+(8) script paths are read per event, over both settings files in the order written, the rest skipped — a copy wired
+as the 9th script of its event is not flagged. The other events' signals read a script up to MAX_READ (512 KB).
 
 Skipped when the project's settings (`settings.local.json` over `settings.json`) disable the plugin.
 Tests: hooks/tests/test_legacy_hooks.py. Python 3.9+, stdlib only.
@@ -36,6 +45,12 @@ from pathlib import Path
 SETTINGS = (".claude/settings.json", ".claude/settings.local.json")
 MAX_READ = 512 * 1024
 MAX_LISTED = 8
+# The two bounds at the input of the copy check (8.2 fix round 2: the work grew with whatever text and however many
+# scripts a project wires). The SessionStart signal examines the first 64 KB (characters) of a script: the kit's own
+# session-start.py is under 40 KB in every version (38,079 bytes at most in the kit's git history), so a copy reads
+# the memory file inside it. At most 8 scripts are read per event; each of the six session-start parts runs this check.
+READ_SIGNAL_TEXT = 64 * 1024
+MAX_SCRIPTS_PER_EVENT = 8
 SCRIPT_RE = re.compile(r"""[^\s"'`;|&()<>]+\.(?:sh|bash|py|js|mjs|cjs|ts)\b""")
 PIECE_SPLIT_RE = re.compile(r"""[\s"'`;|&()<>]+""")
 SCRIPT_WORD_RE = re.compile(r"""[^"'`;|&()<>]+\.(?:sh|bash|py|js|mjs|cjs|ts)""")  # one shell word: spaces allowed
@@ -78,8 +93,8 @@ def _alias_read_re(names: list[str]) -> re.Pattern:
 def reads_memory(text: str) -> bool:
     """True when the text reads the memory file: a read on a line that names its path, or a read of a name that line
     assigns the path to (the first MAX_ALIASES such names). A mention with only `stat()` / `exists()` / a message is
-    not a read."""
-    lines = [line for line in text.splitlines() if len(line) <= MAX_LINE]
+    not a read. Only the first READ_SIGNAL_TEXT characters are examined."""
+    lines = [line for line in text[:READ_SIGNAL_TEXT].splitlines() if len(line) <= MAX_LINE]
     aliases: list[str] = []
     for line in lines:
         match = MEMORY_PATH_RE.search(line)
@@ -98,7 +113,7 @@ SIGNALS = {
     "PreCompact": ("pre-compact", "blocks compaction over MEMORY.md",
                    lambda t: re.search(r'"decision"\s*:\s*"block"', t) and "MEMORY.md" in t),
     "SessionStart": ("session-start", "reads MEMORY.md into the session context",
-                     lambda t: "additionalContext" in t and reads_memory(t)),
+                     lambda t: "additionalContext" in t[:READ_SIGNAL_TEXT] and reads_memory(t)),
     "SessionEnd": ("session-end", "logs the session close",
                    lambda t: "[hook] SessionEnd: session=" in t),
     "PreToolUse": ("protect-tests", "guards test files",
@@ -167,10 +182,12 @@ def _read(path: Path) -> str:
 
 
 def find_copies(project_dir: Path) -> list[tuple[str, str, str, str]]:
-    """(settings file, event, script as written relative to the project, what the copy does) for each copy."""
+    """(settings file, event, script as written relative to the project, what the copy does) for each copy. At most
+    MAX_SCRIPTS_PER_EVENT script paths are read per event, over both settings files; the rest are skipped."""
     if plugin_disabled(project_dir):
         return []
     out = []
+    read: dict[str, int] = {}  # scripts read per event
     for rel in SETTINGS:
         hooks = _load(project_dir / rel).get("hooks")
         if not isinstance(hooks, dict):
@@ -184,10 +201,13 @@ def find_copies(project_dir: Path) -> list[tuple[str, str, str, str]]:
                 if not isinstance(handlers, list):
                     continue
                 for handler in handlers:
+                    if read.get(event, 0) >= MAX_SCRIPTS_PER_EVENT:
+                        break
                     command = handler.get("command") if isinstance(handler, dict) else None
                     if not isinstance(command, str):
                         continue
-                    for script in _scripts(command, project_dir):
+                    for script in _scripts(command, project_dir)[: MAX_SCRIPTS_PER_EVENT - read.get(event, 0)]:
+                        read[event] = read.get(event, 0) + 1
                         if matches(_read(script)):
                             try:
                                 shown = str(script.relative_to(project_dir))

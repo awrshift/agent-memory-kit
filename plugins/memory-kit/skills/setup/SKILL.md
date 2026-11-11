@@ -203,9 +203,11 @@ already available — the only thing that needs a decision is the always-loaded 
 
 **`/memory-kit:setup adopt`** (the argument `adopt`, after an install or an upgrade) runs THIS step alone: skip every
 other step. Walk `${CLAUDE_PLUGIN_ROOT}/reference/adoption.md` row by row, test each row's condition on this
-repository (with the row's command where it gives one), and show the user ONE table: practice · take / adapt / skip ·
-the reason. Apply only what the user approves, by the rule in `adoption.md`; end with the took / adapted / skipped
-report. A full setup offers this step, never runs it unasked. Headless: write nothing, report the table.
+repository (with the row's command where it gives one) — decide from the repository first and ask only what it
+cannot show, once, in one message, each question with your default — and show the user ONE table: practice · take /
+adapt / skip · the reason. Apply only what the user approves, by the rule in `adoption.md`; end with the took /
+adapted / skipped report. A full setup offers this step, never runs it unasked. Headless: write nothing, report the
+table.
 
 ## Step 6 — verify, then hand back
 

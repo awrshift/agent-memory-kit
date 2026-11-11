@@ -6,13 +6,17 @@ named path or commit that does not exist fails the check and is named; one that 
 cases covered (never flagged): a URL with a path and a hex segment, a URL's query values (a path, a hash), an
 e-mail host, a host name without a scheme, version strings (`v8.2.0`, `release/v1.2.3`), a UUID, a sha256 checksum,
 a `#colour`, an `@scope/package`, a glob, a placeholder, a command in backticks and a bare `word/word.js` whose
-first segment is no top-level entry of the repo. Also pinned: the link pattern's bound and the default repository
-(`$CLAUDE_PROJECT_DIR`, else the current directory) when no `--repo` is given.
+first segment is no top-level entry of the repo. Also pinned: a path joined to a URL by `|`, `,` or `)` is still
+checked, the link pattern's bound (read through `hooks/tests/regex_bounds.py`, CPython's private regex parser; that
+test skips, with the reason, on a Python without it) and the default repository (`$CLAUDE_PROJECT_DIR`, else the
+current directory) when no `--repo` is given. The short-hash case builds its hash from the shortest prefix of 7+
+characters that holds a letter and a digit, so it does not depend on the commit's clock.
 """
 
 from __future__ import annotations
 
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -24,10 +28,9 @@ SCRIPT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))
 _spec = importlib.util.spec_from_file_location("claim_refs_check", SCRIPT)
 crc = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(crc)
-try:  # the regex parser: re._parser from Python 3.11, sre_parse before
-    from re import _parser as sre_parse
-except ImportError:  # pragma: no cover
-    import sre_parse
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+                                "hooks", "tests"))
+import regex_bounds  # noqa: E402  the walker shared with hooks/tests
 UNKNOWN = "0badc0de1"
 
 
@@ -90,7 +93,11 @@ class ClaimRefs(unittest.TestCase):
             self.assertIn("MISSING path  " + name, out)
 
     def test_existing_short_hash_passes(self):
-        short = self.first[:7]
+        """The script's hash shape holds a letter and a digit: a 7-char prefix of digits only (about 1 commit in 27)
+        is no hash to it, so the prefix is lengthened until it holds both — deterministic whatever the clock."""
+        n = next((n for n in range(7, 41) if re.search(r"[a-f]", self.first[:n]) and re.search(r"\d", self.first[:n])),
+                 40)
+        short = self.first[:n]
         code, out = self.check(f"Landed in {short}; full range `{short}..HEAD`.\n")
         self.assertEqual(code, 0, out)
         self.assertIn("1 hashes", out)
@@ -139,19 +146,22 @@ class ClaimRefs(unittest.TestCase):
                 self.assertIn("0 paths", out)
                 self.assertIn("0 hashes", out)
 
+    def test_a_path_joined_to_a_url_is_still_checked(self):
+        """The URL span ends at `|`, `,` and `)` as well as at a space: a path written right after one is checked."""
+        for text in ("|https://example.com/a|docs/missing.md|", "https://example.com/a,docs/missing.md",
+                     "(https://example.com/a)docs/missing.md"):
+            with self.subTest(text=text):
+                code, out = self.check(text + "\n")
+                self.assertEqual(code, 1, out)
+                self.assertIn("1 paths", out)
+                self.assertIn("MISSING path  docs/missing.md", out)
+
+    @unittest.skipIf(regex_bounds.PARSER is None, regex_bounds.SKIP_REASON)
     def test_a_long_unclosed_link_is_bounded(self):
         """`](` with no `)` was quadratic: the target is at most 200 characters, so each `](` costs a bounded scan."""
-        bounds = []
+        self.assertEqual(regex_bounds.repeats(crc.LINK_RE), [(1, 200)])
 
-        def walk(node):
-            if isinstance(node, (list, tuple, sre_parse.SubPattern)):
-                for item in node:
-                    walk(item)
-            if isinstance(node, tuple) and len(node) == 2 and node[0] in (sre_parse.MAX_REPEAT, sre_parse.MIN_REPEAT):
-                bounds.append(node[1][:2])
-
-        walk(sre_parse.parse(crc.LINK_RE.pattern))
-        self.assertEqual(bounds, [(1, 200)])
+    def test_a_link_after_a_long_unclosed_run_is_found(self):
         paths, _, _ = crc.candidates("[x](" * 2000 + " [y](docs/guide.md) [z](" + "a" * 201 + ".md)", {"docs"})
         self.assertEqual(paths, {"docs/guide.md"})  # the real link after the run is still found; 201 chars is not
 

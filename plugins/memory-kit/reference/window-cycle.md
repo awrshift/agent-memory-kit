@@ -7,7 +7,8 @@ last-reviewed: 2026-11-11
 
 **Applies when:** you run more than one interactive session on one repository at a time, and one of them integrates.
 **Take as is:** one session integrates; it starts from files, never from a window's memory; files carry the work.
-**Adapt:** how many windows, the 150k / 250k sizes, the brief's lines, the slots, the close steps — one project's.
+**Adapt:** how many windows, the 150k / 250k sizes, the brief's lines, the slots, the close steps — one project's;
+the 250k in trial.
 
 `parallel-development.md` says when parallel work pays and that one session integrates. This file is how one project
 runs it day to day: one MAIN session (the integrator: the user dialogue, decisions, merges, shared docs, memory) and

@@ -22,17 +22,20 @@ Shapes it sees:
          word, a path, a URL, a `#colour`, a UUID or a longer hex string; both ends of `a..b` count). Found =
          `git cat-file -e <hash>^{commit}` succeeds.
 Skipped by shape (never flagged): URLs (`scheme://…`, `mailto:`) and e-mail addresses — blanked, query values and
-host names included, before the bare-path and hash passes — a token whose first segment is a host name
-(`example.com/a.html`) unless a repository has that entry, `@scope/name`, globs and placeholders (`*`, `<…>`,
+host names included, before the bare-path and hash passes; a URL ends at a space, `|`, `,` or `)`, so a path joined
+after one is still checked (and a URL's text after a comma is read as prose) — a token whose first segment is a host
+name (`example.com/a.html`) unless a repository has that entry, `@scope/name`, globs and placeholders (`*`, `<…>`,
 `{…}`, `…`, `...`), a token with a space or starting with `-`, version strings (`release/v1.2.3` — the extension
 starts with a digit), hex runs over 40 characters (checksums). `--verbose` also prints every reference found and
 every path-like token skipped, with the reason.
 
 What it cannot see: a claim in prose («the test covers X», «nothing else changed», a number) — only that a named
 thing exists; a path written without a `/` (`README.md`) or a bare path under a directory that exists nowhere; a
-link target over 200 characters; a hash under 7 characters, in upper case or inside a URL; whether a hash is on the
-branch the text is about (only that git knows it). An ambiguous short hash (two objects share the prefix) counts as
-missing — lengthen it.
+link target over 200 characters; a hash under 7 characters, in upper case or inside a URL; a short hash of digits
+only or letters only (about 1 in 27 seven-character prefixes is all digits) — lengthen it until it holds both;
+whether a hash is on the branch the text is about (only that git knows it). An ambiguous short hash (two objects
+share the prefix) counts as missing — lengthen it. Time: the densest unclosed link, 80 KB of `](` with no `)`, took
+0.11–0.12 s for the whole run on one machine (each `](` scans at most 200 characters).
 
 Exit 0 = every reference found · 1 = the missing ones are listed (fix the text or create the thing first) · 2 = usage.
 Tests: scripts/tests/test_claim_refs_check.py. Python 3.9+, stdlib only.
@@ -49,7 +52,7 @@ import sys
 TICK_RE = re.compile(r"`([^`\n]+)`")
 LINK_RE = re.compile(r"\]\(([^)\s]{1,200})\)")  # bounded: a run of `](` with no `)` was quadratic
 # URL and e-mail spans, blanked before the bare-path and hash passes; a match starts only where a run starts
-URL_RE = re.compile(r"(?<![A-Za-z0-9+.-])[A-Za-z][A-Za-z0-9+.-]{0,31}://\S*")
+URL_RE = re.compile(r"(?<![A-Za-z0-9+.-])[A-Za-z][A-Za-z0-9+.-]{0,31}://[^\s|,)]*")  # ends at `|` `,` `)` too
 EMAIL_RE = re.compile(r"(?<![\w.+-])[\w.+-]{1,64}@[\w.-]{1,255}")
 BARE_RE = re.compile(r"(?<![\w/.:@~-])((?:\.\.?/)?[\w.-]+(?:/[\w.-]+)+/?)")
 HASH_RE = re.compile(r"(?:(?<=\.\.)|(?<![0-9A-Za-z_/#.-]))([0-9a-f]{7,40})(?![0-9A-Za-z_-])")

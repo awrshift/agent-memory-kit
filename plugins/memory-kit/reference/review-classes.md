@@ -11,7 +11,7 @@ last-reviewed: 2026-11-11
 > a hypothesis there.
 
 **Applies when:** you review code that takes outside input, runs queued or retried work, or acts on model output.
-**Take as is:** the check of each class your code can meet; the class is general, the incident is one project's.
+**Take as is:** the form — a class stated as a mechanism, with its check; the classes and incidents are one project's.
 **Adapt:** which lines you copy; each gets your own incident and family, or it stays a hypothesis in your checklist.
 
 Every entry below: (one project's working practice; no count) — the date is the incident, not a measurement.

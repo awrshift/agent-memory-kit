@@ -2,7 +2,7 @@
 
 # Claude Memory Kit
 
-**An agent that remembers where you stopped — and whose "done" is checked before you hear it.**
+**An agent that remembers where you stopped — and a working method for checking its "done".**
 
 Claude Memory Kit is a plugin for Claude Code. Install it in a repository and three things change:
 
@@ -10,15 +10,18 @@ Claude Memory Kit is a plugin for Claude Code. Install it in a repository and th
   your repository and reads them at the next start. You stop re-explaining the project.
 - **Dangerous commands are stopped before they run.** A force push, `reset --hard`, a read of `.env`, an edit that
   weakens a test — blocked or asked about first.
-- **Delegated work is checked before it is called done.** Helper agents build from a written spec, their reports are
-  treated as claims, every fix is reviewed by an agent that did not write it, and a mistake seen three times becomes
-  an automatic check.
+- **A method for handing work to helper agents, so that "done" means checked.** The helper builds from a written spec;
+  the main agent verifies the helper's report before it tells you "done"; a fix made after a review is itself reviewed
+  by an agent that did not write it; a mistake that shows up three times is turned into a check. It is a method, not an
+  automatic gate: `setup` offers one short always-loaded rule file, and the rest is reference the agent opens when the
+  work calls for it.
 
 Nothing becomes a rule without your yes. No database, no service, no API key — text files you can read and diff.
 An independent project, not made or endorsed by Anthropic.
 
-**Why the third point matters.** In one project, five of six fix rounds reached acceptance with nobody reviewing the
-fix; reviewed afterwards, two of five carried a blocking defect. The kit's method exists to close gaps like that one.
+**Why the method matters.** In one project, in five of six pieces of work the fix made after a review reached acceptance
+with nobody reviewing the fix itself; checked afterwards, two of those five carried a defect serious enough to block. A
+small sample from one project — a reason to look at your own fixes, not a proven rate.
 
 [![Version](https://img.shields.io/github/v/release/awrshift/agent-memory-kit?label=version&color=CFEF4A&cacheSeconds=1800)](https://github.com/awrshift/agent-memory-kit/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-55503E?labelColor=55503E&color=55503E)](LICENSE)
@@ -34,7 +37,8 @@ fix; reviewed afterwards, two of five carried a blocking defect. The kit's metho
 1. **You work as usual.** When something is worth keeping, the agent writes one dated line and tells you.
 2. **You close the session.** It looks for patterns across days («you rejected this on four different days — make it
    a rule?»), writes what you approve, and leaves a handoff note.
-3. **The next session starts already knowing** — memory, the handoff and the knowledge index are loaded by a hook.
+3. **The next session starts already knowing** — memory, the handoff and the list of knowledge articles are loaded
+   by a hook.
 4. **When you delegate,** the work goes through a spec file, a review of every diff and a record of what was accepted
    and why. This half is optional: take it when you hand work to helper agents or run several sessions at once.
 
@@ -57,8 +61,9 @@ your files. In a repository that never ran `setup`, the hooks inject one pointer
 
 ![Agent-orchestrated work: the main session writes a spec file, the agents work from it, and a report is input, never a fact](.github/assets/07-orchestrated-work-v73.png)
 
-The main session designs, decides and integrates; helpers build or gather facts from a spec file. The always-loaded
-invariants live in `templates/rules/orchestration.md` (a plugin cannot ship rules; `setup` offers to copy it).
+This is a method the agent follows, not something the hooks enforce. The main session designs, decides and integrates;
+helpers build or gather facts from a spec file. The always-loaded invariants live in `templates/rules/orchestration.md`
+(a plugin cannot ship rules; `setup` offers to copy it).
 
 | Step | What happens | Open |
 |---|---|---|

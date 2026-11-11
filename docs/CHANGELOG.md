@@ -16,7 +16,8 @@ a yes), and every added practice carries its proof tag — most of it is one pro
 - `reference/acceptance.md` + `templates/workspace/project/ACCEPTANCE-TEMPLATE.md` — **the acceptance record**: one
   file per accepted head (spec, rounds, build or fix-diff review, gates, one ruling per finding), «blocking» defined
   before the round, a fix round may not redesign, the gates as a receipt bound to the tree as an option; the kit's
-  «re-run the gates yourself» invariant stays. Measured (why) · in trial since 2026-11-10 (the record and the receipt).
+  «re-run the gates yourself» invariant stays. Measured (why) · in trial since 2026-11-10 (the record) and
+  2026-11-11 (the receipt).
 - `reference/helper-roster.md` + `templates/agents/` (`code-reviewer.md`, `prebuild-reader.md`, `tool-builder.md`,
   `web-recon.md`, `labeler.md`) — **a named role and an explicit model on every helper call**; «judges → the stronger
   model, collects or counts → the cheaper»; what a role file carries when its helper starts without the project's
@@ -38,7 +39,8 @@ a yes), and every added practice carries its proof tag — most of it is one pro
   names must exist**; run before a PR body or a release note is handed over. One project's practice.
 - `reference/adoption.md` + `/memory-kit:setup adopt` — **what to take as is, what to adapt, what to skip**: one row
   per practice of this release (its condition, with a command where one tests it · the file · its strength) and the
-  rule for reading it; each new reference file opens with «Take as is» and «Adapt» lines under its «Applies when».
+  rule for reading it; each of the seven new practice files opens with «Take as is» and «Adapt» lines under its
+  «Applies when».
   `setup adopt` walks the index with the user and applies only what the user approves; it is a mode of `setup`, not
   a new skill (its description names the mode — a few words more in the listing at every start).
 
@@ -81,10 +83,11 @@ a yes), and every added practice carries its proof tag — most of it is one pro
 ### Fixed
 
 - `hooks/lib/legacy_hooks.py` — the «project hook is a copy of the kit's hook» warning no longer fires on a hook that
-  only mentions the memory path without reading it, nor on a `wc` size count. Its patterns run on text the kit does
-  not write, inside the session start's timeout, so every repeat is bounded, at most 8 names assigned the path are
-  collected and their reads are one pattern searched once. Test: `hooks/tests/test_legacy_hooks.py`. Reproduced in
-  one project.
+  only mentions the memory path without reading it, nor on `wc -c "$X"` (a redirect `wc -c < "$X"` still counts as a
+  read — a stated limit). Its patterns run on text the kit does not write, inside the session start's timeout, so the
+  work is bounded at the input: the read signal examines the first 64 KB of a script and at most 8 scripts are read per
+  event, the rest skipped; inside that, every repeat is bounded, at most 8 names assigned the path are collected and
+  their reads are one pattern searched once. Test: `hooks/tests/test_legacy_hooks.py`. Reproduced in one project.
 - `skills/close-session/SKILL.md` — said nothing on how a project adapts it; now a project's own close list is opened
   FROM the skill's steps, never instead of them. Reproduced in one project.
 - `skills/setup/SKILL.md` — said «Seven invariants» of `templates/rules/orchestration.md`, which holds nine.
@@ -116,7 +119,7 @@ take / adapt / skip rule, a command per condition where one exists — is `refer
 | Your project has its own session-close list | `/memory-kit:close-session` |
 | You run a retro over past sessions | `/memory-kit:session-review` |
 
-`plugins/memory-kit/reference/`: 766 lines in 11 files before (main), 1,616 lines in 19 files after. Command:
+`plugins/memory-kit/reference/`: 766 lines in 11 files before (main), 1,619 lines in 19 files after. Command:
 `git ls-tree -r --name-only main -- plugins/memory-kit/reference/ | while read f; do git show "main:$f"; done | wc -l`
 vs `cat plugins/memory-kit/reference/* | wc -l`.
 
