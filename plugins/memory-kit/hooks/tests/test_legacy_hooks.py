@@ -7,7 +7,8 @@ Repos adopted before the plugin existed copied the kit's hooks into `.claude/hoo
 The detector (`hooks/lib/legacy_hooks.py`) reads the project's settings files, resolves each wired script and
 flags it on a POSITIVE signal in its CONTENT, by event — never on its file name:
   PreCompact    emits `"decision": "block"` and names MEMORY.md
-  SessionStart  reads `.claude/memory/MEMORY.md` and prints `additionalContext`
+  SessionStart  READS `.claude/memory/MEMORY.md` and prints `additionalContext` (8.2: naming the path is not
+                enough — a project hook that only stat()s the file for a size nudge is not a copy)
   SessionEnd    logs the kit's `[hook] SessionEnd: session=` line
   PreToolUse    a test-file guard (`Protect test files from modification`, `Test files are protected`,
                 `CMK_ALLOW_TEST_EDITS`)
@@ -50,6 +51,49 @@ SLIM_SESSION_START = '''"""Project-only context: STATUS.md and nudges. MEMORY.md
 import json
 print(json.dumps({"hookSpecificOutput": {"hookEventName": "SessionStart", "additionalContext": open("docs/STATUS.md").read()}}))
 '''
+SIZE_NUDGE_SESSION_START = '''"""Project-only context: the plan and a size nudge for the memory file."""
+import json
+from pathlib import Path
+ROOT = Path(".")
+MEMORY = ROOT / ".claude" / "memory" / "MEMORY.md"
+SOFT_CAP = 16_000
+
+
+def read(path):
+    try:
+        return path.read_text(encoding="utf-8")
+    except OSError:
+        return ""
+
+
+def size_nudge():
+    try:
+        size = MEMORY.stat().st_size
+    except OSError:
+        return ""
+    return f"`.claude/memory/MEMORY.md` is {size} bytes: merge lines first." if size > SOFT_CAP else ""
+
+
+print(json.dumps({"hookSpecificOutput": {"hookEventName": "SessionStart",
+                                         "additionalContext": read(ROOT / "docs" / "plan.md") + size_nudge()}}))
+'''
+READ_FORMS = {
+    "a read helper on a name": '''MEMORY_FILE = PROJECT_DIR / ".claude" / "memory" / "MEMORY.md"
+def read_file_safe(path):
+    return path.read_text()
+print(json.dumps({"additionalContext": read_file_safe(MEMORY_FILE)}))
+''',
+    "open on the line": '''print(json.dumps({"additionalContext": open(".claude/memory/MEMORY.md").read()}))
+''',
+    "read_text after a joined path": '''body = (PROJECT_DIR / ".claude" / "memory" / "MEMORY.md").read_text()
+print(json.dumps({"additionalContext": body}))
+''',
+    "shell cat of a variable": '''#!/bin/bash
+MEMORY_FILE="$CLAUDE_PROJECT_DIR/.claude/memory/MEMORY.md"
+BODY=$(cat "$MEMORY_FILE")
+jq -n --arg c "$BODY" '{hookSpecificOutput: {hookEventName: "SessionStart", additionalContext: $c}}'
+''',
+}
 KIT_SESSION_END = """#!/usr/bin/env bash
 LOG_FILE="$STATE_DIR/session-end.log"
 echo "$(date '+%Y-%m-%d %H:%M:%S') [hook] SessionEnd: session=$SESSION_ID" >> "$LOG_FILE"
@@ -136,6 +180,24 @@ class LegacyHooks(unittest.TestCase):
         hooks.update(wired("PreCompact", "pre-compact.sh"))
         self.settings(hooks)
         self.assertNotIn(NUDGE, self.injected())
+
+    def test_a_hook_that_only_stats_the_memory_file_is_not_flagged(self):
+        """8.2: the path named next to `additionalContext`, the file only stat()ed for a size nudge, a read helper used
+        on another file — project logic, not a copy (the pre-8.2 signal, «mentions the path», flagged it)."""
+        self.write(".claude/hooks/session-start.py", SIZE_NUDGE_SESSION_START)
+        self.settings(wired("SessionStart", "session-start.py", "python3"))
+        self.assertNotIn(NUDGE, self.injected())
+
+    def test_each_read_form_is_flagged(self):
+        """A read of the memory file in each form a copy uses, plus the kit's own current session-start.py."""
+        with open(os.path.join(PLUGIN_ROOT, "hooks", "session-start.py"), encoding="utf-8") as fh:
+            forms = dict(READ_FORMS, **{"the kit's own hook": fh.read()})
+        for label, body in forms.items():
+            with self.subTest(form=label):
+                script = "session-start.sh" if body.startswith("#!/bin/bash") else "session-start.py"
+                self.write(".claude/hooks/" + script, body)
+                self.settings(wired("SessionStart", script, "bash" if script.endswith(".sh") else "python3"))
+                self.assertIn(NUDGE, self.injected())
 
     def test_a_copy_under_another_event_is_not_flagged(self):
         """periodic-save.sh (a Stop hook of old kits) also emits a block: the event must match the kit hook."""

@@ -9,6 +9,11 @@ allowed-tools: Read, Grep, Glob, Edit(.claude/memory/**), Edit(context/handoffs/
 You close the session in four steps. Don't just dump — **audit**. Everything you write, you
 announce briefly; anything promoted to rules/concepts needs the user's verbal "yes" first.
 
+**A project may adapt the close.** Its own close list is opened FROM these steps — each item says how a step
+is done in that project and what the project adds — never run instead of them. A step the list does not name
+is still done: a close run only from the project's list skips the repeat audit of step 2.
+(one project's working practice; no count)
+
 ## Step 1 — Capture what's new
 Scan this session for observations worth keeping. Append each to `.claude/memory/MEMORY.md`
 as a ONE-LINE `[YYYY-MM-DD]`-prefixed entry. Short, scannable, no essays (long rationale
@@ -18,6 +23,9 @@ belongs in a concept article, step 2).
   session or the date (`### s66 (2026-09-25)`, `## Session 65 wrap`): the date lives in each
   line's prefix, the session narrative lives in the handoff (step 4). The SessionStart hook
   flags such headings.
+- **Merge at write time:** before adding a line, grep MEMORY.md for its topic (one or two key words); a
+  line on the same topic is replaced or merged into one (dates joined `[d1→d2]`) — never stacked.
+  (one project's working practice; no count)
 - **Don't capture what the always-loaded layer already says** (`CLAUDE.md`, rules without
   `paths:`) or a number whose source of truth lives elsewhere (a price table, a config) —
   point at the source instead of copying the value.
@@ -58,6 +66,10 @@ opening note). The SessionStart hook injects the newest handoff next time — th
 - **Specs vs code:** any spec still `building` after a merge, or any `assumed` spec → run
   `/memory-kit:code-sync` (it reconciles statuses from repo evidence; this ritual does not).
 - **Caps:** if MEMORY.md is near any cap, do a deeper prune now, not "next time".
+- **Begun below the compaction point:** a project sets two lines for its model's context — no new task
+  past the first, the close begun by the second — so the handoff is written and an automatic compaction is
+  never reached. One project's numbers: no new task past ~350k tokens, the close begun by ~450k, the handoff
+  done before ~500k (about 70 % and 90 % of that last point). (one project's working practice; no count)
 
 ## What NOT to do
 - Don't promote without the user's yes. Repetition makes a CANDIDATE, not a rule.

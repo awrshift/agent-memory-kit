@@ -108,6 +108,11 @@ than no document.
 
 ## Step 5 — Write it where it belongs
 
+**Before a PR body or a release note is handed over,** run the draft through the named-things check:
+`python3 "${CLAUDE_PLUGIN_ROOT}/scripts/claim-refs-check.py" <draft file, or - for stdin> --repo <repo root>`.
+Exit 1 lists every path and commit the draft names that does not exist — fix the text first. It proves the
+named things exist, not that the sentences are true. (one project's working practice; no count)
+
 | Mode | Destination |
 |---|---|
 | `pr` | print the body in chat. Write `.git/PR_BODY.md` only if the user asks for a file — then tell them `gh pr create --body-file .git/PR_BODY.md` |

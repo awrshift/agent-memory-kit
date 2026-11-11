@@ -6,7 +6,9 @@ POSITIVE signal in its CONTENT, under the event the kit hook runs on — never o
 session-start.py is legitimate):
 
   PreCompact    emits `"decision": "block"` and names MEMORY.md
-  SessionStart  reads `.claude/memory/MEMORY.md` (a path or a joined Path) and prints `additionalContext`
+  SessionStart  READS `.claude/memory/MEMORY.md` (a path or a joined Path) and prints `additionalContext` — a read is
+                a read call on the line that names the path, or on a name assigned that path (`X.read_text()`,
+                `open(X)`, `read_file(X)`, `cat "$X"`); a hook that only `stat()`s the file is not a copy (8.2)
   SessionEnd    logs the kit's line `[hook] SessionEnd: session=`
   PreToolUse    a test-file guard: `Protect test files from modification`, `Test files are protected`,
                 or `CMK_ALLOW_TEST_EDITS`
@@ -34,11 +36,53 @@ HOME_TOKEN = "\x00cmk-home\x00"
 MEMORY_PATH_RE = re.compile(
     r"""\.claude/memory/MEMORY\.md|["']\.claude["']\s*/\s*["']memory["']\s*/\s*["']MEMORY\.md["']"""
 )
+# A read of the memory file (8.2: the mention alone flagged a project hook that stat()s it for a size nudge): a read
+# call or a shell read command before the path on its line (within 200 chars), a read call right after it, or the same
+# on a name the line assigns the path to. Windows of 200 chars, lines over MAX_LINE skipped: bounded work per line.
+SHELL_READ = r"\b(?:cat|head|tail|grep|sed|awk|wc|jq)\b"
+CALL_READ = r"(?:\bopen|\b\w*[Rr]ead\w*)\s*\("
+READ_BEFORE_RE = re.compile(
+    rf"(?:{CALL_READ}[^\n]{{0,200}}|{SHELL_READ}[^|;&\n]{{0,200}}|<\s*[\w{{}}/.\-\"'$]{{0,200}})$"
+)
+READ_AFTER_RE = re.compile(r"^[\"')\s]{0,4}\.(?:read_text|read_bytes|read|open)\s*\(")
+ASSIGN_RE = re.compile(
+    r"^\s*(?:export\s+|local\s+|readonly\s+|const\s+|let\s+|var\s+)?([A-Za-z_]\w*)\s*(?::[^=\n]*)?=(?!=)"
+)
+MAX_LINE = 4000
+
+
+def _alias_read_re(name: str) -> re.Pattern:
+    n = re.escape(name)
+    return re.compile(
+        rf"\b{n}\b\s*\)?\s*\.(?:read_text|read_bytes|read|open)\s*\(|"
+        rf"{CALL_READ}\s*(?:str\s*\(\s*)?{n}\b|"
+        rf"(?:{SHELL_READ}[^|;&\n]{{0,200}}|<\s*[\"']?)\$\{{?{n}\b"
+    )
+
+
+def reads_memory(text: str) -> bool:
+    """True when the text reads the memory file: a read on a line that names its path, or a read of a name that line
+    assigns the path to. A mention with only `stat()` / `exists()` / a message is not a read."""
+    lines = [line for line in text.splitlines() if len(line) <= MAX_LINE]
+    aliases = set()
+    for line in lines:
+        match = MEMORY_PATH_RE.search(line)
+        if not match:
+            continue
+        if READ_BEFORE_RE.search(line[: match.start()]) or READ_AFTER_RE.search(line[match.end():]):
+            return True
+        assigned = ASSIGN_RE.match(line)
+        if assigned and assigned.end() <= match.start():
+            aliases.add(assigned.group(1))
+    patterns = [_alias_read_re(name) for name in aliases]
+    return any(p.search(line) for p in patterns for line in lines)
+
+
 SIGNALS = {
     "PreCompact": ("pre-compact", "blocks compaction over MEMORY.md",
                    lambda t: re.search(r'"decision"\s*:\s*"block"', t) and "MEMORY.md" in t),
     "SessionStart": ("session-start", "reads MEMORY.md into the session context",
-                     lambda t: MEMORY_PATH_RE.search(t) and "additionalContext" in t),
+                     lambda t: "additionalContext" in t and reads_memory(t)),
     "SessionEnd": ("session-end", "logs the session close",
                    lambda t: "[hook] SessionEnd: session=" in t),
     "PreToolUse": ("protect-tests", "guards test files",
