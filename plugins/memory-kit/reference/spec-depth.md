@@ -1,6 +1,6 @@
 ---
 created: 2026-10-22
-last-reviewed: 2026-10-22
+last-reviewed: 2026-11-11
 ---
 
 # Spec depth — the five lines a spec carries before anyone builds it
@@ -51,6 +51,15 @@ OWED DECISION.
 - **Low** → self.
 The depth pass raises the proof, never the approach; it does not stand in for the review.
 
+**Before the build, a reader who did not write the spec reads it** — against the code at its base commit (every premise
+about existing code, schema or migration checked there) and against itself (two lines that cannot both hold). Findings
+go into a committed file and the integrator rules on each before the build. One project makes it a line of every
+build brief; it is mandatory when the mechanism is a queue, a ledger or a lock. The role template: `prebuild-reader`
+(`helper-roster.md`). Why: on one project's queue-and-lock designs the spec read changed the approach on three dates
+within five days; on six later units, a check before the build could have shown a first-round defect in two, and
+both catches were such reads — a library fact sitting in the project's own code at the base commit, and two spec
+lines that contradicted each other (measured in one project, 2026-10 and 2026-11: 3 approach changes; 2 of 6 units).
+
 ## 4. Fail branches — written before the run
 
 Per failure mode: what is tried next, and whose call it is — a redesign inside the approach (the agent) or a change to
@@ -60,8 +69,18 @@ The bar is not moved after the results are seen; a moved bar is a new version of
 Before a PAID measurement (model calls, a vendor API, compute): a free count first — how many of the observed defects
 the change can reach at all, and the limit it runs into — with the «not worth it» bar written before the count.
 
+**Paid runs.** The spec carries «N units, ~cost, cap» BEFORE the run. The estimate comes from a script over measured
+rows, never from memory or a number quoted from a report; the run script reads the cap from the spec and stops itself at
+it (a cap that counts past spend gets spent + this run's budget). **One money line, set by the user:** below it the
+agent decides and reports the actual cost after; above it the user approves EACH run on one line — «N units, ~cost,
+cap, why» — even when the plan holding the run was approved. A part whose run depends on an earlier part's bar is paid
+only after that bar is scored. Every parameter of a paid run has a written source: the project's coverage plan, or
+chosen for this task with its reason (one project's working practice; no count).
+
 ## 5. Measure the outcome, not a proxy
 
 Acceptance is judged by what reaches the user. Agreement rates, gate passes, counters and model-judge scores are
 reported as «screen only», never as the result: proxies have flipped sign once the outcome was measured. Every count in
 a report comes from a saved script or command cited next to it; a hand tally is a draft until the script agrees.
+Which numbers are screens and which are measurements — the constant-answer baseline, a count proven on labelled rows,
+the one calibrated exception to «a model judge is an estimate»: `measurement-lessons.md`.
