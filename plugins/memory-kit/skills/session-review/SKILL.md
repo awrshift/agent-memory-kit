@@ -24,8 +24,9 @@ natively, so don't expect auto-triggering; invoke it by name at session close.
 ## The loop
 
 ### 1. Assemble the brief (the load-bearing step)
-Write ONE self-contained markdown brief (e.g. to `/tmp/<repo>-session-review.md`). It is the
-only context the reviewers get. It must contain:
+Write ONE self-contained markdown brief to a path of THIS session — `session-review.md` in the session's
+scratchpad directory when one is listed, else a fresh `mktemp -t session-review.XXXXXX` file — never a fixed
+`/tmp` name, which a parallel session overwrites. It is the only context the reviewers get. It must contain:
 - **An assigned role** that fits the work ("Principal Engineer" for a feature slice, "Security
   reviewer" for auth work) — the role is the lens.
 - **Project context** a stranger can follow, **the session goal**, and **what was built**, with
