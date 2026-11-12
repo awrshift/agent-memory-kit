@@ -206,11 +206,12 @@ class Parts(unittest.TestCase):
             self.assertEqual(fh.read().strip(), "3")
 
     def test_counter_printed_by_a_read_only_part_matches_part_one(self):
-        """The stats block (with `session #N`) lands in part 2 here: 140 stale path refs fill the nudges
-        (80 sufficed until 8.3.0 shrank identity.md; the count only has to push the stats past part 1).
+        """The stats block (with `session #N`) lands in part 2 here: 120 stale path refs fill the nudges.
+        With the 8.3.0 identity.md the test passes for 94-153 refs (measured 2026-11-12); the window
+        moves whenever identity.md changes size (80 sat inside it until 8.3.0).
         Part 2 runs in parallel with part 1, which bumps the counter — the race the protocol closes."""
         self.write(".claude/memory/MEMORY.md", "# Hot\n\n" + "".join(
-            "- [2026-01-01] see `docs/missing-%03d-some-long-name.md` for x\n" % i for i in range(140)))
+            "- [2026-01-01] see `docs/missing-%03d-some-long-name.md` for x\n" % i for i in range(120)))
         for run in range(1, 6):
             k, bodies = self.check_lossless("startup")
             self.assertNotIn("=== SESSION START", bodies[0])
