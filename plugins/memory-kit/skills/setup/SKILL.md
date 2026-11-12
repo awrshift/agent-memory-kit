@@ -42,8 +42,8 @@ The four layers above hold MEMORY. The work's own documents — tasks, specs, re
 QA — belong to a PROJECT, and the kit is multi-project by design: one folder per client or
 product, so that a decision ledger, a findings registry and a QA protocol each count and describe
 exactly ONE thing. **This applies to a single-product code repository too** — it simply has one
-project folder, named after the product. (Earlier versions told you to skip `projects/` in a code
-repo. That left specs, backlogs and research with no home, and they scattered into the repo root.)
+project folder, named after the product. Without it, specs, backlogs and research have no home and
+scatter into the repo root.
 
 Ask for the name(s), then create per project — nothing more:
 
@@ -92,7 +92,8 @@ two truths. Put the choice to the user in one question:
 
 Do NOT point `autoMemoryDirectory` at the kit's `.claude/memory`: the setting only accepts an
 absolute path or one starting with `~/` (so it cannot be committed portably), and Claude Code
-would rewrite the kit's `MEMORY.md` in its own index format, overwriting the dated cache.
+would rewrite the kit's `MEMORY.md` in its own index format, overwriting the dated cache
+(last verified 2026-09-02).
 
 Whichever is chosen, say plainly which system now owns the file.
 
@@ -105,7 +106,7 @@ write `.claude/state/rails-declined`. Either file silences the nudge. A full set
 marker after this step. Headless: write nothing, report the proposal.
 
 The plugin cannot ship permissions (Claude Code only honours `agent` and `subagentStatusLine`
-from a plugin's `settings.json`) — the destructive git operations are already guarded by the
+from a plugin's `settings.json`; last verified 2026-09-26) — the destructive git operations are already guarded by the
 kit's git-guard hook (force push, `reset --hard`, `clean -f`, `branch -D`, `checkout .`,
 `restore .`, `push --mirror`; opt-out `CMK_GIT_GUARD=off`). The rails cover the rest. Build the
 proposal from what is actually in this repo:
@@ -142,8 +143,8 @@ State the rules out loud while you do it:
    must not happen belongs inside the script or a hook. And **no broad allow** for git, gh,
    docker, curl or an interpreter (`Bash(git *)`, `Bash(node *)`, `Bash(python3 *)`, `Bash(*)`):
    in auto mode NARROW allow rules resolve BEFORE the classifier (Claude Code docs,
-   auto-mode-config), so a broad one lets a destructive argument through unseen. The v5
-   allowlist did exactly that — force pushes, hard resets, `node -e` — while reading as safety.
+   auto-mode-config; last verified 2026-09-26), so a broad one lets a destructive argument through
+   unseen — force pushes, hard resets, `node -e` — while it reads as safety.
    A narrow allow names the EXACT script — `Bash(node scripts/foo.mjs *)`, never
    `Bash(node scripts/*)` / `Bash(python3 scripts/*)`: a path wildcard lets the agent write a new
    file into that folder and run it before the classifier sees it. The same for a runner whose
@@ -153,7 +154,7 @@ State the rules out loud while you do it:
    Preferred: a project launch script that loads it itself (`scripts/stand.sh`:
    `set -a; . ./.env; set +a; exec node …`) plus ONE narrow allow `Bash(bash scripts/stand.sh *)` —
    a narrow allow resolves before the classifier AND before Claude Code's built-in static check,
-   which blocks an inline `set -a` whatever the settings say. Fallback only: one `autoMode.allow`
+   which blocks an inline `set -a` whatever the settings say (last verified 2026-09-26). Fallback only: one `autoMode.allow`
    sentence naming the file and the purpose.
 3. **Env backups live outside the repo** (a `.env.bak` at the root is one more file to deny).
 4. **Before adding `ask` rules, list the scripts that call `claude -p`** with gh or docker:
@@ -240,5 +241,5 @@ CLAUDE_PLUGIN_ROOT="$(dirname "$(dirname "$HOOK")")" python3 "$HOOK" <<< '{"sour
   the diff before writing.
 - Don't invent layers. Memory is `MEMORY.md`, `context/handoffs/`, `knowledge/concepts/`,
   `.claude/rules/`; the work's documents live in `projects/<name>/`. That is the whole system.
-- Don't declare success from the file listing alone. The v5 kit spent a year claiming the hot
-  cache was "always loaded" while it was never injected; the only proof is seeing it in context.
+- Don't declare success from the file listing alone. A file that exists, or a hook that reads it, does
+  not prove its body reaches the model; the only proof is seeing it in context.
