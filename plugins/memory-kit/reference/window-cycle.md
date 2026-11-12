@@ -7,8 +7,8 @@ last-reviewed: 2026-11-11
 
 **Applies when:** you run more than one interactive session on one repository at a time, and one of them integrates.
 **Take as is:** one session integrates; it starts from files, never from a window's memory; files carry the work.
-**Adapt:** how many windows, the 150k / 250k sizes, the brief's lines, the slots, the close steps — one project's;
-the 250k in trial.
+**Adapt:** how many windows, how a task is cut into steps, the brief's lines, the slots, the close steps — one
+project's.
 
 `parallel-development.md` says when parallel work pays and that one session integrates. This file is how one project
 runs it day to day: one MAIN session (the integrator: the user dialogue, decisions, merges, shared docs, memory) and
@@ -61,15 +61,12 @@ stand-ins unnoticed before this line existed (one project's working practice; no
 
 ## 4. Size and stop points
 
-- **One deliverable per task, about 150k tokens of the window** (one project's number). A task of more than one large
-  step stops after each step, and at every stop the window gives its context as the number the context counter prints,
-  never an estimate. The window's second task is named in the first brief, so a cleared window restarts from files.
-- **A window takes its next task only while its context plus the task's estimate stays within ~250k** (one project's
-  number); main states the estimate in the brief, with a margin. The reasoning behind both numbers: two windows stopped
-  near 240k at the draft of a design; a round with a spec, a build, a test lane and a review cost 80–100k; a first step
-  of four took 287k against ~200k estimated, and three of four parallel sessions reported an estimate instead of the
-  counter, and one estimate was off by 90k (in trial in one project since 2026-11-11; count due 2026-11-25: windows
-  that ended a task past 250k).
+- **One deliverable per task, cut by work, not by a context number.** A task of more than one large step stops after
+  each step and commits its state, so a cleared window restarts from files; the window's second task is named in the
+  first brief. No window is asked to count, estimate or report its context (Anthropic's prompting guidance: avoid
+  surfacing explicit context-budget counts to the model); the user sees the counter and says when a window closes.
+  Why not a number: in one project three of four parallel sessions reported an estimate instead of the counter, one
+  off by 90k, and a first step of four took 287k against ~200k estimated (one project's working practice, 2026-11).
 - **Size the team to the task, not to the slots.** Pieces that share one context stay in one window; parallel windows
   only for separable work; an idle slot is fine. Fact sweeps and review seats go to helpers from the start
   (`helper-roster.md`). The critical path — the measurement a decision waits on — gets the first slot and the first

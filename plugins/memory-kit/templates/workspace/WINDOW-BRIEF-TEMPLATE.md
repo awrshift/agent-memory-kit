@@ -13,9 +13,9 @@ Stop points: <each decision point where the window stops and waits for the main 
 Premises: <each fact about code, data, a time or a run this brief states — with the source it was read from>.
 Paid: none | the spec's paid line (<section>): units, cost and cap are read there.
 Slot: <the shared resource this window may use — port, database, account> (only if the project shares resources).
-Size: <the task's estimate> · main's context at send: <N> k.
+Steps: <the task's steps, each ending in a commit>.
 Done = <the gate>; report = a committed file at <path>; message to main ≤ 5 lines:
-  verdict · report path · commit · context: <the number /context prints> · what main must decide.
+  verdict · report path · commit · what main must decide.
 ```
 
 The rules behind the lines live in `reference/window-cycle.md`: one task per window, the second named in the first

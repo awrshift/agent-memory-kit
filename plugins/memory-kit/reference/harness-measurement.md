@@ -136,12 +136,13 @@ These are Claude Code behaviour, not the kit's: re-check any line after a Claude
   `my-plugin:reviewer` (https://code.claude.com/docs/en/hooks «SubagentStart»). UNVERIFIED — the docs do not say
   whether a deny rule accepts the scoped name, nor whether a denied agent also leaves the listing sent at every
   start. The settings edit is the user's: the auto-mode classifier refuses it to the agent (fetched 2026-11-11).
-- **A context budget per session is read from the counter, never estimated.** A session doing one task reports the
-  number `/context` prints at each stop; a long task is cut into one step per stop; a plan that gives the main session
-  a reading or labelling job names its size against about 100k. In one project three of four parallel sessions
-  reported an estimate instead of the counter, and one estimate was off by 90k; one task's first step of four took
-  287k, and an estimate given to the user said ~270k at 373k (measured in one project, 2026-10 and 2026-11: 287k for
-  one step; ~270k guessed at 373k). The cycle that uses these budgets: `window-cycle.md`.
+- **A session's length is set by its work, not by a context number.** No session is asked to count, estimate or
+  report its context: Anthropic's prompting guidance is to avoid surfacing explicit context-budget counts to the
+  model, and the counts sessions gave were unreliable — in one project three of four parallel sessions reported an
+  estimate instead of the counter, one off by 90k, and an estimate given to the user said ~270k at 373k (measured in
+  one project, 2026-10 and 2026-11). Instead a long task is cut into one deliverable per step, state is committed after
+  every step so a cleared session continues from files, and the user, who sees the counter, says when to close. The
+  cycle that uses this: `window-cycle.md`.
 - **What a helper cannot do.** Roles and briefs: `helper-roster.md`. Harness facts behind them:
   - It cannot be a blind reader inside your session: every level of `CLAUDE.md` and the project's rules load into a
     helper (docs, fetched 2026-11-11), unless its agent file sets `omitClaudeMd: true` (v2.1.271+; what still loads:
