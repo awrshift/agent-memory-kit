@@ -108,7 +108,7 @@ def remember_created(project_dir: Path, session_id: str, file_path: str) -> None
         fs.append_line(project_dir, f"{session_id}_created_tests", file_path)
 
 
-BASE_CANDIDATES = ("upstream/HEAD", "upstream/main", "upstream/master", "origin/HEAD", "origin/main", "origin/master")
+BASE_CANDIDATES = tuple(f"refs/remotes/{r}/{b}" for r in ("upstream", "origin") for b in ("HEAD", "main", "master"))
 
 
 def git(cwd: str, *args: str) -> int:
@@ -121,8 +121,8 @@ def git(cwd: str, *args: str) -> int:
 def branch_authored(file_path: str) -> bool:
     """8.3.1: a test file that does not exist on the base branch of its own repo was written on this branch — by an
     earlier session as often as by this one (window lives, worktrees) — so it is the branch's own to iterate on, like a
-    file this session created. The base is CMK_TEST_BASE_REF when set and resolvable, else the first resolvable of
-    BASE_CANDIDATES (upstream before origin: in a fork the upstream branch holds the tests that are not ours). Any
+    file this session created. The base is CMK_TEST_BASE_REF when set and resolvable, else the first resolvable remote ref of
+    BASE_CANDIDATES (fully qualified `refs/remotes/...`, so a local branch named `upstream/main` cannot stand in; upstream before origin: in a fork the upstream branch holds the tests that are not ours). Any
     doubt — not a git repo, no base resolves, git fails or times out — answers False, and the weakening rule decides
     as before. A file that exists on the base keeps the full guard: those are the tests a change must not bend."""
     cwd = str(Path(file_path).parent)
@@ -133,8 +133,21 @@ def branch_authored(file_path: str) -> bool:
     base = next((c for c in candidates if git(cwd, "rev-parse", "--verify", "--quiet", f"{c}^{{commit}}") == 0), None)
     if base is None:
         return False
-    # `<rev>:./<name>` resolves relative to `-C`; exit 0 = the blob exists on the base.
-    return git(cwd, "cat-file", "-e", f"{base}:./{Path(file_path).name}") not in (0, -1)
+    # The file is looked up at the fork point of HEAD and the base, never at the base ref itself: a ref swapped for an
+    # unrelated commit has no fork point with HEAD, and no fork point keeps the guard (security review, 8.3.1).
+    fork = git_out(cwd, "merge-base", "HEAD", base)
+    if not fork:
+        return False
+    # `<rev>:./<name>` resolves relative to `-C`; exit 0 = the blob exists at the fork point.
+    return git(cwd, "cat-file", "-e", f"{fork}:./{Path(file_path).name}") not in (0, -1)
+
+
+def git_out(cwd: str, *args: str) -> str:
+    try:
+        r = subprocess.run(["git", "-C", cwd, *args], capture_output=True, text=True, timeout=3)
+    except (OSError, subprocess.SubprocessError):
+        return ""
+    return r.stdout.strip() if r.returncode == 0 else ""
 
 
 def weakening(old: str, new: str) -> str:

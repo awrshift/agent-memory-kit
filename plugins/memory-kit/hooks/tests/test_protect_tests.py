@@ -239,6 +239,25 @@ class ProtectTestsBranchAuthored(unittest.TestCase):
         # pinned to the feature branch itself: the file exists there, so the guard applies
         self.assertEqual(self.edit(self.ours, env=dict(self.env, CMK_TEST_BASE_REF="feature")), "ask")
 
+    def orphan(self):
+        """An unrelated commit (empty tree, no parent) made without touching the work tree."""
+        run = lambda *a: subprocess.run(["git", "-C", self.repo, *a], check=True, capture_output=True, text=True,
+                                       input="").stdout.strip()
+        empty = run("hash-object", "-t", "tree", "-w", "--stdin")
+        return run("commit-tree", empty, "-m", "orphan")
+
+    def test_local_branch_named_like_the_base_cannot_stand_in(self):
+        g = lambda *a: subprocess.run(["git", "-C", self.repo, *a], check=True, capture_output=True)
+        g("remote", "remove", "upstream")
+        g("update-ref", "refs/heads/upstream/main", self.orphan())
+        self.assertEqual(self.edit(self.ours), "ask")
+
+    def test_unrelated_remote_ref_keeps_the_guard(self):
+        g = lambda *a: subprocess.run(["git", "-C", self.repo, *a], check=True, capture_output=True)
+        g("update-ref", "refs/remotes/upstream/main", self.orphan())
+        subprocess.run(["git", "-C", self.repo, "update-ref", "-d", "refs/remotes/upstream/HEAD"], capture_output=True)
+        self.assertEqual(self.edit(self.ours), "ask")
+
     def test_unresolvable_pin_falls_back_to_candidates(self):
         self.assertEqual(self.edit(self.ours, env=dict(self.env, CMK_TEST_BASE_REF="nope/none")), "silent")
 

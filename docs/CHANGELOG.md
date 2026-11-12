@@ -16,7 +16,10 @@ Nothing to migrate. One hook changed.
   when set and resolvable, else the first of `upstream/HEAD`, `upstream/main`, `upstream/master`, `origin/HEAD`,
   `origin/main`, `origin/master` (upstream first: in a fork the upstream branch holds the tests that are not ours). A
   file that exists on the base keeps the full guard; not a git repo, no base, or a git failure → guarded as before.
-  Tests: `tests/test_protect_tests.py` `ProtectTestsBranchAuthored` (five cases).
+  The file is looked up at the fork point of HEAD and the base, and only fully qualified remote refs
+  (`refs/remotes/...`) are candidates — a local branch named `upstream/main`, or a remote ref moved to an unrelated
+  commit, has no fork point with HEAD and keeps the guard (security review of the first commit).
+  Tests: `tests/test_protect_tests.py` `ProtectTestsBranchAuthored` (seven cases, two of them the bypasses).
 
 <a id="v830"></a>
 
