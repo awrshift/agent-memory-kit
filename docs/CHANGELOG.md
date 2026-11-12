@@ -2,6 +2,22 @@
 
 All notable changes to Claude Memory Kit are documented here. Breaking changes marked **BREAKING**.
 
+<a id="v831"></a>
+
+## [8.3.1] — 2026-11-12 — protect-tests: a branch's own tests are its own
+
+Nothing to migrate. One hook changed.
+
+### Changed
+
+- `hooks/protect-tests.py` — **a test file the base branch does not have passes.** Until now only a file THIS session
+  created was exempt, so every later session (a cleared window, another worktree) was asked to confirm edits of tests
+  the same branch wrote — the maintainer clicked «Yes» on such prompts every session. The base is `CMK_TEST_BASE_REF`
+  when set and resolvable, else the first of `upstream/HEAD`, `upstream/main`, `upstream/master`, `origin/HEAD`,
+  `origin/main`, `origin/master` (upstream first: in a fork the upstream branch holds the tests that are not ours). A
+  file that exists on the base keeps the full guard; not a git repo, no base, or a git failure → guarded as before.
+  Tests: `tests/test_protect_tests.py` `ProtectTestsBranchAuthored` (five cases).
+
 <a id="v830"></a>
 
 ## [8.3.0] — 2026-11-12 — contradictions and session load: instruction text only

@@ -34,7 +34,8 @@ claude plugin update memory-kit@memory-kit
   request (on a context-limit recovery) or skip the compaction.
 - **PreToolUse(Edit|Write) — `protect-tests.py`** — asks before an edit that can weaken an existing test (an assertion
   line changed or removed, a `.skip`/`.only` added) and before any hand edit of a `.snap`; never blocks the red→green
-  loop; `CMK_ALLOW_TEST_EDITS=1` opts out for a session.
+  loop; a test file the base branch does not have (written on this branch, by any session) passes —
+  base = `CMK_TEST_BASE_REF`, else `upstream`, else `origin`; `CMK_ALLOW_TEST_EDITS=1` opts out for a session.
 - **PreToolUse(Bash) — `guard-git.py`** — blocks force push, `push --mirror`, `reset --hard`, `clean -f`, `branch -D`,
   `checkout .`, `restore .` wherever the flag sits in a real git command (never in quoted text or a commit message);
   `--force-with-lease` passes; `CMK_GIT_GUARD=off` opts out.
@@ -110,7 +111,7 @@ project README's map already sends that class.
 ## Environment knobs
 
 `CMK_INJECT_BUDGET` (48000) · `CMK_MEMORY_LINE_CAP` (180) · `CMK_MEMORY_BYTE_CAP` (32768) ·
-`CMK_MEMORY_MAXLINE_CAP` (3000) · `CMK_SPEC_STALE_DAYS` (14) · `CMK_ALLOW_TEST_EDITS=1` · `CMK_GIT_GUARD=off` ·
+`CMK_MEMORY_MAXLINE_CAP` (3000) · `CMK_SPEC_STALE_DAYS` (14) · `CMK_ALLOW_TEST_EDITS=1` · `CMK_TEST_BASE_REF` · `CMK_GIT_GUARD=off` ·
 `CMK_SECRETS_GUARD=off` · `CMK_ZSH_GUARD=off`.
 
 Architecture and rationale: the kit repository's

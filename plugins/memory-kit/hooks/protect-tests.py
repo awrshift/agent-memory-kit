@@ -32,6 +32,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -107,6 +108,35 @@ def remember_created(project_dir: Path, session_id: str, file_path: str) -> None
         fs.append_line(project_dir, f"{session_id}_created_tests", file_path)
 
 
+BASE_CANDIDATES = ("upstream/HEAD", "upstream/main", "upstream/master", "origin/HEAD", "origin/main", "origin/master")
+
+
+def git(cwd: str, *args: str) -> int:
+    try:
+        return subprocess.run(["git", "-C", cwd, *args], capture_output=True, timeout=3).returncode
+    except (OSError, subprocess.SubprocessError):
+        return -1
+
+
+def branch_authored(file_path: str) -> bool:
+    """8.3.1: a test file that does not exist on the base branch of its own repo was written on this branch — by an
+    earlier session as often as by this one (window lives, worktrees) — so it is the branch's own to iterate on, like a
+    file this session created. The base is CMK_TEST_BASE_REF when set and resolvable, else the first resolvable of
+    BASE_CANDIDATES (upstream before origin: in a fork the upstream branch holds the tests that are not ours). Any
+    doubt — not a git repo, no base resolves, git fails or times out — answers False, and the weakening rule decides
+    as before. A file that exists on the base keeps the full guard: those are the tests a change must not bend."""
+    cwd = str(Path(file_path).parent)
+    if not Path(cwd).is_dir():
+        return False
+    pinned = os.environ.get("CMK_TEST_BASE_REF", "").strip()
+    candidates = ((pinned,) if pinned else ()) + BASE_CANDIDATES
+    base = next((c for c in candidates if git(cwd, "rev-parse", "--verify", "--quiet", f"{c}^{{commit}}") == 0), None)
+    if base is None:
+        return False
+    # `<rev>:./<name>` resolves relative to `-C`; exit 0 = the blob exists on the base.
+    return git(cwd, "cat-file", "-e", f"{base}:./{Path(file_path).name}") not in (0, -1)
+
+
 def weakening(old: str, new: str) -> str:
     """Why replacing `old` with `new` can weaken a test, or "" when it cannot.
 
@@ -160,6 +190,9 @@ def main() -> None:
         remember_created(project_dir, session_id, file_path)
         no_opinion()
     if session_created_file(project_dir, session_id, file_path):
+        no_opinion()
+    # A test file the base branch does not have: written on this branch, by any session — its own to iterate on.
+    if branch_authored(file_path):
         no_opinion()
 
     # v2: an existing test file asks only when the change can weaken what it proves.

@@ -180,5 +180,68 @@ class ProtectTestsV2(unittest.TestCase):
         self.assertEqual(self.edit(old, old + "    expect(sum(x, 0)).toBe(2);\n", env=env), ("silent", ""))
 
 
+class ProtectTestsBranchAuthored(unittest.TestCase):
+    """8.3.1: a test file the base branch does not have was written on this branch (by any session) — its edits pass;
+    a test file the base branch has keeps the full guard; no resolvable base keeps the old behaviour."""
+
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp(prefix="cmk-pt-git-")
+        self.shim = tempfile.mkdtemp(prefix="cmk-py-")
+        os.symlink(sys.executable, os.path.join(self.shim, "python3"))
+        self.base = os.path.join(self.tmp, "base")
+        self.repo = os.path.join(self.tmp, "work")
+        g = lambda cwd, *a: subprocess.run(["git", "-C", cwd, *a], check=True, capture_output=True)
+        os.makedirs(os.path.join(self.base, "tests"))
+        g(self.base, "init", "-q", "-b", "main")
+        g(self.base, "config", "user.email", "t@example.com")
+        g(self.base, "config", "user.name", "t")
+        with open(os.path.join(self.base, "tests", "theirs.test.ts"), "w") as fh:
+            fh.write(JS_TEST)
+        g(self.base, "add", ".")
+        g(self.base, "commit", "-q", "-m", "base")
+        subprocess.run(["git", "clone", "-q", "-o", "upstream", self.base, self.repo], check=True, capture_output=True)
+        g(self.repo, "config", "user.email", "t@example.com")
+        g(self.repo, "config", "user.name", "t")
+        g(self.repo, "checkout", "-q", "-b", "feature")
+        self.ours = os.path.join(self.repo, "tests", "ours.test.ts")
+        with open(self.ours, "w") as fh:
+            fh.write(JS_TEST)
+        g(self.repo, "add", ".")
+        g(self.repo, "commit", "-q", "-m", "ours")
+        self.theirs = os.path.join(self.repo, "tests", "theirs.test.ts")
+        self.env = dict(os.environ, CLAUDE_PLUGIN_ROOT=PLUGIN_ROOT, CLAUDE_PROJECT_DIR=self.repo,
+                        PATH=self.shim + os.pathsep + os.environ["PATH"])
+        self.env.pop("CMK_ALLOW_TEST_EDITS", None)
+        self.env.pop("CMK_TEST_BASE_REF", None)
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp, ignore_errors=True)
+        shutil.rmtree(self.shim, ignore_errors=True)
+
+    def edit(self, path, env=None):
+        payload = json.dumps({"session_id": "s9", "tool_name": "Edit", "tool_input": {
+            "file_path": path, "old_string": "    expect(sum(x, 3)).toBe(5);", "new_string": "    expect(sum(x, 3)).toBe(6);"}})
+        r = subprocess.run(WIRING, shell=True, input=payload, capture_output=True, text=True, env=env or self.env)
+        self.assertEqual(r.returncode, 0, r.stderr)
+        return json.loads(r.stdout)["hookSpecificOutput"]["permissionDecision"] if r.stdout.strip() else "silent"
+
+    def test_branch_authored_test_passes(self):
+        self.assertEqual(self.edit(self.ours), "silent")
+
+    def test_test_on_the_base_branch_still_asks(self):
+        self.assertEqual(self.edit(self.theirs), "ask")
+
+    def test_no_resolvable_base_keeps_the_guard(self):
+        subprocess.run(["git", "-C", self.repo, "remote", "remove", "upstream"], check=True, capture_output=True)
+        self.assertEqual(self.edit(self.ours), "ask")
+
+    def test_pinned_base_wins(self):
+        # pinned to the feature branch itself: the file exists there, so the guard applies
+        self.assertEqual(self.edit(self.ours, env=dict(self.env, CMK_TEST_BASE_REF="feature")), "ask")
+
+    def test_unresolvable_pin_falls_back_to_candidates(self):
+        self.assertEqual(self.edit(self.ours, env=dict(self.env, CMK_TEST_BASE_REF="nope/none")), "silent")
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=1)

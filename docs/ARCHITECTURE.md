@@ -527,7 +527,9 @@ wire again: since 7.3 session start flags a project whose own settings run a COP
   can weaken it — an assertion/skip line changed or removed, a skip/only marker added, a Write whose
   content fails the same rule against the file on disk ("a failing test means the code is wrong");
   any hand edit of a `.snap` asks. Additions and renames pass silently; a new test and any test
-  this session created are never guarded (the red→green loop); `CMK_ALLOW_TEST_EDITS=1` opts out.
+  this session created are never guarded (the red→green loop), nor is a test file the base branch
+  does not have (8.3.1: base = `CMK_TEST_BASE_REF`, else `upstream/*`, else `origin/*`; no base → guarded);
+  `CMK_ALLOW_TEST_EDITS=1` opts out.
 - **guard-git.py** (7.1) — PreToolUse(Bash): blocks a real destructive git argv (force push,
   `push --mirror`, `reset --hard`, `clean -f`, `branch -D`, `checkout .`, `restore .`), found by a
   shell-aware parser (`hooks/lib/cmdparse.py`) so quoted text, heredocs and commit messages never
