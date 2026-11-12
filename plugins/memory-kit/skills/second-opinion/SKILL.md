@@ -1,6 +1,6 @@
 ---
 name: second-opinion
-description: "Cross-check the agent's own answer with independent reviewers before bringing it to the user. Use when the user says 'second opinion', 'sanity check', 'cross-check', 'am I missing something', 'stress-test', 'devil's advocate', 'run a full review', 'this is important', 'high-stakes', 'help me choose between', 'critique this', or similar. Three review styles: Devil's Advocate (single critique), Boardroom Debate (parallel multi-reviewer validation), Round-Table (multi-round brainstorm for choosing between paths). Not for factual lookups — use WebSearch for those."
+description: "Cross-check the agent's own answer with independent reviewers before bringing it to the user. Use when the user says 'second opinion', 'sanity check', 'cross-check', 'am I missing something', 'stress-test', 'devil's advocate', 'run a full review', 'this is important', 'high-stakes', 'help me choose between', 'critique this', or similar. Three review styles: Devil's Advocate (single critique), Boardroom Debate (parallel multi-reviewer validation), Round-Table (multi-round brainstorm for choosing between paths). Not for factual lookups — use WebSearch for those. Skip this skill when a user-level review board or second-opinion skill exists — use that one instead."
 ---
 
 # Second Opinion — cross-check before you commit
@@ -15,10 +15,10 @@ depends on what you have available:
   spots. It reviews from the brief only (no repo access) — lean on it for concept and
   tech-currency, not file-level facts.
 
-**Already have your own review setup?** If your user-level configuration defines a review board
-or a second-opinion skill (your own reviewer agent, a model list, a wrapper for another model
-family), use that one and skip this skill — two review procedures for one decision drift apart.
-This skill is the default for people who have none.
+**Why the description says to skip it when you have your own board:** a user-level review board or
+second-opinion skill (your own reviewer agent, a model list, a wrapper for another model family) and this
+skill are two procedures for one decision, and they drift apart. This skill is the default for people who
+have none.
 
 ## When to invoke
 
