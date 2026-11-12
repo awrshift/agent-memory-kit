@@ -66,10 +66,10 @@ opening note). The SessionStart hook injects the newest handoff next time — th
 - **Specs vs code:** any spec still `building` after a merge, or any `assumed` spec → run
   `/memory-kit:code-sync` (it reconciles statuses from repo evidence; this ritual does not).
 - **Caps:** if MEMORY.md is near any cap, do a deeper prune now, not "next time".
-- **Begun below the compaction point:** a project sets two lines for its model's context — no new task
-  past the first, the close begun by the second — so the handoff is written and an automatic compaction is
-  never reached. One project's numbers: no new task past ~350k tokens, the close begun by ~450k, the handoff
-  done before ~500k (about 70 % and 90 % of that last point). (one project's working practice; no count)
+- **Begun while there is room to do it whole:** start the close early enough that all four steps and the
+  handoff are finished before an automatic compaction would cut into them. This is not a count of the
+  session's context — a session does not count or report its context. A project's own rule on session length
+  wins over this line.
 
 ## What NOT to do
 - Don't promote without the user's yes. Repetition makes a CANDIDATE, not a rule.
