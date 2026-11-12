@@ -1,20 +1,17 @@
 # Memory Kit — how you work in this repository
 
-> Injected by the `memory-kit` plugin at every session start (and re-injected after compaction).
-> It is versioned with the plugin, so there is nothing to paste into `CLAUDE.md`.
-
 ## Two invariants
 
 **1 — The user talks. You write.** The user never opens `MEMORY.md`, a handoff, a rule or a
 concept article. You propose in conversation, they say "yes", you write the file and say what you
-wrote. If you catch yourself saying "add this to …" — rephrase as "I'll write it, confirm?".
+wrote. If you catch yourself saying "add this to …", rephrase as "I'll write it, confirm?".
 
 **2 — Every memory entry carries a `[YYYY-MM-DD]` tag.** Dates are what make the audit possible:
 without them you cannot see that a pattern showed up on three different days, and you cannot tell
-a fresh fact from a rotten one. A stored fact about the OUTSIDE world (a price, an open ticket,
+a fresh fact from a rotten one. A stored fact about the outside world (a price, an open ticket,
 "the client is waiting") older than ~7 days is a hypothesis — re-check before acting on it.
 
-## Where things live (in THIS repository)
+## Where things live (in this repository)
 
 | Layer | File | Answers | Loaded |
 |---|---|---|---|
@@ -23,74 +20,56 @@ a fresh fact from a rotten one. A stored fact about the OUTSIDE world (a price, 
 | Deep memory | `knowledge/concepts/*.md` + `knowledge/index.md` | facts and rationale by topic | index injected; articles on demand |
 | Hard rules | `.claude/rules/*.md` | what must always / never happen | loaded by Claude Code itself |
 
-Those four are MEMORY, and there is no fifth — no `wisdom/`, `playbooks/`, `patterns/`; a new
-memory layer is how this system dies.
+Those four are the memory layers, and there is no fifth (no `wisdom/`, `playbooks/`, `patterns/`):
+every extra layer is one more place a fact goes stale.
 
-**The work's own documents are not memory.** They live per project in `projects/<name>/`:
-`README.md` (the map of where this project's documents live — read it before writing one — and
-the project's **workflow tier**: `prototype · alpha · beta · ga`, how much proof a `done` owes),
-`BACKLOG.md`, `plans/YYYY-MM-DD-<slug>.md` — the spec an executor builds to, which is not
-delegable without **Goal · Non-goals (what it must NOT do) · Acceptance written before building**,
-plus the exact gate commands once there is something to run (the kit ships the full form as
-`SPEC-TEMPLATE.md`; the skills know its path). Acceptance rows carry stable `AC-n` ids that
-slices, tests, QA runs and findings quote, a `Value sources` table names where every value comes
-from, and a spec may be `assumed` — an executor's recorded override of a missing source, owed
-ratification. The rest of the folder is `research/`, `decisions-log.md`,
-`review-findings.md`, `qa/`. One folder per client or product — a
-single-product repo has exactly one. A spec, a backlog or a QA protocol never goes into
-`MEMORY.md`; a dated cross-session pattern never goes into a project folder. If a repo already
-keeps its documents elsewhere, its project README says so and that mapping wins.
+**The work's own documents are not memory.** They live per project in `projects/<name>/` — one
+folder per client or product, a single-product repo has one. Its `README.md` is the map of where
+that project's documents live (read it before writing one) and names its workflow tier; specs go to
+`plans/YYYY-MM-DD-<slug>.md`, written from the kit's `SPEC-TEMPLATE.md`. A spec, a backlog or a QA
+protocol never goes into `MEMORY.md`; a dated cross-session pattern never goes into a project
+folder. If a repo already keeps its documents elsewhere, its project README says so and that
+mapping wins.
 
-## The caps (why the hook nags)
+## The caps
 
-`MEMORY.md` is a HOT CACHE, not an archive: **180 lines / 32 KB / 3000 chars per line**. Three
-caps because line count alone lies — content densifies into ever-longer lines while `wc -l` stays
-flat. A tripped cap means run `/memory-kit:memory-audit` BEFORE other work.
+`MEMORY.md` is a hot cache, not an archive: **180 lines / 32 KB / 3000 chars per line**. Three
+caps because line count alone misleads — content densifies into ever-longer lines while `wc -l`
+stays flat. A tripped cap means run `/memory-kit:memory-audit` before other work.
 
-- **The header is «current state»**, 2-3 sentences, REPLACED at every close — never a stack of
+- **The header is the current state**, 2-3 sentences, replaced at every close — never a stack of
   "previous session" paragraphs. History belongs in handoffs.
-- **Overflow flows out by promotion**: a pattern seen on 3+ distinct dates → a
+- **Overflow leaves by promotion**: a pattern seen on 3+ distinct dates becomes a
   `knowledge/concepts/` article (facts + rationale) or a `.claude/rules/` file (a mechanical
-  always/never, only once it is stable). Promoted entries get PRUNED from the cache.
-- **One home per fact.** When a fact changes, grep its restatements and fix them in the same pass.
-  A stale copy that still looks current is the #1 failure mode of agent memory.
+  always/never, only once it is stable). Promoted entries are pruned from the cache.
+- **One home per fact.** When a fact changes, grep its restatements and fix them in the same pass —
+  a stale copy that still looks current misleads the next session.
 
-## What else ships with the plugin (you have to know it exists to reach it)
+## Depth the plugin carries (read on demand)
 
-**Operators**, all namespaced `/memory-kit:` — bodies load only on invoke: `close-session` ·
-`memory-audit` (when a cap trips) · `system-audit` (the periodic seven-lens sweep) ·
-`session-review` · `second-opinion` · `qa-sweep` · `document` (PR · changelog · release note ·
-postmortem, written from the diff) · `code-sync` (specs reconciled against the code) · `setup` ·
-`tour`.
-
-**Depth, read on demand** from the plugin's `reference/` directory — free until you open it:
-`orchestrator-fact-check` (a report is INPUT, never a fact; a number from history carries its
-time window and build) · `spec-depth` (depth pass, fresh-checked practice, review stake, fail
-branches written first, outcome over proxy) · `review-loop` (finding triage, the diff gate, the
-findings-class registry) · `parallel-development` (fan-out, worktree isolation, one integrator) ·
-`doc-governance` (one SSOT per fact, the anti-drift rules) · `decisions-log` (the lean ledger) ·
-`capability-map-sweep` (the "the library already does this" defect class) ·
-`project-extensions` (when a repeated workflow earns a project skill / hook / agent, and what
-each costs when idle). Delegating to
-subagents? `templates/rules/orchestration.md` is the nine always-loaded invariants — copy it into
-`.claude/rules/` (a plugin cannot ship rules; `/memory-kit:setup` offers this).
-Permissions are speed bumps; hooks are gates, and a gate is proven only through its exact wiring (`reference/harness-measurement.md`).
-Noisy commands: `bash ${CLAUDE_PLUGIN_ROOT}/scripts/quiet.sh <cmd>`.
+From the plugin's `reference/` directory, free until opened: `orchestrator-fact-check` (a report
+is input, never a fact; a number from history carries its time window and build) · `spec-depth`
+(depth pass, fresh-checked practice, review stake, fail branches written first, outcome over
+proxy) · `review-loop` (finding triage, the diff gate, the findings-class registry) ·
+`parallel-development` (fan-out, worktree isolation, one integrator) · `doc-governance` (one SSOT
+per fact) · `decisions-log` (the lean ledger) · `capability-map-sweep` (the "the library already
+does this" defect class) · `project-extensions` (when a repeated workflow earns a project skill /
+hook / agent). Delegating to subagents: `templates/rules/orchestration.md` holds the invariants to
+copy into `.claude/rules/` (a plugin cannot ship rules; `/memory-kit:setup` offers it).
+Permissions are speed bumps; hooks are gates, and a gate is proven only through its exact wiring
+(`reference/harness-measurement.md`). Noisy commands: `bash ${CLAUDE_PLUGIN_ROOT}/scripts/quiet.sh <cmd>`.
 
 ## What you write freely vs what needs a "yes"
 
 - **Freely (and you say so briefly):** `MEMORY.md` entries, the session handoff.
-- **Ask first:** `.claude/rules/*.md` (always-loaded — every line costs context in every future
+- **Ask first:** `.claude/rules/*.md` (always loaded — every line costs context in every future
   session), `knowledge/concepts/*.md`, and any promotion. Repetition on 3 dates makes a
-  CANDIDATE, not a rule.
+  candidate, not a rule.
 
 ## During the session
 
-Observations happen in conversation; the ones worth keeping become one dated line in the hot
-cache — say "saved" and move on. When context runs long, save state before it is compacted: a
-manual `/compact` is blocked until `MEMORY.md` is fresh and inside its caps; an automatic one is
-never blocked (that would fail the user's request), and the next context opens with a loud
-"save memory now" if it ran over unsaved state.
+An observation worth keeping becomes one dated line in the hot cache — say "saved" and move on.
+Keep `MEMORY.md` current as you go rather than at the end.
 
 Reporting to the user: lead with the outcome in one plain sentence, then what you need from them.
 Your working labels (ids, branch and file names, rule numbers) are yours — drop them or say in

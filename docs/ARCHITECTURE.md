@@ -211,9 +211,10 @@ grow the same way unnoticed.
 
 ### context/identity.md (in the plugin) — the working agreement
 **Is:** how the agent works with memory here — the two invariants, the layer map, the caps, what
-needs a "yes", and (since 6.1.1) the one place that names the operators and the `reference/`
-directory, so depth that costs nothing until opened can actually be found. Injected at session
-start and after compaction; versioned with the plugin.
+needs a "yes", and the one place that names the `reference/` directory, so depth that costs nothing
+until opened can actually be found. The operators are not listed there: the skill listing already
+carries each one's name and description (8.3.0). Injected at session start and after compaction;
+versioned with the plugin.
 **Is not:** your project's `CLAUDE.md`. That one is yours: stack, conventions, domain. The kit
 never writes to it.
 
