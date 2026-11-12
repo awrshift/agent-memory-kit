@@ -106,7 +106,7 @@ All are `/memory-kit:<name>` and also trigger from plain words; until a skill ru
 | Skill | What it does |
 |---|---|
 | `setup` | Adopts the kit here, settles coexistence with Claude Code's auto memory, offers permission rails, the orchestration rule and the role templates — each on a yes. `setup rails` re-runs only the rails; `setup adopt` sorts the kit's practices for this repository |
-| `close-session` | End of session: capture, look for a pattern on 3+ dates, promote on a yes, write the handoff. Says how a project adapts it, begins below the compaction point, merges memory lines at write time |
+| `close-session` | End of session: capture, look for a pattern on 3+ dates, promote on a yes, write the handoff. Says how a project adapts it, begins while there is room to finish it (no context count), merges memory lines at write time |
 | `memory-audit` | When memory trips a cap: a move plan for your approval, then the moves |
 | `system-audit` | Periodic health check of the whole setup through its lenses; measures which layers fired, proves each guard through its exact wiring |
 | `session-review` | Adversarial review of a session's work by an isolated reviewer that reads the files; a retro's facts come from the session logs by script, at most three changes |

@@ -2,6 +2,43 @@
 
 All notable changes to Claude Memory Kit are documented here. Breaking changes marked **BREAKING**.
 
+<a id="v830"></a>
+
+## [8.3.0] — 2026-11-12 — contradictions and session load: instruction text only
+
+Nothing to migrate. No hook code changed; no skill, agent or hook added or removed. Every change is to text the model
+reads, found by a prompt audit of the plugin (the findings live in the adopting project that ran it).
+
+### Changed
+
+- `skills/close-session` — **no context-token thresholds.** The «~350k / ~450k» close lines are gone: the close is
+  begun while there is room to finish it whole, a session does not count its context, and a project's own rule on
+  session length wins (the platform's guidance is to avoid surfacing explicit context-budget counts). The same class
+  next door: `reference/adoption.md` (the close-session row), `reference/harness-measurement.md` and
+  `reference/window-cycle.md` (the 150k / 250k sizes) and `templates/workspace/WINDOW-BRIEF-TEMPLATE.md` no longer ask a
+  session or window to count or report its context — a task is cut into steps that each end in a commit.
+- `context/identity.md` (injected at every start and after compaction) — **6,717 → 5,098 bytes.** Dropped: the install
+  note, the operator list (the skill listing already carries each skill's name and description), the auto-compaction
+  details the hooks print themselves, the spec-field detail `SPEC-TEMPLATE.md` carries, emphasis with no reason. Kept:
+  the two invariants, the layer table, the caps, the `reference/` pointers, what needs a «yes». Measured on one adopting
+  repository with `session-start.py --part 1..6`: startup / clear / fork 31,765 → 30,139 characters in 5 → 4 parts;
+  compact 18,723 → 17,097 in 3 → 2 parts; resume unchanged (1,610). Every part stays under the 10,000-character cap.
+- `skills/tour` — the operator list names every folder in `skills/` (10, not 5 + 3); rules load every session or by
+  their `paths:` glob, not «by keyword»; the hooks are «the hooks in `hooks/hooks.json`», not a hand count of six.
+- `skills/second-opinion` — the «skip when a user-level review board exists» condition moved into the `description`,
+  where routing reads it.
+- `skills/setup` — the v5 history narratives are gone (each line's live reason kept); every harness-behaviour claim
+  carries the date it was last verified, taken from `git log -L` of its line.
+- `skills/session-review` and `skills/system-audit` — the brief and the collector's output go to a per-session path
+  (the session scratchpad, else `mktemp`), not a fixed `/tmp` name that parallel sessions overwrite.
+- `agents/idea-validator` — «look harder» when every concern is addressed is replaced by: a concern the input already
+  addresses is not a finding; say so when none remain.
+
+### Tests
+
+- `hooks/tests/test_session_start_parts.py` — the read-only-part counter test now writes 120 stale refs (was 80) so the
+  stats block still lands in part 2 after the smaller identity (measured passing window 94-153); no assertion changed.
+
 <a id="v820"></a>
 
 ## [8.2.0] — 2026-11-11 — the method for delegated and parallel work, as files and templates; a readme for developers

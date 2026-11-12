@@ -75,7 +75,7 @@ nothing.
 
 | Skill | For |
 |---|---|
-| `close-session` | the end-of-session ritual: capture → audit for 3+-date repetition → promote on a yes → handoff; a project's own close list is opened from its steps, never instead of them; the close begins below the compaction point; a memory line is merged into its topic at write time, never stacked |
+| `close-session` | the end-of-session ritual: capture → audit for 3+-date repetition → promote on a yes → handoff; a project's own close list is opened from its steps, never instead of them; the close begins while there is room to finish it, with no context count; a memory line is merged into its topic at write time, never stacked |
 | `memory-audit` | cap-trip surgery on the hot cache, by an approved move plan |
 | `system-audit` | the periodic sweep of the whole system through its lenses (`skills/system-audit/references/lenses.md`), every finding evidence-backed — including the transcript profiler that answers "did this layer ever fire" and `gates.py`, which proves every PreToolUse hook through its exact wiring |
 | `setup` · `tour` | adopt the kit here (`setup rails`: only the permission rails, on an adopted repo; `setup adopt` sorts the kit's practices for this repository) · walk through it on your own files |
