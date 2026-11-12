@@ -20,7 +20,7 @@ Done = <the gate>; report = a committed file at <path>; message to main ≤ 5 li
 
 The rules behind the lines live in `reference/window-cycle.md`: one task per window, the second named in the first
 brief (§1, §4) · files carry the work, messages point (§2) · each premise with its source, checked first (§2, §3) ·
-the coverage map before the briefs (§3) · size, stop points and the counter, never an estimate (§4) · paid runs:
+the coverage map before the briefs (§3) · steps cut by work, each ending in a commit; stop points (§4) · paid runs:
 `reference/spec-depth.md` §4. What the brief adds:
 
 1. Paid: nothing is spent before main's yes on the spec's paid line; the run script reads the cap from the spec and

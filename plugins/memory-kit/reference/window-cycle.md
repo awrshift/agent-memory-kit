@@ -35,13 +35,13 @@ several WINDOWS (interactive sessions that build and report). Copy what fits; th
 ## 2. Files carry the work, messages point
 
 The spec is a file in `projects/<name>/plans/`, the evidence beside it, the report a committed file in the spec's
-report format. The message to main is at most five lines: the verdict, the report's path and commit, the window's
-context number, what main must decide. A window is cleared at the close, so nothing lives only in a message — and
+report format. The message to main is at most five lines: the verdict, the report's path and commit, what main
+must decide. A window is cleared at the close, so nothing lives only in a message — and
 whatever main reads is paid from main's context; main reads a report's sections when it needs them, not whole.
 Why: one project's window reports by message ran 2–8k characters; main's own whole-file reads were 40 % of its
 context, window messages 5 % (measured in one project, 2026-11: main's session log).
 
-A window reports at the estimate after reading the code, at each stop point the brief names (then waits), before any
+A window reports after reading the code (what it found that changes the plan), at each stop point the brief names (then waits), before any
 paid run, when blocked, and when finished. A premise main gives a window is checked by the window before it acts on it
 (`orchestrator-fact-check.md`, «A statement carries its check») (one project's working practice; no count).
 

@@ -36,10 +36,11 @@ An unverified observation is labelled `hypothesis` and never counted in the verd
 # repo and date, is overwritten by a parallel session, and the first read is then of another run.
 FACTS=$(mktemp -t "system-audit-facts-$(basename "$PWD").XXXXXX")
 bash "${CLAUDE_PLUGIN_ROOT}/skills/system-audit/scripts/collect.sh" "$PWD" > "$FACTS"
+echo "facts: $FACTS"; head -3 "$FACTS"
 ```
 
-Check the first three lines of the output: the `repo:` line must name the repo you are auditing.
-If it does not, another session wrote the file — re-run the collector rather than reason over it.
+Check the first three lines: the `repo:` line must name the repo you are auditing. If it does not, the collector ran
+with the wrong argument or working directory — re-run it rather than reason over the file.
 
 (If this skill lives somewhere else on your machine, run `scripts/collect.sh` from this skill's
 own directory — it's read-only and never writes into the audited repo.)
