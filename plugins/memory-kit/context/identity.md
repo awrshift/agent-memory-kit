@@ -37,11 +37,13 @@ mapping wins.
 caps because line count alone misleads — content densifies into ever-longer lines while `wc -l`
 stays flat. A tripped cap means run `/memory-kit:memory-audit` before other work.
 
-- **The header is the current state**, 2-3 sentences, replaced at every close — never a stack of
-  "previous session" paragraphs. History belongs in handoffs.
+- **The header is the current state**, at most 3 lines, replaced at every close — never a stack of
+  "previous session" paragraphs; session detail belongs in the handoff. A project may make it one
+  pointer line to the newest handoff — its session-close document wins on form.
 - **Overflow leaves by promotion**: a pattern seen on 3+ distinct dates becomes a
   `knowledge/concepts/` article (facts + rationale) or a `.claude/rules/` file (a mechanical
-  always/never, only once it is stable). Promoted entries are pruned from the cache.
+  always/never, on a family's 3rd counted occurrence or a user's correction). Promoted entries are
+  pruned from the cache.
 - **One home per fact.** When a fact changes, grep its restatements and fix them in the same pass —
   a stale copy that still looks current misleads the next session.
 

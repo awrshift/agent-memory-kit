@@ -62,7 +62,7 @@ documented at `code.claude.com/docs`.
 ║  templates/workspace/…   — WINDOW-BRIEF, ACCEPTANCE (with    ║
 ║                            SPEC and the rest), copied on use ║
 ╠══════════════════════════════════════════════════════════════╣
-║  HANDOFF HISTORY (grep-on-demand, not auto-loaded wholesale) ║
+║  HANDOFFS (grep-on-demand, not auto-loaded wholesale)        ║
 ║  ──────────────────────────────────────────────────────────  ║
 ║  context/handoffs/<topic>-YYYY-MM-DD.md                      ║
 ║      — one immutable note per closed session; only the       ║
@@ -134,8 +134,8 @@ The integrator may answer "build anyway, assume X". Then, and only then, the exe
 assumption, who authorised it, the code area it governs — and builds against that. It is the
 single spec file an executor may create, and it never edits an existing one. An `assumed` spec
 is a **debt**: it is owed ratification, `code-sync` lists it every run and the session-start
-stats count it until the integrator either folds the decision into the real spec (and marks the
-assumed one `superseded`) or changes the code.
+stats count it until the integrator either folds the decision into the real spec (and deletes the
+assumed one, its live references repointed) or changes the code.
 
 ### The workflow tier — one rigor dial per project
 
@@ -219,7 +219,8 @@ versioned with the plugin.
 never writes to it.
 
 ### .claude/memory/MEMORY.md — hot cache
-**Is:** a current-state header (2-3 sentences, replaced every close) followed by date-tagged
+**Is:** a current-state header (at most 3 lines, replaced every close; a project may make it one
+pointer line to the newest handoff) followed by date-tagged
 one-liners captured during sessions — observations worth keeping, each with the date it was
 seen, so that repetition on 3+ distinct dates becomes visible. Short strings. Cross-session
 accumulator. Held under three caps (below).
@@ -228,7 +229,8 @@ accumulator. Held under three caps (below).
 ### context/handoffs/*.md — session handoffs
 **Is:** one short note per closed session, `<topic>-YYYY-MM-DD.md`, written at `/close-session`
 from `HANDOFF-TEMPLATE.md`. The SessionStart hook injects the NEWEST one, so tomorrow's session
-opens already knowing where you left off. Older handoffs stay as searchable history.
+opens already knowing where you left off. An older handoff nothing live cites is deleted — git keeps
+the past. A project with its own `HANDOFF-TEMPLATE.md` fills its own sections.
 **Is not:** a rolling file that gets overwritten (that was the v4 NSP — retired, see below). Not
 a chronicle stacked into MEMORY.md's header.
 
@@ -366,7 +368,8 @@ Promotion is agent-driven, on `/close-session`, always on the user's verbal "yes
 
 ```
   observed in         →  MEMORY.md            →  .claude/rules/*.md
-  conversation           (date-tagged line)      (grep-enforceable, stable 6+ months)
+  conversation           (date-tagged line)      (grep-enforceable; a family's 3rd occurrence
+                                                   or a user's correction)
                                                   OR
                                                   knowledge/concepts/*.md
                                                   (deep reference article)
@@ -379,7 +382,7 @@ Promotion is agent-driven, on `/close-session`, always on the user's verbal "yes
    specific and dated: "noticed [date], [date], [date] you said X — codify as a rule or a concept?"
 3. **Promoted on "yes".** The user confirms → the agent writes a `knowledge/concepts/<topic>.md`
    article (facts + rationale) or a `.claude/rules/<name>.md` constraint (mechanical / always-or-never,
-   only for patterns stable 6+ months), and updates `knowledge/index.md`. The now-promoted (or
+   on a family's 3rd counted occurrence or a user's correction), and updates `knowledge/index.md`. The now-promoted (or
    long-absorbed) raw lines are **pruned** from MEMORY.md — that's how it stays under its caps.
 
 Promotion is the **agent-driven audit ritual** — not automatic detection, not manual editing. The
@@ -454,7 +457,8 @@ Step 3 — Refresh: agent REPLACES the MEMORY.md header with fresh current-state
     │
     ▼
 Step 4 — Handoff: agent copies HANDOFF-TEMPLATE.md → context/handoffs/<topic>-YYYY-MM-DD.md
-         and fills its five sections. The next session opens with this note.
+         and fills its sections (a project's own template, else the kit's five).
+         The next session opens with this note.
 ```
 
 Key property: **user never opens a file during the entire ritual.** They talk, agent writes.

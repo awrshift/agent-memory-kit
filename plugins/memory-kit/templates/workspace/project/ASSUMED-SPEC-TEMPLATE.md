@@ -23,6 +23,7 @@ lands differently.
 
 ## Ratify
 
-The integrator deliberates this. Either it fills a real spec and this file is marked
-`superseded`, or the assumption is confirmed and this file flips to `decided`. Until then it
+The integrator deliberates this. Either it fills a real spec and this file is deleted (its live
+references repointed in the same change), or the assumption is confirmed and this file flips to
+`decided`. Until then it
 stays flagged in session-start stats and in `code-sync`.

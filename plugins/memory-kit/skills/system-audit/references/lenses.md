@@ -154,12 +154,12 @@ Candidate classes:
 - **Duplicated** — the same fact/instruction in two layers; keep the enforceable one, point the other at it.
 - **Ceremony without a consumer** — a template section, a field, a report nobody reads or acts on.
 - **Premature generality** — abstraction, config, or a pipeline built for a scale that hasn't arrived. The tell: one caller, ever.
-- **Zombie state** — closed experiments, dead branches/worktrees, superseded docs still in the reading path, archived-but-not-labelled files.
+- **Zombie state** — closed experiments, dead branches/worktrees, superseded docs still in the repository, archived or «historical» copies kept for history (git already keeps them).
 - **Instruction overload** — an instruction file so long that its own rules compete for attention. If everything is a rule, nothing is.
   The method for the instruction set itself: `reference/rules-subtraction.md`.
 
-For each: `what · evidence it's dead · what it costs to keep (attention, tokens, drift surface) · what breaks if removed · removal = delete | merge | label as historical`.
+For each: `what · evidence it's dead · what it costs to keep (attention, tokens, drift surface) · what breaks if removed · removal = delete | merge`.
 
 **Quota:** at least 3 candidates, or an explicit, evidence-backed statement that the system is
-lean. Deleting a shared rule/doc layer needs the user's yes; archiving with a label is the safe
-middle path.
+lean. Deleting a shared rule/doc layer needs the user's yes; there is no archive-with-a-label middle
+path — git keeps the past, and a deletion is undone with `git revert`.

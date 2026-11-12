@@ -1,6 +1,6 @@
 ---
 created: 2026-07-17
-last-reviewed: 2026-11-11
+last-reviewed: 2026-11-12
 ---
 
 # Doc governance — anti-drift
@@ -18,15 +18,14 @@ carry. The rest is opt-in for repositories whose docs actually change status.
 |---|---|
 | `created` | `YYYY-MM-DD` — required |
 | `last-reviewed` | `YYYY-MM-DD` — required; bump it when you re-verify, not when you edit |
-| `status` | `current` · `frozen` · `superseded` · `historical` · `archived` (optional; absent = `current`). The ONE status vocabulary of the kit — `knowledge/concepts/` articles use it too |
+| `status` | `current` · `frozen` (optional; absent = `current`). The ONE status vocabulary of the kit — `knowledge/concepts/` articles use it too. A doc that would be superseded, historical or archived is deleted instead (R3) |
 | `authority` | `ssot` (the one deciding home) · `derived` (a view; sources win) (optional) |
-| `superseded_by` | a pointer (only when superseded) |
 
 ## The rules
 
 - **R1 — one SSOT per fact.** A derived doc POINTS at the value, never re-copies it. A
   derivable number (test count, LOC, an open-PR count) is not restated as a live value at all — say "run the
-  command"; historical mentions carry "(as of <date>)".
+  command"; a dated record (a report, a handoff) states it "(as of <date>)".
   *Applies when more than one document tracks progress or the order of work:* state that code or git can derive (a
   status a script computes, a task's «done» that its commit shows) is not kept by hand at all; what is kept by hand
   is judgement — a decision, a ruling, its why — written at the event (the acceptance of a piece of work), not
@@ -35,12 +34,13 @@ carry. The rest is opt-in for repositories whose docs actually change status.
   a written decision and a date (one project's working practice; no count).
 - **R2 — change a fact → grep for the old value** across all docs and fix/repoint EVERY hit in
   the SAME change. A stale copy that looks current is the #1 doc failure.
-- **R3 — label, don't bury.** Superseded/historical docs keep their `status:` plus a one-line
-  "replaced by" note. Archiving = `git mv` to an `archive/` dir + one manifest line
-  (what/why/where-preserved). Out of the reading path, still greppable — never lost.
-  *Applies when you archive or reorganise more than a handful of files:* the move rewrites every live reference in
-  the SAME change (a script that moves and rewrites, with a broken-reference count against a baseline), and its gate
-  runs every consumer a link check cannot see — code that builds the path at run time, and builders that parse the
+- **R3 — current state only; the past lives in git.** A doc holds what work needs now: a stale line is deleted the
+  moment it is seen (no «was X», no `## History`, no «replaced by» stub), and a whole doc no work needs is deleted with
+  its live references fixed in the SAME change — `git log -S` finds the past. A dated record (a report, an acceptance,
+  a handoff) is not edited after the fact; it is deleted when nothing live cites it.
+  *Applies when you delete, move or reorganise more than a handful of files:* the change rewrites every live
+  reference in the SAME change (a script that moves or deletes and rewrites, with a broken-reference count against a
+  baseline), and its gate runs every consumer a link check cannot see — code that builds the path at run time, and builders that parse the
   moved or rewritten file's structure (a page generated from a status file's headings). A file a script builds a path
   to stays put until that script's data is next revised (measured in one project, 2026-11: two batches moved 753 and
   10,739 files and rewrote 101 and 430 live files with 0 new broken references; the consumer gate was added after a

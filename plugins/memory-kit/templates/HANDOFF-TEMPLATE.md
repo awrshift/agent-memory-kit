@@ -3,7 +3,8 @@
 > A handoff is the note this session leaves for the next one. The agent writes it at session
 > close (via `/memory-kit:close-session`); the SessionStart hook injects the NEWEST handoff automatically —
 > so tomorrow's session opens already knowing where you left off. One file per session close,
-> named `<topic>-<YYYY-MM-DD>.md`. Old handoffs stay as searchable history.
+> named `<topic>-<YYYY-MM-DD>.md`. Not kept for history: an old handoff nothing live cites is
+> deleted — git keeps the past.
 
 ## 1. What was done
 <what shipped / changed / got decided this session — short bullets, date-tagged facts>

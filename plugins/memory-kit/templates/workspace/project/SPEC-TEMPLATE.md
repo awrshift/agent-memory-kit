@@ -1,7 +1,7 @@
 # <Slug> — spec
 
-**Created:** YYYY-MM-DD · **Status:** draft | decided | building | done | superseded | assumed | stale
-**Authority:** ssot for this slice · **Superseded by:** `<path>` (only when superseded)
+**Created:** YYYY-MM-DD · **Status:** draft | decided | building | done | assumed | stale
+**Authority:** ssot for this slice (a spec replaced by another is deleted, its live references repointed)
 **Depth pass:** YYYY-MM-DD · <what the pass changed, or «nothing changed because …»>
 **Practice:** <dated research file with sources> | not needed because <…>
 **Review:** <high | medium | low> · <why> · <who>

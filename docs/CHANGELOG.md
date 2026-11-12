@@ -2,6 +2,39 @@
 
 All notable changes to Claude Memory Kit are documented here. Breaking changes marked **BREAKING**.
 
+<a id="v840"></a>
+
+## [8.4.0] — 2026-11-12 — the plugin stops contradicting the project that adopts it
+
+Nothing to migrate. No hook code changed. Text the model reads, aligned with rules an adopting project already holds
+(an audit there found seven conflicts; the maintainer's rule: where the plugin contradicts the project, the plugin
+gives way, and nothing is kept for history — the past is in git). A project with no rule of its own gets the defaults
+below.
+
+### Changed
+
+- **MEMORY header form** — `context/identity.md`, `skills/close-session` step 3, `templates/MEMORY-TEMPLATE.md`,
+  `skills/memory-audit` step 5: the header is the current state in at most 3 lines (was «2-3 sentences»), replaced every
+  close; a project may make it one pointer line to the newest handoff, and the project's session-close document wins on
+  form.
+- **Handoff shape** — `skills/close-session` step 4: a project's own `context/handoffs/HANDOFF-TEMPLATE.md` is filled
+  with its own sections; the kit's five sections only when the project has none. The «what NOT to do» line names the
+  section by its heading («Opening…»), the one the SessionStart hook keeps whole.
+- **Promotion bar** — `skills/close-session` step 2, `context/identity.md`: a `.claude/rules/` file is promoted on a
+  family's 3rd counted occurrence (`reference/review-loop.md` §2) or a user's correction — «only for patterns stable 6+
+  months» is gone.
+- **No history kept** — `reference/doc-governance.md` R3 is now «current state only; the past lives in git»: a stale
+  line is deleted, a doc no work needs is deleted with its live references fixed in the same change, a dated record is
+  deleted when nothing live cites it; status vocabulary `current` · `frozen` (`superseded` · `historical` · `archived`
+  and `superseded_by` removed). Same rule in: `skills/memory-audit` (a merged line's predecessor is deleted, no
+  `## History`), `templates/workspace/knowledge-index.md` (vocabulary, no `## History`), `skills/code-sync` (still never
+  deletes a document itself — it names one to delete under Heads up; an assumed spec replaced by a real one is deleted,
+  not marked `superseded`; an older kit's `superseded` spec is counted and named), `SPEC-TEMPLATE.md` and
+  `ASSUMED-SPEC-TEMPLATE.md` (no `superseded` status), the project `README-TEMPLATE.md` (no `archived` status),
+  `templates/HANDOFF-TEMPLATE.md` and `skills/tour` (old handoffs are not kept for history), `skills/system-audit`
+  (removal = delete | merge; no «label as historical» middle path; `usage.py` proposes deletions, not archival),
+  `reference/adoption.md` (the R3 row). Repo docs: `docs/ARCHITECTURE.md`, `README.md`.
+
 <a id="v831"></a>
 
 ## [8.3.1] — 2026-11-12 — protect-tests: a branch's own tests are its own

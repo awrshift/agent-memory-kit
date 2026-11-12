@@ -26,8 +26,8 @@ List any `.claude/rules/*.md` files. If folder is empty (only `_example.md.disab
 ### Stop 5 — Knowledge concepts
 List `knowledge/concepts/*.md`. Say: "Deep memory with facts. 'What's our typography scale', 'what we know about SEO for AI'. Reference articles. Empty now — I write them during `/memory-kit:close-session` when a pattern has repeated on three-plus dates and you say yes."
 
-### Stop 6 — Handoff history
-Show `context/handoffs/`. Say: "One note per closed session — my session diary. You never open them; just ask 'what did we do last Tuesday?' and I read them back."
+### Stop 6 — Handoffs
+Show `context/handoffs/`. Say: "One note per closed session; the newest one opens the next session. An old note nothing points at is deleted — git keeps the past, so 'what did we do last Tuesday?' still has an answer."
 
 ### Stop 7 — Projects
 List `projects/*/` and open one `README.md`. Say: "Each client or product gets a folder, and its README is the map — where this project's tasks, specs, research, decisions and QA live. Memory is shared across all of them; paperwork is per project. Say 'we're working on <name>' and I switch to that one."

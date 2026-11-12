@@ -1,8 +1,9 @@
 # Memory — Hot cache
 
 **Current state:** fresh install — no work yet. (Agent: REPLACE these header lines at every
-`/memory-kit:close-session` with 2-3 sentences of where things stand — current state, never a
-chronicle; session detail lives in `context/handoffs/`.)
+`/memory-kit:close-session` with at most 3 lines of where things stand — current state, never a
+chronicle; session detail lives in `context/handoffs/`. A project whose session-close document
+asks for one pointer line to the newest handoff gets that line instead.)
 
 **Agent writes this file.** If you want to add a note, say it in conversation — the agent
 captures and writes. Injected in full at every session start.

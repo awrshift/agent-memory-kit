@@ -41,7 +41,7 @@ One table for the whole audit. `severity`: 🔴 broken · 🟠 drifting · 🟡 
 
 | what | evidence it's dead | cost to keep | what breaks if removed | action |
 |---|---|---|---|---|
-| … | not seen in N sessions | attention/tokens/drift | nothing | delete / merge / label historical |
+| … | not seen in N sessions | attention/tokens/drift | nothing | delete / merge |
 
 ## 5. Not recommended (deliberately)
 

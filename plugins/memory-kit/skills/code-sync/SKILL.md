@@ -43,11 +43,12 @@ line, a map row, `Last verified:`, and a BACKLOG Done line. Everything else keep
 Read the header of every `plans/*.md` (`**Created:** YYYY-MM-DD · **Status:** …`; one grep over
 the folder is enough). A plain `Status: …` line counts too, and a spec with no `Created:` takes its
 date from a `YYYY-MM-DD-<slug>.md` file name — the SessionStart spec flags read them the same way.
-A spec with no status line at all is counted as `no status` in the table, never guessed. Statuses are `draft · decided · building · done · superseded · assumed ·
+A spec with no status line at all is counted as `no status` in the table, never guessed. Statuses are `draft · decided · building · done · assumed ·
 stale`. Build the working table: spec · status · created · age in days.
 
-`building` goes to step 2, `assumed` to step 3. `draft`, `decided`, `done`, `superseded` and
-`stale` are counted and left untouched.
+`building` goes to step 2, `assumed` to step 3. `draft`, `decided`, `done` and `stale` are counted
+and left untouched. A `superseded` spec (an older kit's status) is counted and named under Heads up
+as one to delete — `reference/doc-governance.md` R3.
 
 ## Step 2 — every `building` spec against the code
 
@@ -85,8 +86,8 @@ its header. Print the table under the heading **Owed ratification** and recommen
 first (the oldest, or the one whose Code area the current work touches).
 
 **Never flip or edit an `assumed` spec yourself.** The kit has no architect skill: the main
-session deliberates, then either writes the real spec and marks the assumed one `superseded`, or
-confirms the assumption and flips it to `decided`. Your output is that agenda, nothing more.
+session deliberates, then either writes the real spec and deletes the assumed one (its live
+references repointed in the same change), or confirms the assumption and flips it to `decided`. Your output is that agenda, nothing more.
 
 ## Step 4 — BACKLOG.md, only what you can prove
 
@@ -118,7 +119,7 @@ Four lines, the kit's shape:
 - **Headline:** `N specs reconciled: a done · b stale · c still building · d assumed owed`.
 - **Next:** the ONE command or decision that moves this forward — the gate that would close the
   nearest `building` spec, or the assumed spec to ratify first.
-- **Heads up:** only if a spec went `stale` — one line each, spec + reason.
+- **Heads up:** only if a spec went `stale` or one is left to delete — one line each, spec + reason.
 - **Pointer:** the files you edited, as paths.
 
 ## Dry run
@@ -138,7 +139,8 @@ table (file · line · from → to) instead of applying it. Nothing is written, 
 - **Never touch** `.claude/memory/MEMORY.md`, `context/handoffs/`, `knowledge/` or
   `.claude/rules/` — promotion lives in `/memory-kit:close-session`, on the user's yes.
 - **Never create a file.** This skill creates none: no spec, no run record, no report file.
-- **Never delete a document.** `superseded` and `stale` are labels, not removals
-  (`reference/doc-governance.md`, R3).
+- **Never delete a document yourself.** A spec no work needs is deleted by the main session, with
+  its live references fixed in the same change — the past lives in git (`reference/doc-governance.md`,
+  R3). You name it under Heads up; `stale` is a status you set, not a removal.
 - **Don't touch** a `draft`, `decided`, `done` or `superseded` spec at all — they are not yours
   to reconcile.

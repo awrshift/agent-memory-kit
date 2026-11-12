@@ -157,7 +157,7 @@ the roster and the rule «judges → the stronger model, collects or counts → 
 | `reference/measurement-lessons.md` | Before a bar on a count or a model's judgment deciding a change (counts from one project) |
 | `reference/reporting.md` | Writing a status, a close report or an answer to the user's comment (one project's practice) |
 | `reference/rules-subtraction.md` | Your always-loaded instructions grew one line per incident and need cutting |
-| `reference/doc-governance.md` | Keeping docs true: one home per fact, derived state not kept by hand, archive moves |
+| `reference/doc-governance.md` | Keeping docs true: one home per fact, derived state not kept by hand, stale docs deleted (git keeps the past) |
 | `reference/decisions-log.md` | Recording a product or architecture decision in a lean ledger |
 | `reference/project-extensions.md` | Adding your own rule, skill, hook or agent; what each costs idle; ideas measured and not built |
 | `reference/harness-measurement.md` | Changing settings, hooks or rules: probes before and after; dated harness notes |

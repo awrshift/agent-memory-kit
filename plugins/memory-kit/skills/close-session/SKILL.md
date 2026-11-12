@@ -36,7 +36,8 @@ Read the date-tagged entries in MEMORY.md. Look for repetition: **did this patte
 said X — codify as a rule or a concept article?"
 - User says yes → write `knowledge/concepts/<topic>.md` (facts + rationale; frontmatter per
   `knowledge/index.md` spec) or `.claude/rules/<name>.md` (mechanical always/never constraint;
-  only for patterns stable 6+ months). Update `knowledge/index.md` (one line per concept).
+  a rule is promoted on a family's 3rd counted occurrence — `reference/review-loop.md` §2 — or on
+  a user's correction). Update `knowledge/index.md` (one line per concept).
 - Promoted or long-absorbed entries get PRUNED from MEMORY.md — that's how it stays under its
   caps (180 lines / 32 KB / 3000 chars per line).
 - Writing a fact into a second place? `reference/doc-governance.md` — one SSOT per fact, and when
@@ -46,15 +47,18 @@ said X — codify as a rule or a concept article?"
   it belongs in that project's folder, per the map in its `README.md`.
 
 ## Step 3 — Refresh the MEMORY.md header
-The header (everything above the first `---`) is «current state of work», 2-3 sentences,
+The header (everything above the first `---`) is «current state of work», at most 3 lines,
 **REPLACED** every close — never a chronicle of past sessions. Per-session detail lives in the
-handoff, not stacked in the header.
+handoff, not stacked in the header. A project may make the header one pointer line to the newest
+handoff; where the project's session-close document sets the form, it wins.
 
 ## Step 4 — Write the handoff
-Copy `context/handoffs/HANDOFF-TEMPLATE.md` → `context/handoffs/<topic>-<YYYY-MM-DD>.md` and
-fill its five sections (what was done · where things stand · memory updates · next steps ·
-opening note). The SessionStart hook injects the newest handoff next time — this file IS the
-"remember where we left off" mechanism.
+When the project has its own `context/handoffs/HANDOFF-TEMPLATE.md`, copy it →
+`context/handoffs/<topic>-<YYYY-MM-DD>.md` and fill that template's sections, whatever they are
+named. Only when there is none, copy the plugin's `templates/HANDOFF-TEMPLATE.md` and fill its five
+sections (what was done · where things stand · memory updates · next steps · opening note). The
+SessionStart hook injects the newest handoff next time — this file IS the "remember where we left
+off" mechanism.
 
 ## Also check (30 seconds)
 - **Experiment hygiene:** any `experiments/*-YYYYMMDD/` older than 30 days → ask: still active
@@ -76,5 +80,6 @@ opening note). The SessionStart hook injects the newest handoff next time — th
 - Don't stack "Prior session" paragraphs in the MEMORY header — replace it.
 - Don't group today's lines under a session heading — see Step 1.
 - Don't write a handoff longer than ~1 screen (about 4,000 characters). It's a note, not a transcript.
-  Session start injects 6,000 characters of it; the opening-note section always arrives whole, the rest
-  is cut — so the next session's first move belongs in that section, not in step 4's list.
+  Session start injects 6,000 characters of it; the section whose heading starts with «Opening» always
+  arrives whole, the rest is cut — so the next session's first move belongs in that section, not in a
+  next-steps list.

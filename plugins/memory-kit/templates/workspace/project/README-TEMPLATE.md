@@ -1,6 +1,6 @@
 # <Project name>
 
-**Status:** active | paused | shipped | archived
+**Status:** active | paused | shipped
 **Started:** YYYY-MM-DD · **Last verified:** YYYY-MM-DD
 **Workflow tier:** prototype | alpha | beta | ga
 
@@ -11,8 +11,8 @@
 
 The tier is this project's default; a task in `BACKLOG.md` overrides it with its own `**Tier:**`.
 
-One paragraph: what this project is, for whom, and what "done" looks like. No history —
-history lives in the handoffs.
+One paragraph: what this project is, for whom, and what "done" looks like. No history — the
+past lives in git; a project no work needs any more is deleted, not archived.
 
 ## Where this project's documents live
 

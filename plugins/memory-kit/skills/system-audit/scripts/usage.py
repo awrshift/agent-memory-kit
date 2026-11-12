@@ -5,10 +5,11 @@ Parses Claude Code session transcripts in ~/.claude/projects/<encoded>/**/*.json
 and writes knowledge/usage-frequency.md — a frequency profile of which files,
 skills, and tools you actually use.
 
-The point: it turns "what can I archive / what's dead weight?" from a guess into
+The point: it turns "what can I delete / what's dead weight?" from a guess into
 data. Files read a lot recently = hot (load-bearing). Files with zero reads in
-30 days = cold candidates (safe to archive or prune). The agent surfaces the cold
-list at /close-session and proposes archival — you say yes, the agent writes.
+30 days = cold candidates (to delete or merge; git keeps the past). The agent
+surfaces the cold list at /close-session and proposes deletions — you say yes,
+the agent writes.
 
 Filters mechanical reads (auto-loaded paths like MEMORY.md / CLAUDE.md, which the
 session-start hook loads for you) and collapses bursts (multi-edit on a single
@@ -220,7 +221,7 @@ def render_report(stats: dict, now: datetime, total_events: int, after_burst: in
         f"**Filter:** mechanical-paths blacklist + burst (> {BURST_THRESHOLD} same key in {BURST_WINDOW_MINUTES} min → 1 use)",
         "",
         "> ⚠ **Frequency ≠ value.** A cold concept may be foundational, just rarely re-read.",
-        "> Use the cold list as ONE input to a `/close-session` archival proposal, not an auto-delete trigger.",
+        "> Use the cold list as ONE input to a `/close-session` deletion proposal, not an auto-delete trigger.",
         "",
         "## Tool surface (all-time)",
         "",
