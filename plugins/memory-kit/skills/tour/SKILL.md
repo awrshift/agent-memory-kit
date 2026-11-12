@@ -21,7 +21,7 @@ Open the newest `context/handoffs/*.md` (or the template if none yet) and, if mu
 Open `.claude/memory/MEMORY.md`. Say: "This is my hot cache. Date-tagged one-liners of patterns from recent sessions; the header on top is the current state of work, replaced at every close. A hook watches three size caps so this file physically can't silently bloat."
 
 ### Stop 4 — Rules (.claude/rules/)
-List any `.claude/rules/*.md` files. If folder is empty (only `_example.md.disabled`), say: "This is where hard project rules live. 'Don't use X', 'always check Y'. They auto-load by keyword. Empty for now — they'll appear when you start dictating rules and I propose them on `/memory-kit:close-session`."
+List any `.claude/rules/*.md` files. If folder is empty (only `_example.md.disabled`), say: "This is where hard project rules live. 'Don't use X', 'always check Y'. A rule loads every session, or — when it carries a `paths:` glob — only once a matching file is read. Empty for now — they'll appear when you start dictating rules and I propose them on `/memory-kit:close-session`."
 
 ### Stop 5 — Knowledge concepts
 List `knowledge/concepts/*.md`. Say: "Deep memory with facts. 'What's our typography scale', 'what we know about SEO for AI'. Reference articles. Empty now — I write them during `/memory-kit:close-session` when a pattern has repeated on three-plus dates and you say yes."
@@ -33,10 +33,10 @@ Show `context/handoffs/`. Say: "One note per closed session — my session diary
 List `projects/*/` and open one `README.md`. Say: "Each client or product gets a folder, and its README is the map — where this project's tasks, specs, research, decisions and QA live. Memory is shared across all of them; paperwork is per project. Say 'we're working on <name>' and I switch to that one."
 
 ### Stop 8 — Hooks
-Don't deep-dive — the hooks ship inside the plugin, there is nothing in this repo to maintain. Say: "Six hooks run silently: one injects your memory and the working rules at every session start, one blocks compaction until state is saved, one asks before an existing test gets edited, one stops destructive git commands, one keeps secret files like `.env` out of the conversation, one logs the close."
+Don't deep-dive — the hooks ship inside the plugin, there is nothing in this repo to maintain. Say: "The hooks in the plugin's `hooks/hooks.json` run silently: one injects your memory and the working rules at every session start, one holds a manual compaction until state is saved, one asks before an existing test gets edited, guards stop destructive git commands and keep secret files like `.env` out of the conversation, and one logs the close."
 
 ### Stop 9 — Operators
-List what this plugin adds: `/memory-kit:close-session`, `/memory-kit:tour`, `/memory-kit:setup`, `/memory-kit:memory-audit`, `/memory-kit:system-audit`. Say: "`/memory-kit:close-session` is the one that matters — the end-of-session ritual where I audit what happened, propose what's worth remembering forever, and leave the handoff note for next time. `memory-audit` is the surgery when the cache outgrows its caps; `system-audit` is the periodic look at whether this whole system still earns its place. There are three more for when you build with subagents — `session-review`, `second-opinion`, `qa-sweep` — and you don't need them to start."
+List what this plugin adds — one operator per folder in the plugin's `skills/`: `/memory-kit:close-session`, `/memory-kit:tour`, `/memory-kit:setup`, `/memory-kit:memory-audit`, `/memory-kit:system-audit`, `/memory-kit:code-sync`, `/memory-kit:document`, `/memory-kit:session-review`, `/memory-kit:second-opinion`, `/memory-kit:qa-sweep`. Say: "`/memory-kit:close-session` is the one that matters — the end-of-session ritual where I audit what happened, propose what's worth remembering forever, and leave the handoff note for next time. `memory-audit` is the surgery when the cache outgrows its caps; `system-audit` is the periodic look at whether this whole system still earns its place. `code-sync` reconciles specs with the code after a merge and `document` writes a PR body or changelog from the diff; `session-review`, `second-opinion` and `qa-sweep` are for when you build with subagents — you don't need any of these to start."
 
 ## Closing
 
