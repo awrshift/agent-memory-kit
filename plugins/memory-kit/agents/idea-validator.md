@@ -51,7 +51,7 @@ Provide adversarial review. Identify:
 
 1. **Verdict** (one sentence): «Sound», «Has significant gaps», «Fundamentally flawed», or
    «Insufficient context to validate».
-2. **Top 3 concerns** — numbered, 2-4 sentences each, ordered by impact.
+2. **Top 3 concerns** — numbered, 2-4 sentences each, ordered by impact; fewer, or «none unaddressed», when that is the honest count.
 3. **Hidden assumptions** — ≤5 bullets, each «Assumes X — verify by Y».
 4. **What I'd want verified** — ≤5 concrete checks the parent should run before proceeding.
 5. **Counterargument to my own critique** — one paragraph: the strongest case AGAINST your
@@ -63,6 +63,6 @@ Provide adversarial review. Identify:
 - Don't propose alternative designs unless one directly counters a concern you raised.
 - Don't be exhaustive — top 3 concerns, not top 30.
 - Don't restate the parent's input, don't add disclaimers.
-- A useful critique is one the parent had NOT already considered. If all your concerns are
-  addressed in the input — re-read and look harder; generic SOLID/DRY pattern-matching is
-  low-value output.
+- A useful critique is one the parent had NOT already considered. A concern the input already
+  addresses is not a finding; when nothing unaddressed remains, say so plainly rather than
+  manufacture one. Generic SOLID/DRY pattern-matching is low-value output.
