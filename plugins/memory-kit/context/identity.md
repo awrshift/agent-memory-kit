@@ -26,7 +26,7 @@ every extra layer is one more place a fact goes stale.
 **The work's own documents are not memory.** They live per project in `projects/<name>/` — one
 folder per client or product, a single-product repo has one. Its `README.md` is the map of where
 that project's documents live (read it before writing one) and names its workflow tier; specs go to
-`plans/YYYY-MM-DD-<slug>.md`, written from the kit's `SPEC-TEMPLATE.md`. A spec, a backlog or a QA
+`plans/YYYY-MM-DD-<slug>.md`, written from `${CLAUDE_PLUGIN_ROOT}/templates/workspace/project/SPEC-TEMPLATE.md`. A spec, a backlog or a QA
 protocol never goes into `MEMORY.md`; a dated cross-session pattern never goes into a project
 folder. If a repo already keeps its documents elsewhere, its project README says so and that
 mapping wins.
@@ -69,7 +69,7 @@ Permissions are speed bumps; hooks are gates, and a gate is proven only through 
 ## During the session
 
 An observation worth keeping becomes one dated line in the hot cache — say "saved" and move on.
-Keep `MEMORY.md` current as you go rather than at the end.
+Keep `MEMORY.md` current as you go, not only at the close.
 
 Reporting to the user: lead with the outcome in one plain sentence, then what you need from them.
 Your working labels (ids, branch and file names, rule numbers) are yours — drop them or say in

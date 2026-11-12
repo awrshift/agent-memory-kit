@@ -31,10 +31,11 @@ An unverified observation is labelled `hypothesis` and never counted in the verd
 
 ```bash
 # from the repo being audited; pass a path as $1 to audit a different repo.
-# The output path carries the repo name and date: a fixed /tmp name gets overwritten by a
-# parallel session auditing another repo, and the first read is then of the wrong repo.
-bash "${CLAUDE_PLUGIN_ROOT}/skills/system-audit/scripts/collect.sh" "$PWD" \
-  > "/tmp/system-audit-facts-$(basename "$PWD")-$(date +%F).md"
+# The output goes to a path of THIS session — the session's scratchpad directory when one is listed
+# (use it in place of the mktemp line), else a fresh mktemp file: a fixed /tmp name, even one carrying the
+# repo and date, is overwritten by a parallel session, and the first read is then of another run.
+FACTS=$(mktemp -t "system-audit-facts-$(basename "$PWD").XXXXXX")
+bash "${CLAUDE_PLUGIN_ROOT}/skills/system-audit/scripts/collect.sh" "$PWD" > "$FACTS"
 ```
 
 Check the first three lines of the output: the `repo:` line must name the repo you are auditing.

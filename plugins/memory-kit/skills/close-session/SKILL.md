@@ -66,8 +66,8 @@ opening note). The SessionStart hook injects the newest handoff next time — th
 - **Specs vs code:** any spec still `building` after a merge, or any `assumed` spec → run
   `/memory-kit:code-sync` (it reconciles statuses from repo evidence; this ritual does not).
 - **Caps:** if MEMORY.md is near any cap, do a deeper prune now, not "next time".
-- **Begun while there is room to do it whole:** start the close early enough that all four steps and the
-  handoff are finished before an automatic compaction would cut into them. This is not a count of the
+- **Begun while there is room to do it whole:** start the close early enough that all four steps — capture, audit,
+  header, handoff — are finished before an automatic compaction would cut into them. This is not a count of the
   session's context — a session does not count or report its context. A project's own rule on session length
   wins over this line.
 
