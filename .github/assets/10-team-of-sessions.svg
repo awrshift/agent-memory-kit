@@ -1,0 +1,120 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 700" width="960" height="700" role="img" aria-labelledby="t d">
+  <title id="t">Multi-Agent Driven Development: you, one main session, three window sessions, files and memory</title>
+  <desc id="d">You talk only to the main session. The main session sends a brief file to each of three window sessions and gets a report file back. Each window calls its own subagents. All work lives in repository files; the memory layer underneath lets every level restart after a cleared context.</desc>
+  <style>
+    .bg { fill: #FAFAF5; }
+    .ink { fill: #1F1D17; }
+    .soft { fill: #5B574A; }
+    .box { fill: #FFFFFF; stroke: #55503E; stroke-width: 1.5; }
+    .main { fill: #EEF8C4; stroke: #55503E; stroke-width: 2; }
+    .you { fill: #FFFFFF; stroke: #1F1D17; stroke-width: 2; }
+    .pill { fill: #F2F0E6; stroke: #8A8573; stroke-width: 1; }
+    .band { fill: #F2F0E6; stroke: #8A8573; stroke-width: 1; }
+    .mem { fill: #CFEF4A; stroke: #55503E; stroke-width: 1.5; }
+    .memink { fill: #1F1D17; }
+    .line { stroke: #55503E; stroke-width: 1.6; fill: none; }
+    .thin { stroke: #8A8573; stroke-width: 1.2; fill: none; stroke-dasharray: 4 4; }
+    .head { fill: #55503E; }
+    text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #16150F; }
+      .ink { fill: #F2F0E6; }
+      .soft { fill: #B9B4A2; }
+      .box { fill: #22211A; stroke: #B9B4A2; }
+      .main { fill: #2E3414; stroke: #CFEF4A; }
+      .you { fill: #22211A; stroke: #F2F0E6; }
+      .pill { fill: #2A2920; stroke: #6E6A5A; }
+      .band { fill: #22211A; stroke: #6E6A5A; }
+      .mem { fill: #CFEF4A; stroke: #CFEF4A; }
+      .memink { fill: #16150F; }
+      .line { stroke: #B9B4A2; }
+      .thin { stroke: #6E6A5A; }
+      .head { fill: #B9B4A2; }
+    }
+  </style>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="head" d="M0,0 L10,5 L0,10 z"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="960" height="700" rx="16"/>
+
+  <text class="ink" x="40" y="46" font-size="26" font-weight="700">Multi-Agent Driven Development</text>
+  <text class="soft" x="40" y="74" font-size="17">You talk to one agent. It runs the team.</text>
+
+  <!-- you -->
+  <rect class="you" x="380" y="98" width="200" height="56" rx="10"/>
+  <text class="ink" x="480" y="122" font-size="16" font-weight="700" text-anchor="middle">You</text>
+  <text class="soft" x="480" y="142" font-size="12" text-anchor="middle">product scope · money above the cap</text>
+
+  <line class="line" x1="480" y1="154" x2="480" y2="194" marker-start="url(#a)" marker-end="url(#a)"/>
+  <text class="soft" x="492" y="179" font-size="12">your only conversation</text>
+
+  <!-- main -->
+  <rect class="main" x="230" y="196" width="500" height="80" rx="12"/>
+  <text class="ink" x="480" y="225" font-size="17" font-weight="700" text-anchor="middle">Main session — the orchestrator</text>
+  <text class="ink" x="480" y="247" font-size="13" text-anchor="middle">plans the round · specs · coverage map · rulings · acceptance</text>
+  <text class="soft" x="480" y="266" font-size="12" text-anchor="middle">every outward action (push, PR, replies others see) stays here</text>
+
+  <!-- main to windows -->
+  <path class="line" d="M330,276 L170,356" marker-start="url(#a)" marker-end="url(#a)"/>
+  <path class="line" d="M480,276 L480,356" marker-start="url(#a)" marker-end="url(#a)"/>
+  <path class="line" d="M630,276 L790,356" marker-start="url(#a)" marker-end="url(#a)"/>
+  <text class="soft" x="492" y="310" font-size="12">brief file in ↓</text>
+  <text class="soft" x="492" y="328" font-size="12">report file out ↑ · message ≤ 5 lines</text>
+
+  <!-- windows -->
+  <g>
+    <rect class="box" x="50" y="358" width="240" height="94" rx="10"/>
+    <text class="ink" x="170" y="384" font-size="15" font-weight="700" text-anchor="middle">Window session w1</text>
+    <text class="ink" x="170" y="405" font-size="13" text-anchor="middle">one task per life</text>
+    <text class="soft" x="170" y="424" font-size="12" text-anchor="middle">waits at named stop points</text>
+    <text class="soft" x="170" y="441" font-size="12" text-anchor="middle">retro file, then /clear</text>
+  </g>
+  <g>
+    <rect class="box" x="360" y="358" width="240" height="94" rx="10"/>
+    <text class="ink" x="480" y="384" font-size="15" font-weight="700" text-anchor="middle">Window session w2</text>
+    <text class="ink" x="480" y="405" font-size="13" text-anchor="middle">one task per life</text>
+    <text class="soft" x="480" y="424" font-size="12" text-anchor="middle">waits at named stop points</text>
+    <text class="soft" x="480" y="441" font-size="12" text-anchor="middle">retro file, then /clear</text>
+  </g>
+  <g>
+    <rect class="box" x="670" y="358" width="240" height="94" rx="10"/>
+    <text class="ink" x="790" y="384" font-size="15" font-weight="700" text-anchor="middle">Window session w3</text>
+    <text class="ink" x="790" y="405" font-size="13" text-anchor="middle">one task per life</text>
+    <text class="soft" x="790" y="424" font-size="12" text-anchor="middle">waits at named stop points</text>
+    <text class="soft" x="790" y="441" font-size="12" text-anchor="middle">retro file, then /clear</text>
+  </g>
+
+  <!-- subagents under each window -->
+  <g font-size="11">
+    <line class="line" x1="170" y1="452" x2="170" y2="474"/>
+    <rect class="pill" x="56" y="476" width="66" height="24" rx="12"/><text class="ink" x="89" y="492" text-anchor="middle">builder</text>
+    <rect class="pill" x="128" y="476" width="72" height="24" rx="12"/><text class="ink" x="164" y="492" text-anchor="middle">reviewer</text>
+    <rect class="pill" x="206" y="476" width="78" height="24" rx="12"/><text class="ink" x="245" y="492" text-anchor="middle">fact-gatherer</text>
+
+    <line class="line" x1="480" y1="452" x2="480" y2="474"/>
+    <rect class="pill" x="366" y="476" width="66" height="24" rx="12"/><text class="ink" x="399" y="492" text-anchor="middle">builder</text>
+    <rect class="pill" x="438" y="476" width="72" height="24" rx="12"/><text class="ink" x="474" y="492" text-anchor="middle">reviewer</text>
+    <rect class="pill" x="516" y="476" width="78" height="24" rx="12"/><text class="ink" x="555" y="492" text-anchor="middle">fact-gatherer</text>
+
+    <line class="line" x1="790" y1="452" x2="790" y2="474"/>
+    <rect class="pill" x="676" y="476" width="66" height="24" rx="12"/><text class="ink" x="709" y="492" text-anchor="middle">builder</text>
+    <rect class="pill" x="748" y="476" width="72" height="24" rx="12"/><text class="ink" x="784" y="492" text-anchor="middle">reviewer</text>
+    <rect class="pill" x="826" y="476" width="78" height="24" rx="12"/><text class="ink" x="865" y="492" text-anchor="middle">fact-gatherer</text>
+  </g>
+  <text class="soft" x="480" y="526" font-size="12" text-anchor="middle">each window calls its own subagents, each with an explicit model</text>
+
+  <!-- files -->
+  <line class="thin" x1="170" y1="500" x2="170" y2="552"/>
+  <line class="thin" x1="790" y1="500" x2="790" y2="552"/>
+  <rect class="band" x="40" y="552" width="880" height="50" rx="10"/>
+  <text class="ink" x="480" y="574" font-size="14" font-weight="700" text-anchor="middle">Repository files carry the work</text>
+  <text class="soft" x="480" y="592" font-size="12" text-anchor="middle">specs · coverage map · briefs · reports · rulings · acceptance records · gate receipts</text>
+
+  <!-- memory -->
+  <rect class="mem" x="40" y="614" width="880" height="58" rx="10"/>
+  <text class="memink" x="480" y="638" font-size="14" font-weight="700" text-anchor="middle">Memory layer — MEMORY.md · handoffs · knowledge · rules</text>
+  <text class="memink" x="480" y="657" font-size="12" text-anchor="middle">every level restarts from it after a cleared context</text>
+</svg>

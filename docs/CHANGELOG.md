@@ -4,13 +4,21 @@ All notable changes to Claude Memory Kit are documented here. Breaking changes m
 
 <a id="v850"></a>
 
-## [8.5.0] — 2026-11-13 — the team method: one main session, three windows
+## [8.5.0] — 2026-11-13 — Multi-Agent Driven Development: you talk to one agent, it runs the team
 
-Nothing to migrate. No hook, script or skill behaviour changed. Text only: an outside developer can now reproduce the
-maintainer's way of working — one main session that orchestrates and three interactive windows, each holding one task
-per life.
+Nothing to migrate. No hook, script or skill behaviour changed; the plugin id `memory-kit`, every command name, every
+path and the repository stay the same. Text only: an outside developer can now reproduce the maintainer's way of
+working — one main session that orchestrates and three interactive windows, each holding one task per life.
 
 ### Added
+
+- `README.md` — **repositioned first screen.** Title «Multi-Agent Driven Development Kit» with «formerly Claude Memory
+  Kit» under it; the lead is that your attention goes to one agent only — the main session — which splits the work
+  across three window sessions and their subagents (two levels deep); why windows are sessions and not only subagents,
+  checked against the Claude Code docs (subagents, agent teams; fetched 2026-11-13); files cross each level, messages
+  only point; who decides what; memory as the foundation layer. «How it works» step 4 points at the team section.
+- `.github/assets/10-team-of-sessions.svg` — the new hero, drawn as SVG text, readable in light and dark. The old
+  banner PNG stays (embedded from `docs/ASSETS.md`, kept for the social preview).
 
 - `README.md` — **«Working as a team: one main session and three windows»**, right after «The method in one screen»:
   four named terminals (`claude --name w1`), main finds the windows with `ListAgents` and sends briefs by `SendMessage`

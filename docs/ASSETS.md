@@ -4,6 +4,13 @@ Nine diagrams and five demo clips in `.github/assets/` carry the visual story. T
 the product. The rule: **a diagram that states a fact is a fact that has to be swept like any
 other** — same discipline as the docs, and a stale panel is a lie in the most-read file.
 
+## 8.5.0 hero (2026-11-13) — the first screen is the team method
+
+| Asset | 8.5.0 |
+|---|---|
+| `10-team-of-sessions.svg` | **new, the README hero.** Drawn as SVG text (no image of text), colours switch with `prefers-color-scheme`. Every box is a claim of the README's first screen: you talk to main only; main plans, specs, coverage map, rulings, acceptance, every outward action; three window sessions, one task per life, stop points, retro then `/clear`; brief file in, report file out, message ≤ 5 lines; each window's own subagents with an explicit model; files carry the work; the memory layer underneath. Edit the SVG by hand; no prompt |
+| `og-banner-claude-code.png` | **removed from the README** (replaced by the hero above). Its claims are still true of the memory layer; the file is kept for the social preview, and its only embed is now this line: ![banner](../.github/assets/og-banner-claude-code.png) |
+
 ## 8.2.0 readme sweep (2026-11-11) — the four images the README used, opened and read
 
 The README was rewritten for developers in 8.2.0; an image stayed only if every claim on it is true of the tree and it
@@ -50,7 +57,7 @@ undo the cap. If you ever switch to real PNGs, rename the files to match, and ex
 Removed in v6: `01-before-after.png` — the before/after table in the README says the same thing,
 and it was the one asset drawn in a different (emoji-face) style. Still in git history.
 
-**Embed homes — since 8.2.0** the root README carries `og-banner-claude-code` and `07-orchestrated-work-v73` only;
+**Embed homes — since 8.5.0** the root README carries `10-team-of-sessions.svg` and `07-orchestrated-work-v73` only;
 `01` lives in the 8.2.0 table above, the video in the demo section. **Before (2026-09-02; names updated for 8.0):** the root README carried `og-banner-claude-code`, `01-system-map-claude-code`
 (after "The problem"), the four demo clips (`demo-1` under "A day with it", `demo-3` + `demo-4`
 under the comparison table, `demo-2` under "Many clients"), and `07` + `09` inside the collapsed

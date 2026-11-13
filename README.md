@@ -1,23 +1,44 @@
-![Claude Memory Kit](.github/assets/og-banner-claude-code.png)
+![Multi-Agent Driven Development: you talk to one main session; it sends brief files to three window sessions, each with its own subagents; files and memory underneath](.github/assets/10-team-of-sessions.svg)
 
-# Claude Memory Kit
+# Multi-Agent Driven Development Kit
 
-**An agent that remembers where you stopped — and a working method for checking its "done".**
+**You talk to one agent. It runs the team.**
 
-Claude Memory Kit is a plugin for Claude Code. Install it in a repository and you get three things:
+*Formerly Claude Memory Kit — the plugin id `memory-kit` and every command name stay the same for compatibility.*
 
-- **Every session opens where the last one ended.** The agent keeps short dated notes and a handoff as plain files in
-  your repository and reads them at the next start. You stop re-explaining the project.
-- **Dangerous commands are stopped before they run.** A force push, `reset --hard`, a read of `.env`, an edit that
-  weakens a test — blocked or asked about first.
-- **A method for handing work to helper agents, so that "done" means checked.** The helper builds from a written spec;
-  the main agent verifies the helper's report before it tells you "done"; a fix made after a review is itself reviewed
-  by an agent that did not write it; a mistake that shows up three times is turned into a check. It is a method, not an
-  automatic gate: `setup` offers one short always-loaded rule file, and the rest is reference the agent opens when the
-  work calls for it.
+A plugin and a working method for Claude Code. The scarcest resource in agent-driven work is your attention, so the
+method spends it in one place: **you talk to one agent only — the main session.** It holds the whole picture, so you
+decide with one counterpart instead of five; it splits the work across the other sessions and their helpers. You
+never talk to the windows or the helpers, never relay a brief, never read their raw output: decisions, evidence and
+questions reach you from one place.
 
-Nothing becomes a rule without your yes. No database, no service, no API key — text files you can read and diff.
-An independent project, not made or endorsed by Anthropic.
+**The team is two levels deep.** You → main → three windows → their subagents.
+
+- **Main** plans the round, writes the specs, rules on every finding, accepts work on evidence, and is the only one
+  that acts outward (a push, a PR, a reply others will see).
+- **Three windows are full Claude Code sessions, not subagents** — each opened by you in its own terminal, visible,
+  with its own context, tools, hooks and memory, holding one task to its stop points.
+- **Each window calls its own subagents** (a builder, a reviewer, a fact-gatherer), each with an explicit model.
+
+**Why sessions, and not only subagents.** A subagent lives inside its caller's session: it works in its own context
+and hands back a summary, it cannot ask you a question, and its permission prompts surface in the caller's terminal
+(Claude Code docs, [subagents](https://code.claude.com/docs/en/sub-agents)). A window is a session you can watch and
+that starts like any session — your `CLAUDE.md`, the hooks, this kit's memory and handoff — so it can hold a task
+across several stops and reviews and still survive main being cleared. Claude Code's own
+[agent teams](https://code.claude.com/docs/en/agent-teams) also run teammates as full sessions, but let you talk to
+any teammate directly; this method keeps you talking to main only.
+
+**What crosses each level is a file.** A brief, a spec, a report, a ruling, an acceptance record — committed to the
+repository. Messages only point at files, five lines at most.
+
+**Who decides what.** You: product scope, and money above the cap you set. Main: architecture, acceptance, every
+outward action. Windows: build to a spec and report; they never decide.
+
+**Memory is the foundation.** Short dated notes and a handoff, as plain files in your repository, read at every
+start — so main, each window, and you after a day away all pick up where the work stopped after a cleared context.
+Dangerous commands are stopped before they run: a force push, `reset --hard`, a read of `.env`, an edit that weakens
+a test. Nothing becomes a rule without your yes. No database, no service, no API key. An independent project, not
+made or endorsed by Anthropic.
 
 **Why the method matters.** In one project, in five of six pieces of work the fix made after a review reached acceptance
 with nobody reviewing the fix itself; checked afterwards, two of those five carried a defect serious enough to block. A
@@ -39,9 +60,9 @@ small sample from one project — a reason to look at your own fixes, not a prov
    a rule?»), writes what you approve, and leaves a handoff note.
 3. **The next session starts already knowing** — memory, the handoff and the list of knowledge articles are loaded
    by a hook.
-4. **When you delegate,** the kit gives the agent a method to follow: a spec file first, a review of every diff, a
-   record of what was accepted and why. This half is optional: take it when you hand work to helper agents or run
-   several sessions at once.
+4. **When the work outgrows one session,** main runs the team: a spec file first, a brief file per window, a review of
+   every diff, a record of what was accepted and why ([below](#working-as-a-team-one-main-session-and-three-windows)).
+   Memory works on its own; take the team half when you hand work to helpers or run several sessions at once.
 
 ## Install
 
