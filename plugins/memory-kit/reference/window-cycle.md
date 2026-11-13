@@ -18,10 +18,13 @@ newcomer is in the root README, «Working as a team». Copy what fits; the count
 
 ## 1. The cycle and its close order
 
-1. **Start from files.** Main starts cleared; three windows are open and clean, each started with a name
-   (`claude --name w1`). Main finds them itself (`ListAgents`) and never asks the user to open or name them. The past
-   lives in files — the newest handoff's «Windows» section (§7), branches, commits, committed reports. Main never asks
-   a window or the user what is still alive. Held work is re-based first (`parallel-development.md`).
+1. **Start from files.** Main starts cleared; the three windows (each started with a name, `claude --name w1`) are clean
+   or still working on a brief of the last round. Main finds them itself (`ListAgents`) and never asks the user to open
+   or name them. **Window state has one home: the round file's windows table (§7), updated at each event** — never a copy
+   in the handoff. Main checks each open row (sent, not cleared) against the window's own evidence — its commits, report,
+   retro — before any message; a brief written but not sent is new work, not a working window. Before its first message
+   to a window, main commits this round's file with the open rows carried. Held work is re-based first
+   (`parallel-development.md`).
 2. **Assign.** Each window gets ONE task by a brief FILE (§3). Main sends it itself by `SendMessage` to the window's
    listed name with `notify_when_idle: true`, so main hears when the window stops; the message names the brief file,
    its commit and the first stop point. The user never pastes or relays a brief. A window's name for the session is
@@ -34,11 +37,15 @@ newcomer is in the root README, «Working as a team». Copy what fits; the count
    from files.
 5. **Last tasks.** A round's tasks are those of its plan and their continuations; main opens no second round in the
    same session. A task that cannot finish is stopped at a clean state and recorded (§7).
-6. **Close, in this order:** every window finishes and reports → main accepts each result (`acceptance.md`) and saves
-   what it needs into files → main finishes its own tasks → the handoff with its «Windows» section → the user clears
-   the windows → the user clears main → step 1. When the user wants main closed while windows still work, main first
-   tells each window it is leaving and the handoff names each window's step and the stop message main waits for; the
-   next main tells each window it is back and asks it to repeat any stop message sent meanwhile.
+6. **Close — two modes.** (a) Every window finished: main accepts each result (`acceptance.md`), the window's retro is
+   committed and its row marked cleared → main finishes its own tasks → the handoff → the user clears the windows, then
+   main. (b) The user closes main while windows still work: main tells each it is leaving; their rows are current (sent,
+   the stop awaited, pending rulings). The handoff carries no windows table, one line pointing at the round file. The
+   next main, after step 1's check, tells each window with a sent and uncleared row that it is back and asks it to
+   repeat any stop message sent meanwhile.
+   Why one home: one project's handoff table, copied by hand at the close, listed a window as working whose brief had
+   been written but never sent; the next main messaged a cleared window. Two direction reviewers (two model families)
+   found the copy, not a missing check, to be the cause (one project's incident, 2026-11; no count).
 
 **Visible windows, not background sessions.** One project tried a background session as the third slot and went back
 to three interactive windows: the user wants to see the work as it happens, and a visible window's permission prompts
@@ -137,10 +144,13 @@ dialogue, main's slot); the old main stays alive but idle as a fallback.
 
 Tested twice on one day in one project (one project's working practice; no count).
 
-## 7. The handoff's «Windows» section
+## 7. The round file's windows table
 
-Written by main at the close, per window: the task · branch and last commit · what is verified and how · what is not ·
-the next step · resources kept (scratch databases, running services). The next main starts from this section
+One file per main session (e.g. `docs/process/plans/<date>-<session>-windows.md`), one row per window life, updated at
+the event: task · brief and its commit · sent (time, or «not sent») · the stop main waits for · pending main rulings or
+paid approvals · accepted (record, commit) · cleared (retro commit) · resources kept (scratch databases, running
+services). Main records only what a window cannot know; live progress is the window's own commits and reports. A
+project nudge at session start (no round file committed since the newest handoff) is the cheap firing mechanism
 (one project's working practice; no count).
 
 ## 8. The retro — every window life ends with one

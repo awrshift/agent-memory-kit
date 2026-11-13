@@ -134,8 +134,10 @@ The way the maintainer works daily: you talk to ONE session — main — and mai
 6. **Money.** A paid step has a cap line («N units, ~cost, cap»), a committed launcher that loads keys inside itself,
    and a free dry run plus a free probe of every vendor key shown before the yes. Below your money line main approves;
    above it you approve each run.
-7. **Close when the round is done:** every window reports and is accepted, main writes the handoff (with a «Windows»
-   section), you clear the windows, then main. The next main starts from files, never from a window's memory.
+7. **Close when the round is done:** every window reports and is accepted, main writes the handoff, you clear the
+   windows, then main. Each window's state lives in one place — the round file's windows table, updated when a brief
+   is sent, a stop arrives, a result is accepted or a window is cleared — and the handoff only points at it. The next
+   main checks each open row against the window's own commits before it messages anyone.
 
 ### The relay: work that outlives every context
 

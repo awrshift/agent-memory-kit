@@ -50,7 +50,10 @@ said X — codify as a rule or a concept article?"
 The header (everything above the first `---`) is «current state of work», at most 3 lines,
 **REPLACED** every close — never a chronicle of past sessions. Per-session detail lives in the
 handoff, not stacked in the header. A project may make the header one pointer line to the newest
-handoff; where the project's session-close document sets the form, it wins.
+handoff — then it is replaced only when it no longer points right; where the project's
+session-close document sets the form, it wins.
+A project that closes many sessions a day may run Step 2's 3-date audit once a day (the first
+close after a set hour) instead of at every close; its session-close document says so.
 
 ## Step 4 — Write the handoff
 When the project has its own `context/handoffs/HANDOFF-TEMPLATE.md`, copy it →
@@ -58,7 +61,9 @@ When the project has its own `context/handoffs/HANDOFF-TEMPLATE.md`, copy it →
 named. Only when there is none, copy the plugin's `templates/HANDOFF-TEMPLATE.md` and fill its five
 sections (what was done · where things stand · memory updates · next steps · opening note). The
 SessionStart hook injects the newest handoff next time — this file IS the "remember where we left
-off" mechanism.
+off" mechanism. With parallel windows, the handoff carries no windows table — one line pointing at
+the round file that holds each window's state (`reference/window-cycle.md` §7); a hand copy of that
+state at the close is how a written-but-unsent brief once became «working».
 
 ## Also check (30 seconds)
 - **Experiment hygiene:** any `experiments/*-YYYYMMDD/` older than 30 days → ask: still active

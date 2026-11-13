@@ -2,6 +2,22 @@
 
 All notable changes to Claude Memory Kit are documented here. Breaking changes marked **BREAKING**.
 
+<a id="v852"></a>
+
+## [8.5.2] — 2026-11-13 — window state has one home: the round file
+
+Nothing to migrate. Text only.
+
+- `reference/window-cycle.md` — §1 start: windows are clean OR still working; window state lives only in the round file's windows table,
+  updated at each event (sent · stop awaited · accepted · cleared); main checks each open row against the window's own commits, report and
+  retro before any message; a brief written but not sent is new work. §1 close: two modes (all windows finished · main closed while
+  windows work). §7 is now the round file's table (was the handoff's «Windows» section). Why: one project's hand-copied handoff table
+  turned a written-but-unsent brief into «working», and the next main messaged a cleared window; two direction reviewers from two model
+  families found the copy to be the cause, not a missing check — so no close-time check was added.
+- `skills/close-session` — a pointer-form MEMORY header is replaced only when it no longer points right; a project closing many sessions
+  a day may run the 3-date audit once a day; with windows, the handoff points at the round file instead of carrying a windows table.
+- `templates/HANDOFF-TEMPLATE.md`, root `README.md` «Working as a team» step 7 — follow.
+
 <a id="v850"></a>
 
 ## [8.5.1] — 2026-11-13 — the critic runs on a different model from the author

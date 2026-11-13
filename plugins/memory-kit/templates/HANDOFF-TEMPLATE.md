@@ -21,3 +21,5 @@
 ## 5. [Opening note for next session]
 <one paragraph the next session should act on immediately: "start with X because Y";
 anything NOT to re-open; any external fact that must be re-checked before acting on it>
+<with parallel windows: one line pointing at the round file that holds each window's state — no windows table here
+(`reference/window-cycle.md` §7)>
