@@ -1,4 +1,4 @@
-# Claude Memory Kit (`memory-kit` plugin)
+# Multi-Agent Driven Development Kit (`memory-kit` plugin, formerly Claude Memory Kit)
 
 For developers who run Claude Code on a real repository and delegate to helper agents or run several sessions:
 memory as plain dated files in the repository (injected every session, size-capped, promoted only on your yes),

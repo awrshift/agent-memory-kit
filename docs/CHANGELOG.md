@@ -17,6 +17,8 @@ working — one main session that orchestrates and three interactive windows, ea
   across three window sessions and their subagents (two levels deep); why windows are sessions and not only subagents,
   checked against the Claude Code docs (subagents, agent teams; fetched 2026-11-13); files cross each level, messages
   only point; who decides what; memory as the foundation layer. «How it works» step 4 points at the team section.
+- `plugin.json` `displayName` «Multi-Agent Driven Development Kit» (was «Memory Kit»); keywords `multi-agent`,
+  `agent-team`, `subagents` added in `plugin.json` and `marketplace.json`; the plugin README's title follows.
 - `.github/assets/10-team-of-sessions.svg` — the new hero, drawn as SVG text, readable in light and dark. The old
   banner PNG stays (embedded from `docs/ASSETS.md`, kept for the social preview).
 - `.github/assets/11-relay.svg` (README «The relay», replaces the ASCII block) and `.github/assets/12-method.svg`

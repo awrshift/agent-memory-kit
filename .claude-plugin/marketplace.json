@@ -20,7 +20,11 @@
         "session-handoff",
         "knowledge-base",
         "orchestration",
-        "agent-qa"
+        "agent-qa",
+        "multi-agent",
+        "agent-team",
+        "subagents",
+        "system-audit"
       ]
     }
   ]
