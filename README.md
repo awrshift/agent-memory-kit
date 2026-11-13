@@ -137,6 +137,29 @@ The way the maintainer works daily: you talk to ONE session — main — and mai
 7. **Close when the round is done:** every window reports and is accepted, main writes the handoff (with a «Windows»
    section), you clear the windows, then main. The next main starts from files, never from a window's memory.
 
+### The relay: work that outlives every context
+
+A context window ends; the work does not. Every session — main and each window — carries the work in files, so any of
+them can be cleared and the next one picks the baton up without loss:
+
+```
+ main works ──► tells each window «main is leaving» ──► writes the handoff (each window's step, the stop message it
+     ▲          (they hold their stop messages)          waits for), memory, the plan; commits ──► /clear
+     │                                                                                             │
+     └── tells each window «main is back», asks for any stop message sent meanwhile ◄── starts from the files
+                                                                                          (hooks load memory,
+ a window: one task ──► report + retro committed ──► /clear ──► next brief from files      handoff, plan)
+```
+
+- **Nothing lives only in a context.** Each step is committed as it ends; a brief, a spec, a report, a ruling, the
+  handoff and the plan are files. A cleared session reads them back; it never relies on what a previous one remembers.
+- **Main can close while windows keep working.** It says so first, so no stop message is lost, and says so again when
+  it returns. Windows are cleared after each task the same way, and main keeps handing out the next one.
+- **When to close is set by the work, not by a token count.** Main lives one round (plan, briefs, acceptance, close);
+  you can say «close now» at any moment. No prompt carries a context budget: a budget in the prompt changes how the
+  model works. The chain that makes it hold — memory, the handoff, the plan file, the rules, the brief and acceptance
+  files — is what this kit ships.
+
 Background sessions were tried for the third slot and are not the default: visible windows are, so you see the work
 and every stop reaches a person. Depth: `reference/window-cycle.md` (the cycle, the brief's lines, the retro) ·
 `WINDOW-BRIEF-TEMPLATE.md` · `reference/spec-depth.md` (prebuild reader, case tables, paid runs) ·
