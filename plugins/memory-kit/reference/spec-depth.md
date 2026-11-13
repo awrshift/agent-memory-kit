@@ -1,12 +1,12 @@
 ---
 created: 2026-10-22
-last-reviewed: 2026-11-11
+last-reviewed: 2026-11-13
 ---
 
-# Spec depth — the five lines a spec carries before anyone builds it
+# Spec depth — what a spec carries before anyone builds it
 
 A spec (`templates/workspace/project/SPEC-TEMPLATE.md`) can be complete and still shallow: every field filled, the goal
-met on paper, and the result wrong in the way experts in that field would have predicted. These five lines are what
+met on paper, and the result wrong in the way experts in that field would have predicted. These lines are what
 the template's header asks for, and why. Each one exists because skipping it cost a real round of rework.
 
 ## 1. Depth pass — deeper, not bigger
@@ -51,10 +51,16 @@ OWED DECISION.
 - **Low** → self.
 The depth pass raises the proof, never the approach; it does not stand in for the review.
 
-**Before the build, a reader who did not write the spec reads it** — against the code at its base commit (every premise
-about existing code, schema or migration checked there) and against itself (two lines that cannot both hold). Findings
-go into a committed file and the integrator rules on each before the build. One project makes it a line of every
-build brief; it is mandatory when the mechanism is a queue, a ledger or a lock. The role template: `prebuild-reader`
+**Before the build, a reader who did not write the spec reads it** — the prebuild reader. It reads against the code at
+the spec's base commit (every premise about existing code, schema or migration opened there, not recalled) and
+against itself (two lines that cannot both hold). Findings go into a committed file, one id each; the integrator rules
+on EACH before the build — fixed in the spec (with the new commit) · rejected with evidence · deferred with a named
+check — and the build starts only when every id has a ruling. One project makes it a line of every build brief; it
+is mandatory when the mechanism is a queue, a ledger or a lock. **No third read of one spec:** when the second read
+still finds a lot, its findings are classed by cause first (a wrong statement about existing code, or an under-defined
+new rule); a pile of the second kind means the deciding rules need a case table (§6), not another read. In one
+project three reads of one spec found 28 → 22 → 29 items: wrong statements about code fell from 11 to 7 while
+under-defined new rules rose from 7 to 16 (measured in one project, 2026-11: three reads of one spec). The role template: `prebuild-reader`
 (`helper-roster.md`). Why: on one project's queue-and-lock designs the spec read changed the approach on three dates
 within five days; on six later units, a check before the build could have shown a first-round defect in two, and
 both catches were such reads: a library fact sitting in the project's own code at the base commit, and two spec
@@ -78,6 +84,22 @@ cap, why» — even when the plan holding the run was approved. A part whose run
 only after that bar is scored. Every parameter of a paid run has a written source: the project's coverage plan, or
 chosen for this task with its reason (one project's working practice; no count).
 
+**The launcher, the dry run and the key probe — shown before the yes.** A paid step is started by a COMMITTED script
+that loads the environment (keys, endpoints, slot settings) inside itself; nobody types a key or exports one by hand,
+and a command that reads a key out of an environment file is refused by the deny rules. Before the money line's yes,
+the stop shows two free outputs: the launcher's **dry run** — the whole path up to the vendor call, with the units, the
+estimate and the cap it will use, no call made — and a **probe of every vendor key** the run will call (one zero-cost
+request per key: a model list, an account balance). The approver approves a command it has seen, and a depleted or
+refused key is found before the paid step, not inside it. Why: in one project a spend was approved whose launch
+command main had not seen, and the step stopped inside the window; another run found its primary key empty mid-run
+(one project's working practice, 2026-11; no count).
+
+**The money line, written down.** One table in the project's rules: who approves which cap. A typical shape — a cap
+up to a small sum is the integrator's call and the user is told the actual cost after; above it the user's yes on one
+line «N units, ~cost, cap, why» before EACH run; a window never spends without main's yes on its brief's paid line,
+and main's yes never stands in for the user's above the line. Plan · approved · actual per run go into a dated spend
+sheet the user sees at the close (one project's working practice; no count).
+
 ## 5. Measure the outcome, not a proxy
 
 Acceptance is judged by what reaches the user. Agreement rates, gate passes, counters and model-judge scores are
@@ -85,3 +107,37 @@ reported as «screen only», never as the result: proxies have flipped sign once
 a report comes from a saved script or command cited next to it; a hand tally is a draft until the script agrees.
 Which numbers are screens and which are measurements — the constant-answer baseline, a count proven on labelled rows,
 the one calibrated exception to «a model judge is an estimate»: `measurement-lessons.md`.
+
+## 6. Deciding rules — a function with a case table, not prose
+
+**Applies when:** the spec holds a rule that decides on cases — keep or drop, retry or stop, which branch, which label.
+
+A spec carries a line `Deciding rules: none — <why>` or `Deciding rules: <path of the case table>`. Per rule:
+
+- **the function's name and signature** — the rule is code from the first slice, not a paragraph;
+- **a case table** — literal inputs, the expected decision and its reason, one row per outcome;
+- **the writer of each input** — the code path or data source that can actually produce that literal; an input no
+  writer produces is not a case (its boundary is tested once);
+- **the command that runs the table** — the table is a test that runs, accepted by its exit code, never by reading.
+
+```
+rule: should_retry(status, attempt)            run: <test command> -k should_retry
+| status | attempt | expected        | reason                       | writer that produces it  |
+| 429    | 1       | retry           | rate limit is transient      | vendor client, on 429    |
+| 429    | 3       | stop: give_up   | the retry budget is 3        | vendor client, on 429    |
+| 400    | 1       | stop: refuse    | the request itself is wrong  | vendor client, on 4xx    |
+| None   | 1       | stop: error     | no status = transport failed | the timeout path         |
+```
+
+**Proven by an exhaustive run, with planted breaks.** Where the inputs are small (a few enums, small integers), the
+build runs the function over EVERY combination and checks each result against the rule's invariant stated first
+(«never retry a 4xx other than 429», «never more than N attempts»), not only the listed rows. Then it plants a break —
+flips one branch, shifts one boundary by one — and shows the run catches each one; a planted break the run does not
+catch means the invariant or the table is too weak. The deciding functions are the build's FIRST slice; the
+measurement that depends on them runs on the built functions. Prose stays for the wiring only, and there every
+statement about existing code is a row «claim · file:line opened at the build's head».
+
+Why: in one project the share of prebuild findings that were under-defined or wrongly deciding NEW rules rose across
+three reads of one prose spec (7 → 16), while the spec kept growing; a table that runs ends that loop (§3; measured
+in one project, 2026-11: three reads of one spec). The rule is in trial: one project's count of reads per spec after
+the change is due 2026-11-25.

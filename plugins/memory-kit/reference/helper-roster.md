@@ -1,6 +1,6 @@
 ---
 created: 2026-11-11
-last-reviewed: 2026-11-11
+last-reviewed: 2026-11-13
 ---
 
 # Helper roster — a named role and an explicit model on every helper call
@@ -34,7 +34,8 @@ copy into your `.claude/agents/` (`/memory-kit:setup` offers it); adapt the path
 - `code-reviewer` (stronger model) — a built diff or a fix diff against its spec, by someone who did not write it →
   the review record `acceptance.md` §1–2 reads.
 - `prebuild-reader` (stronger) — a spec against the code at its base commit, and against itself, before the build →
-  a blocking / note list (`spec-depth.md` §3).
+  a blocking / note list, one id per finding, each ruled by the integrator before the build; no third read of one
+  spec — the second read's findings are classed by cause first (`spec-depth.md` §3, §6).
 - `tool-builder` (stronger) — scripts, harnesses, checks with a self-test; not product code → the script, its saved
   output, its limits.
 - `web-recon` (cheaper) — an external fresh-check: a vendor's API, price, version, a practice → fact · quote · URL ·

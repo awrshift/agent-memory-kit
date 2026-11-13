@@ -28,7 +28,7 @@ small sample from one project — a reason to look at your own fixes, not a prov
 [![Claude Code plugin](https://img.shields.io/badge/Claude_Code-plugin-CFEF4A)](#install)
 
 **On this page:** [How it works](#how-it-works) · [Install](#install) · [The method](#the-method-in-one-screen) ·
-[What is inside](#what-is-inside) · [Reference](#reference--read-on-demand) ·
+[Team of sessions](#working-as-a-team-one-main-session-and-three-windows) · [What is inside](#what-is-inside) · [Reference](#reference--read-on-demand) ·
 [What it writes](#what-it-writes-in-your-repository) · [Privacy and cost](#privacy-and-cost) ·
 [Proof status](#proof-status)
 
@@ -73,6 +73,53 @@ helpers build or gather facts from a spec file. The always-loaded invariants liv
 | 3. Review, fix rounds included | Every nontrivial diff, and every fix round's diff, reviewed by an agent that did not write it; findings triaged to the owning layer; a fix round may not redesign | `reference/review-loop.md` §0–§1 · `reference/review-classes.md` · `reference/acceptance.md` |
 | 4. Acceptance record | One file per accepted head: spec, rounds, review, gates re-run on that tree, one ruling per finding | `reference/acceptance.md` · `ACCEPTANCE-TEMPLATE.md` · `reference/orchestrator-fact-check.md` |
 | 5. Findings registry | Each confirmed finding logged by class and family; a family seen three times is promoted into a check | `reference/review-loop.md` §2 |
+
+## Working as a team: one main session and three windows
+
+The way the maintainer works daily: you talk to ONE session — main — and main runs three more Claude Code sessions
+(windows) on the same repository. Work crosses between them as files; messages only point at files.
+
+```
+                         you
+                          │  talk only here
+                   ┌──────┴──────┐
+                   │    main     │  plans the round · specs · rulings · acceptance · memory
+                   └──┬───┬───┬──┘
+       brief file ↓   │   │   │   ↑ report file + message ≤ 5 lines
+               ┌──────┘   │   └──────┐
+             ┌─┴──┐    ┌──┴─┐     ┌──┴─┐
+             │ w1 │    │ w2 │     │ w3 │   one task per life · own helpers underneath
+             └─┬──┘    └──┬─┘     └──┬─┘
+   ────────────┴──────────┴──────────┴──────────────────────────────────────────────
+   repository files: specs · briefs · reports · rulings · acceptance records · memory
+```
+
+1. **Open four terminals on the repository** and name each session: `claude --name main`, then `claude --name w1`,
+   `w2`, `w3`. Keep all four visible — you watch the work; you type only in main.
+2. **Main plans the round.** It reads the handoff, writes the specs, commits a **coverage map** (every piece of the
+   source → a window, a later session, or «not taken because …»), runs the depth pass on each spec and has a
+   **prebuild reader** — a helper that did not write it — check the spec against the code first, ruling each finding.
+3. **Main sends the briefs itself.** It finds the windows with `ListAgents` and sends each one message by
+   `SendMessage` with `notify_when_idle: true`: the brief's path, its commit, the first stop point. You never paste a
+   brief.
+4. **Each window holds one task per life.** It reads its brief file and the spec, checks the premises marked «from a
+   report», builds (calling its own helpers with an explicit model), stops at each named stop point, and reports in at
+   most five lines pointing at a committed report. When finished it writes a short **retro** file, and you clear it
+   with `/clear` before its next task. A fix round after a review is a new life, not a continuation.
+5. **Main decides and accepts.** It rules on every finding one by one, reads one real artifact itself, and accepts a
+   block on a **gate receipt** — the gates run once by a script on the exact tree accepted. Main never hands off
+   talking to you, a push, a PR, or a reply others will see. A window never sends you to itself: a refused command goes
+   to main, and main asks you in main.
+6. **Money.** A paid step has a cap line («N units, ~cost, cap»), a committed launcher that loads keys inside itself,
+   and a free dry run plus a free probe of every vendor key shown before the yes. Below your money line main approves;
+   above it you approve each run.
+7. **Close when the round is done:** every window reports and is accepted, main writes the handoff (with a «Windows»
+   section), you clear the windows, then main. The next main starts from files, never from a window's memory.
+
+Background sessions were tried for the third slot and are not the default: visible windows are, so you see the work
+and every stop reaches a person. Depth: `reference/window-cycle.md` (the cycle, the brief's lines, the retro) ·
+`WINDOW-BRIEF-TEMPLATE.md` · `reference/spec-depth.md` (prebuild reader, case tables, paid runs) ·
+`reference/acceptance.md` (gate receipt) · `reference/helper-roster.md` (roles and models).
 
 ## What is inside
 
@@ -146,13 +193,13 @@ the roster and the rule «judges → the stronger model, collects or counts → 
 | File | Open it when |
 |---|---|
 | `reference/adoption.md` | After an install or upgrade: what to take as is, what to adapt, what to skip |
-| `reference/spec-depth.md` | Writing a spec: depth pass, fresh-checked practice, review by stake, the pre-build read, paid runs with a cap |
+| `reference/spec-depth.md` | Writing a spec: depth pass, fresh-checked practice, review by stake, the pre-build read, paid runs (launcher, dry run, key probe, money line), deciding rules as case tables |
 | `reference/orchestrator-fact-check.md` | Accepting anyone's report, or telling the user how things are now: the claim → check table |
 | `reference/review-loop.md` | Handling findings: triage and the fix spec's family line, the diff gate, the findings registry |
-| `reference/acceptance.md` | You accept a helper's build after a review round (in trial) |
+| `reference/acceptance.md` | You accept a helper's build after a review round: the record, the gate receipt (in trial) |
 | `reference/review-classes.md` | Reviewing a diff or writing a checklist: defect classes one backend project met, each with its check (one project's practice) |
 | `reference/parallel-development.md` | Fanning work out: worktrees, one integrator, held work that drifts, flow limits |
-| `reference/window-cycle.md` | You run more than one interactive session on one repository (one project's practice) |
+| `reference/window-cycle.md` | You run one main session and three windows on one repository: the cycle, the brief's lines, the retro (one project's practice) |
 | `reference/helper-roster.md` | You delegate to helpers often: a role and an explicit model per call (in trial) |
 | `reference/measurement-lessons.md` | Before a bar on a count or a model's judgment deciding a change (counts from one project) |
 | `reference/reporting.md` | Writing a status, a close report or an answer to the user's comment (one project's practice) |

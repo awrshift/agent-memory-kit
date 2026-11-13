@@ -1,6 +1,6 @@
 ---
 created: 2026-11-11
-last-reviewed: 2026-11-11
+last-reviewed: 2026-11-13
 ---
 
 # Acceptance — the record a block of work is accepted on
@@ -68,10 +68,12 @@ made by a patch meant to fix a listed item; 3 had been in the first build and mi
 (measured in one project, 2026-11: 35 of 72 in redesigned code). The rounds come from the fixes, not from the first
 review's recall.
 
-## 5. The gates as a receipt — an option under trial
+## 5. The gates as a receipt — run once, by a script, on the accepted tree
 
-The kit's layer stays: the integrator runs the objective gates itself on the tree it accepts
-(`orchestrator-fact-check.md` layer 1). This option changes HOW that run is kept, not who trusts it.
+The kit's layer stays: the integrator owns the objective gates on the tree it accepts (`orchestrator-fact-check.md`
+layer 1). The receipt changes HOW that run is kept: the gates run ONCE, by a committed script, on the exact tree to
+accept — not by hand, not in the window's own words, not on «the branch» — and the acceptance file names the receipt
+in `Gates:`. Nobody re-runs the gates by hand afterwards; the check reads the receipt.
 
 A script runs the project's full gate set once in a clean worktree at the head to accept and writes a receipt
 (one JSON file): the head and its tree hash, `git status --porcelain` before AND after the run (untracked files
@@ -85,6 +87,10 @@ and the acceptance check refuses:
   `project-extensions.md` «Telemetry»);
 - a failed or timed-out gate without a written line `Gate ruling: <gate> — <why>` by the integrator;
 - a skippable gate skipped without a reason.
+
+The check runs where the acceptance is committed (a commit wrapper or a pre-commit hook): an `ACCEPTED` record whose
+receipt it refuses does not land. While the gate script runs, nothing else heavy runs on the machine (a build, a replay,
+another test suite): tests with timers fail under load, and a failure caused by load reads as a real one.
 
 Why: one project re-read its eight acceptance files. The gates had been re-run by hand in seven, all green; in two the
 re-run was on another head than the one the window's count or the acceptance refers to, and in the eighth the re-run was

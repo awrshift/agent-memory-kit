@@ -1,7 +1,7 @@
 {
   "name": "memory-kit",
   "displayName": "Memory Kit",
-  "version": "8.4.0",
+  "version": "8.5.0",
   "description": "Claude Code agent that remembers where you stopped, plus a working method for checking its \"done\": memory as plain dated files in your repository (nothing becomes a rule without your yes), guards for git, secrets and tests, and a method for delegated work — spec file, review of every diff, acceptance record, findings registry.",
   "author": {
     "name": "awrshift",

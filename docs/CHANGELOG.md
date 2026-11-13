@@ -2,6 +2,48 @@
 
 All notable changes to Claude Memory Kit are documented here. Breaking changes marked **BREAKING**.
 
+<a id="v850"></a>
+
+## [8.5.0] — 2026-11-13 — the team method: one main session, three windows
+
+Nothing to migrate. No hook, script or skill behaviour changed. Text only: an outside developer can now reproduce the
+maintainer's way of working — one main session that orchestrates and three interactive windows, each holding one task
+per life.
+
+### Added
+
+- `README.md` — **«Working as a team: one main session and three windows»**, right after «The method in one screen»:
+  four named terminals (`claude --name w1`), main finds the windows with `ListAgents` and sends briefs by `SendMessage`
+  with `notify_when_idle`, one task per window life ended by a retro and `/clear`, what main keeps (coverage map, depth
+  pass, prebuild reader, rulings, gate receipt, every outward action), the money line, the close; a diagram of main ↔
+  three windows ↔ files. Background sessions are named as tried and not the default.
+- `reference/spec-depth.md` §6 — **deciding rules as a function with a case table**: literal inputs, expected decision
+  and reason, the writer that can produce each input, the command that runs it; proven by an exhaustive run over small
+  inputs with planted breaks; the deciding functions are the first slice.
+- `reference/spec-depth.md` §4 — **paid runs**: a committed launcher that loads the environment inside itself; its free
+  dry run and a free probe of every vendor key shown before the yes; the money line written as a table of who approves
+  which cap, with a spend sheet.
+- `reference/window-cycle.md` §8 — **the retro**: every window life ends with a ≤ 25-line file of seven questions; main
+  counts the facts by script once a day and takes at most three changes at the strongest layer.
+
+### Changed
+
+- `reference/window-cycle.md` — brought to current practice: three windows; one task per life; a fix round is a new
+  life; the brief's lines as a table (Env, launcher with dry run and key probe, Retro path, Gates «nothing heavy while
+  the gate runner runs»); premises split into «read by main» and «from a report — check first»; the window never sends
+  the user to itself; main may close while windows work, with the hand-back steps; visible windows over background
+  sessions.
+- `templates/workspace/WINDOW-BRIEF-TEMPLATE.md` — the same lines (Binding rules, split Premises, Launcher, Env, Rules
+  that drop or gate, At the limit, Gates, Retro, next task in a new life) and two added rules (no sending the user to
+  the window; one task, one life).
+- `reference/spec-depth.md` §3 — the prebuild reader: findings ruled one by one before the build; no third read of one
+  spec — the second read's findings are classed by cause first.
+- `reference/acceptance.md` §5 — the gate receipt is the stated way: gates run once by a script on the accepted tree,
+  named in `Gates:`; the check refuses another tree, a dirty tree or a failed gate without a written ruling, at the
+  commit; nothing heavy runs while the gate script runs.
+- `reference/helper-roster.md` — the `prebuild-reader` line says the same.
+- `templates/rules/orchestration.md` — the `window-cycle` pointer reads «three windows».
+
 <a id="v840"></a>
 
 ## [8.4.0] — 2026-11-12 — the plugin stops contradicting the project that adopts it
