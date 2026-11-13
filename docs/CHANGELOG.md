@@ -19,6 +19,10 @@ working — one main session that orchestrates and three interactive windows, ea
   only point; who decides what; memory as the foundation layer. «How it works» step 4 points at the team section.
 - `.github/assets/10-team-of-sessions.svg` — the new hero, drawn as SVG text, readable in light and dark. The old
   banner PNG stays (embedded from `docs/ASSETS.md`, kept for the social preview).
+- `.github/assets/11-relay.svg` (README «The relay», replaces the ASCII block) and `.github/assets/12-method.svg`
+  (README «The method in one screen» and the plugin README, replaces `07-orchestrated-work-v73.png`, which stays in
+  `docs/ASSETS.md`) — same family as the hero. `og-banner-mad.png` 1280×640, the new social-preview banner, rendered
+  from `og-banner-mad.svg`. The hero's «You» box and subagent pills widened (text overflowed them).
 
 - `README.md` — **«Working as a team: one main session and three windows»**, right after «The method in one screen»:
   four named terminals (`claude --name w1`), main finds the windows with `ListAgents` and sends briefs by `SendMessage`

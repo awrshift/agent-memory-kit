@@ -81,7 +81,7 @@ your files. In a repository that never ran `setup`, the hooks inject one pointer
 
 ## The method in one screen
 
-![Agent-orchestrated work: the main session writes a spec file, the agents work from it, and a report is input, never a fact](.github/assets/07-orchestrated-work-v73.png)
+![The method: main writes the spec file; windows build with their subagents and leave a report; every diff, fix rounds included, is reviewed by an agent that did not write it; main accepts on evidence with a gate receipt; a report is input, never a fact](.github/assets/12-method.svg)
 
 This is a method the agent follows, not something the hooks enforce. The main session designs, decides and integrates;
 helpers build or gather facts from a spec file. The always-loaded invariants live in `templates/rules/orchestration.md`
@@ -142,14 +142,7 @@ The way the maintainer works daily: you talk to ONE session — main — and mai
 A context window ends; the work does not. Every session — main and each window — carries the work in files, so any of
 them can be cleared and the next one picks the baton up without loss:
 
-```
- main works ──► tells each window «main is leaving» ──► writes the handoff (each window's step, the stop message it
-     ▲          (they hold their stop messages)          waits for), memory, the plan; commits ──► /clear
-     │                                                                                             │
-     └── tells each window «main is back», asks for any stop message sent meanwhile ◄── starts from the files
-                                                                                          (hooks load memory,
- a window: one task ──► report + retro committed ──► /clear ──► next brief from files      handoff, plan)
-```
+![The relay: main tells the windows it is leaving, commits the handoff, memory and the plan, is cleared, starts from the files and tells the windows it is back; each window does one task, commits a report and a retro, is cleared and reads its next brief from files](.github/assets/11-relay.svg)
 
 - **Nothing lives only in a context.** Each step is committed as it ends; a brief, a spec, a report, a ruling, the
   handoff and the plan are files. A cleared session reads them back; it never relies on what a previous one remembers.

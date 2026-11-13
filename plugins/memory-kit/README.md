@@ -94,7 +94,7 @@ how each call picks a role and a model: `reference/helper-roster.md`. The method
 the findings registry, parallel windows, measurement — lives in `reference/`; the root README's table says when to open
 each file, and the proof tag inside each line says what it rests on.
 
-![Orchestrated work: a spec, executors, one integrator](https://raw.githubusercontent.com/awrshift/agent-memory-kit/main/.github/assets/07-orchestrated-work-v73.png)
+![The method: spec, build, independent review of every diff, acceptance on evidence](https://raw.githubusercontent.com/awrshift/agent-memory-kit/main/.github/assets/12-method.svg)
 ![Agent QA and per-project documents](https://raw.githubusercontent.com/awrshift/agent-memory-kit/main/.github/assets/09-agent-qa-projects.png)
 
 ## State it owns in your repository

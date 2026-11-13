@@ -1,0 +1,129 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 720" width="760" height="720" role="img" aria-labelledby="t d">
+  <title id="t">The relay: every session can be cleared without losing the work, because the work lives in files</title>
+  <desc id="d">Main session loop: main works; tells every window «main is leaving» and the windows hold their stop messages; commits the handoff, memory and the plan; /clear; starts from the files, which hooks load; tells every window «main is back» and asks for any stop message sent meanwhile; works again. Window loop: one task from one brief; report and retro committed; /clear; next brief read from files. Nothing lives only in a context; when to close is set by the work, not by a token count.</desc>
+  <style>
+    .bg { fill: #FAFAF5; }
+    .ink { fill: #1F1D17; }
+    .soft { fill: #5B574A; }
+    .box { fill: #FFFFFF; stroke: #55503E; stroke-width: 1.5; }
+    .main { fill: #EEF8C4; stroke: #55503E; stroke-width: 2; }
+    .band { fill: #F2F0E6; stroke: #8A8573; stroke-width: 1; }
+    .mem { fill: #CFEF4A; stroke: #55503E; stroke-width: 1.5; }
+    .memink { fill: #1F1D17; }
+    .line { stroke: #55503E; stroke-width: 1.6; fill: none; }
+    .thin { stroke: #55503E; stroke-width: 1.4; fill: none; stroke-dasharray: 5 4; }
+    .head { fill: #55503E; }
+    text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #16150F; }
+      .ink { fill: #F2F0E6; }
+      .soft { fill: #B9B4A2; }
+      .box { fill: #22211A; stroke: #B9B4A2; }
+      .main { fill: #2E3414; stroke: #CFEF4A; }
+      .band { fill: #22211A; stroke: #6E6A5A; }
+      .mem { fill: #CFEF4A; stroke: #CFEF4A; }
+      .memink { fill: #16150F; }
+      .line { stroke: #B9B4A2; }
+      .thin { stroke: #B9B4A2; }
+      .head { fill: #B9B4A2; }
+    }
+  </style>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="head" d="M0,0 L10,5 L0,10 z"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="760" height="720" rx="16"/>
+
+  <text class="ink" x="30" y="44" font-size="24" font-weight="700">The relay: work that outlives every context</text>
+  <text class="soft" x="30" y="70" font-size="15">Any session can be cleared without losing the work — the work lives in files.</text>
+
+  <text class="soft" x="30" y="106" font-size="13" font-weight="700" letter-spacing="1">MAIN SESSION</text>
+
+  <!-- row 1 -->
+  <rect class="main" x="30" y="118" width="240" height="74" rx="10"/>
+  <text class="ink" x="150" y="148" font-size="16" font-weight="700" text-anchor="middle">Main works</text>
+  <text class="soft" x="150" y="170" font-size="12.5" text-anchor="middle">plans · specs · rulings · acceptance</text>
+
+  <rect class="box" x="490" y="118" width="240" height="74" rx="10"/>
+  <text class="ink" x="610" y="144" font-size="15" font-weight="700" text-anchor="middle">«main is leaving»</text>
+  <text class="soft" x="610" y="164" font-size="12.5" text-anchor="middle">to every window; they hold</text>
+  <text class="soft" x="610" y="181" font-size="12.5" text-anchor="middle">their stop messages</text>
+
+  <path class="line" d="M270,155 L488,155" marker-end="url(#a)"/>
+
+  <!-- row 2 -->
+  <rect class="box" x="30" y="226" width="240" height="104" rx="10"/>
+  <text class="ink" x="150" y="256" font-size="15" font-weight="700" text-anchor="middle">«main is back»</text>
+  <text class="soft" x="150" y="278" font-size="12.5" text-anchor="middle">to every window; asks for</text>
+  <text class="soft" x="150" y="295" font-size="12.5" text-anchor="middle">any stop message sent</text>
+  <text class="soft" x="150" y="312" font-size="12.5" text-anchor="middle">meanwhile</text>
+
+  <rect class="mem" x="295" y="226" width="170" height="104" rx="10"/>
+  <text class="memink" x="380" y="248" font-size="14" font-weight="700" text-anchor="middle">The baton: files</text>
+  <text class="memink" x="380" y="268" font-size="12" text-anchor="middle">handoff: each window's</text>
+  <text class="memink" x="380" y="284" font-size="12" text-anchor="middle">step and the stop</text>
+  <text class="memink" x="380" y="300" font-size="12" text-anchor="middle">message main waits for</text>
+  <text class="memink" x="380" y="318" font-size="12" text-anchor="middle">memory · the plan</text>
+
+  <rect class="box" x="490" y="226" width="240" height="104" rx="10"/>
+  <text class="ink" x="610" y="256" font-size="15" font-weight="700" text-anchor="middle">Commits the handoff,</text>
+  <text class="ink" x="610" y="276" font-size="15" font-weight="700" text-anchor="middle">memory and the plan</text>
+  <text class="soft" x="610" y="298" font-size="12.5" text-anchor="middle">every step is committed</text>
+  <text class="soft" x="610" y="315" font-size="12.5" text-anchor="middle">as it ends</text>
+
+  <path class="thin" d="M490,278 L467,278" marker-end="url(#a)"/>
+  <path class="line" d="M610,192 L610,224" marker-end="url(#a)"/>
+  <path class="line" d="M150,226 L150,194" marker-end="url(#a)"/>
+
+  <!-- row 3 -->
+  <rect class="box" x="30" y="362" width="240" height="74" rx="10"/>
+  <text class="ink" x="150" y="390" font-size="15" font-weight="700" text-anchor="middle">Starts from the files</text>
+  <text class="soft" x="150" y="412" font-size="12.5" text-anchor="middle">hooks load memory, handoff, plan</text>
+
+  <rect class="box" x="490" y="362" width="240" height="74" rx="10"/>
+  <text class="ink mono" x="610" y="392" font-size="17" font-weight="700" text-anchor="middle">/clear</text>
+  <text class="soft" x="610" y="414" font-size="12.5" text-anchor="middle">the context goes; the work stays</text>
+
+  <path class="line" d="M610,330 L610,360" marker-end="url(#a)"/>
+  <path class="line" d="M490,399 L272,399" marker-end="url(#a)"/>
+  <path class="line" d="M150,362 L150,332" marker-end="url(#a)"/>
+  <path class="thin" d="M340,330 L262,360" marker-end="url(#a)"/>
+  <text class="soft" x="380" y="388" font-size="12" text-anchor="middle">next main</text>
+
+  <!-- windows -->
+  <text class="soft" x="30" y="478" font-size="13" font-weight="700" letter-spacing="1">EACH WINDOW SESSION</text>
+
+  <rect class="box" x="30" y="490" width="154" height="78" rx="10"/>
+  <text class="ink" x="107" y="516" font-size="15" font-weight="700" text-anchor="middle">One task</text>
+  <text class="soft" x="107" y="536" font-size="12.5" text-anchor="middle">from one brief</text>
+  <text class="soft" x="107" y="553" font-size="12.5" text-anchor="middle">own subagents</text>
+
+  <rect class="box" x="212" y="490" width="154" height="78" rx="10"/>
+  <text class="ink" x="289" y="516" font-size="15" font-weight="700" text-anchor="middle">Report + retro</text>
+  <text class="soft" x="289" y="536" font-size="12.5" text-anchor="middle">committed</text>
+  <text class="soft" x="289" y="553" font-size="12.5" text-anchor="middle">message ≤ 5 lines</text>
+
+  <rect class="box" x="394" y="490" width="154" height="78" rx="10"/>
+  <text class="ink mono" x="471" y="518" font-size="17" font-weight="700" text-anchor="middle">/clear</text>
+  <text class="soft" x="471" y="538" font-size="12.5" text-anchor="middle">a new life</text>
+  <text class="soft" x="471" y="555" font-size="12.5" text-anchor="middle">for every task</text>
+
+  <rect class="box" x="576" y="490" width="154" height="78" rx="10"/>
+  <text class="ink" x="653" y="516" font-size="15" font-weight="700" text-anchor="middle">Next brief</text>
+  <text class="soft" x="653" y="536" font-size="12.5" text-anchor="middle">read from files</text>
+  <text class="soft" x="653" y="553" font-size="12.5" text-anchor="middle">sent by main</text>
+
+  <path class="line" d="M184,529 L210,529" marker-end="url(#a)"/>
+  <path class="line" d="M366,529 L392,529" marker-end="url(#a)"/>
+  <path class="line" d="M548,529 L574,529" marker-end="url(#a)"/>
+  <path class="line" d="M653,568 L653,590 L107,590 L107,570" marker-end="url(#a)"/>
+  <text class="soft" x="380" y="610" font-size="12" text-anchor="middle">a fix round after a review is a new life too</text>
+
+  <!-- footer -->
+  <rect class="band" x="30" y="630" width="700" height="62" rx="10"/>
+  <text class="ink" x="380" y="655" font-size="14" font-weight="700" text-anchor="middle">Nothing lives only in a context.</text>
+  <text class="soft" x="380" y="676" font-size="12.5" text-anchor="middle">When to close is set by the work, not by a token count.</text>
+</svg>

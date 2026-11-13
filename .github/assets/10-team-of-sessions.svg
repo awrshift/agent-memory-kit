@@ -44,7 +44,7 @@
   <text class="soft" x="40" y="74" font-size="17">You talk to one agent. It runs the team.</text>
 
   <!-- you -->
-  <rect class="you" x="380" y="98" width="200" height="56" rx="10"/>
+  <rect class="you" x="330" y="98" width="300" height="56" rx="10"/>
   <text class="ink" x="480" y="122" font-size="16" font-weight="700" text-anchor="middle">You</text>
   <text class="soft" x="480" y="142" font-size="12" text-anchor="middle">product scope · money above the cap</text>
 
@@ -90,19 +90,19 @@
   <!-- subagents under each window -->
   <g font-size="11">
     <line class="line" x1="170" y1="452" x2="170" y2="474"/>
-    <rect class="pill" x="56" y="476" width="66" height="24" rx="12"/><text class="ink" x="89" y="492" text-anchor="middle">builder</text>
-    <rect class="pill" x="128" y="476" width="72" height="24" rx="12"/><text class="ink" x="164" y="492" text-anchor="middle">reviewer</text>
-    <rect class="pill" x="206" y="476" width="78" height="24" rx="12"/><text class="ink" x="245" y="492" text-anchor="middle">fact-gatherer</text>
+    <rect class="pill" x="52" y="476" width="62" height="24" rx="12"/><text class="ink" x="83" y="492" text-anchor="middle">builder</text>
+    <rect class="pill" x="120" y="476" width="72" height="24" rx="12"/><text class="ink" x="156" y="492" text-anchor="middle">reviewer</text>
+    <rect class="pill" x="198" y="476" width="90" height="24" rx="12"/><text class="ink" x="243" y="492" text-anchor="middle">fact-gatherer</text>
 
     <line class="line" x1="480" y1="452" x2="480" y2="474"/>
-    <rect class="pill" x="366" y="476" width="66" height="24" rx="12"/><text class="ink" x="399" y="492" text-anchor="middle">builder</text>
-    <rect class="pill" x="438" y="476" width="72" height="24" rx="12"/><text class="ink" x="474" y="492" text-anchor="middle">reviewer</text>
-    <rect class="pill" x="516" y="476" width="78" height="24" rx="12"/><text class="ink" x="555" y="492" text-anchor="middle">fact-gatherer</text>
+    <rect class="pill" x="362" y="476" width="62" height="24" rx="12"/><text class="ink" x="393" y="492" text-anchor="middle">builder</text>
+    <rect class="pill" x="430" y="476" width="72" height="24" rx="12"/><text class="ink" x="466" y="492" text-anchor="middle">reviewer</text>
+    <rect class="pill" x="508" y="476" width="90" height="24" rx="12"/><text class="ink" x="553" y="492" text-anchor="middle">fact-gatherer</text>
 
     <line class="line" x1="790" y1="452" x2="790" y2="474"/>
-    <rect class="pill" x="676" y="476" width="66" height="24" rx="12"/><text class="ink" x="709" y="492" text-anchor="middle">builder</text>
-    <rect class="pill" x="748" y="476" width="72" height="24" rx="12"/><text class="ink" x="784" y="492" text-anchor="middle">reviewer</text>
-    <rect class="pill" x="826" y="476" width="78" height="24" rx="12"/><text class="ink" x="865" y="492" text-anchor="middle">fact-gatherer</text>
+    <rect class="pill" x="672" y="476" width="62" height="24" rx="12"/><text class="ink" x="703" y="492" text-anchor="middle">builder</text>
+    <rect class="pill" x="740" y="476" width="72" height="24" rx="12"/><text class="ink" x="776" y="492" text-anchor="middle">reviewer</text>
+    <rect class="pill" x="818" y="476" width="90" height="24" rx="12"/><text class="ink" x="863" y="492" text-anchor="middle">fact-gatherer</text>
   </g>
   <text class="soft" x="480" y="526" font-size="12" text-anchor="middle">each window calls its own subagents, each with an explicit model</text>
 

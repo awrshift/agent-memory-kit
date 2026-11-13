@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" width="1280" height="640" role="img" aria-labelledby="t">
+  <title id="t">Multi-Agent Driven Development Kit — You talk to one agent. It runs the team.</title>
+  <style>
+    text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    .ink { fill: #1F1D17; }
+    .soft { fill: #5B574A; }
+    .box { fill: #FFFFFF; stroke: #55503E; stroke-width: 2; }
+    .main { fill: #EEF8C4; stroke: #55503E; stroke-width: 2.5; }
+    .pill { fill: #F2F0E6; stroke: #8A8573; stroke-width: 1.2; }
+    .mem { fill: #CFEF4A; stroke: #55503E; stroke-width: 2; }
+    .line { stroke: #55503E; stroke-width: 2.2; fill: none; }
+  </style>
+  <rect x="0" y="0" width="1280" height="640" fill="#FAFAF5"/>
+  <rect x="0" y="0" width="16" height="640" fill="#CFEF4A"/>
+
+  <!-- text block -->
+  <text class="soft" x="80" y="128" font-size="24" font-weight="600" letter-spacing="2">CLAUDE CODE PLUGIN · MEMORY KIT</text>
+  <text class="ink" x="80" y="214" font-size="66" font-weight="800">Multi-Agent</text>
+  <text class="ink" x="80" y="292" font-size="66" font-weight="800">Driven Development</text>
+  <text class="ink" x="80" y="370" font-size="66" font-weight="800">Kit</text>
+  <text class="ink" x="80" y="446" font-size="34" font-weight="500">You talk to one agent.</text>
+  <text class="ink" x="80" y="492" font-size="34" font-weight="500">It runs the team.</text>
+  <text class="soft" x="80" y="576" font-size="22">spec → build → review → acceptance · the relay · memory in files</text>
+
+  <!-- mini diagram -->
+  <rect class="box" x="900" y="96" width="200" height="56" rx="12"/>
+  <text class="ink" x="1000" y="132" font-size="24" font-weight="700" text-anchor="middle">You</text>
+  <line class="line" x1="1000" y1="152" x2="1000" y2="196"/>
+  <rect class="main" x="860" y="196" width="280" height="72" rx="14"/>
+  <text class="ink" x="1000" y="241" font-size="26" font-weight="700" text-anchor="middle">Main session</text>
+  <path class="line" d="M920,268 L840,326"/>
+  <path class="line" d="M1000,268 L1000,326"/>
+  <path class="line" d="M1080,268 L1160,326"/>
+  <rect class="box" x="780" y="326" width="120" height="56" rx="10"/>
+  <text class="ink" x="840" y="361" font-size="21" font-weight="700" text-anchor="middle">w1</text>
+  <rect class="box" x="940" y="326" width="120" height="56" rx="10"/>
+  <text class="ink" x="1000" y="361" font-size="21" font-weight="700" text-anchor="middle">w2</text>
+  <rect class="box" x="1100" y="326" width="120" height="56" rx="10"/>
+  <text class="ink" x="1160" y="361" font-size="21" font-weight="700" text-anchor="middle">w3</text>
+  <g>
+    <line class="line" x1="840" y1="382" x2="840" y2="408"/>
+    <line class="line" x1="1000" y1="382" x2="1000" y2="408"/>
+    <line class="line" x1="1160" y1="382" x2="1160" y2="408"/>
+    <circle class="pill" cx="812" cy="422" r="12"/><circle class="pill" cx="840" cy="422" r="12"/><circle class="pill" cx="868" cy="422" r="12"/>
+    <circle class="pill" cx="972" cy="422" r="12"/><circle class="pill" cx="1000" cy="422" r="12"/><circle class="pill" cx="1028" cy="422" r="12"/>
+    <circle class="pill" cx="1132" cy="422" r="12"/><circle class="pill" cx="1160" cy="422" r="12"/><circle class="pill" cx="1188" cy="422" r="12"/>
+  </g>
+  <text class="soft" x="1000" y="466" font-size="18" text-anchor="middle">each window runs its own subagents</text>
+  <rect class="mem" x="780" y="492" width="440" height="56" rx="12"/>
+  <text class="ink" x="1000" y="527" font-size="20" font-weight="700" text-anchor="middle">files + memory carry the work</text>
+</svg>

@@ -1,0 +1,118 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 690" width="760" height="690" role="img" aria-labelledby="t d">
+  <title id="t">The method: spec, build, review, acceptance on evidence</title>
+  <desc id="d">1. Main writes the spec file; a reader who did not write it checks it against the code. 2. Windows build to the spec, each with its own subagents, and leave a report file. 3. Every diff, fix rounds included, is reviewed by an agent that did not write it; each finding gets one ruling, families go to the findings registry; a fix round goes back to build and is reviewed again. 4. Main accepts on evidence: gates run once by a script on the exact tree, a gate receipt and an acceptance record. A report is input, never a fact.</desc>
+  <style>
+    .bg { fill: #FAFAF5; }
+    .ink { fill: #1F1D17; }
+    .soft { fill: #5B574A; }
+    .box { fill: #FFFFFF; stroke: #55503E; stroke-width: 1.5; }
+    .main { fill: #EEF8C4; stroke: #55503E; stroke-width: 2; }
+    .file { fill: #F2F0E6; stroke: #8A8573; stroke-width: 1.2; }
+    .fold { fill: #DEDACB; stroke: #8A8573; stroke-width: 1.2; }
+    .num { fill: #CFEF4A; stroke: #55503E; stroke-width: 1.5; }
+    .numink { fill: #1F1D17; }
+    .line { stroke: #55503E; stroke-width: 1.6; fill: none; }
+    .thin { stroke: #55503E; stroke-width: 1.4; fill: none; stroke-dasharray: 5 4; }
+    .head { fill: #55503E; }
+    text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #16150F; }
+      .ink { fill: #F2F0E6; }
+      .soft { fill: #B9B4A2; }
+      .box { fill: #22211A; stroke: #B9B4A2; }
+      .main { fill: #2E3414; stroke: #CFEF4A; }
+      .file { fill: #2A2920; stroke: #6E6A5A; }
+      .fold { fill: #3A392E; stroke: #6E6A5A; }
+      .num { fill: #CFEF4A; stroke: #CFEF4A; }
+      .numink { fill: #16150F; }
+      .line { stroke: #B9B4A2; }
+      .thin { stroke: #B9B4A2; }
+      .head { fill: #B9B4A2; }
+    }
+  </style>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="head" d="M0,0 L10,5 L0,10 z"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="760" height="690" rx="16"/>
+
+  <text class="ink" x="30" y="44" font-size="24" font-weight="700">The method: spec → build → review → accept</text>
+  <text class="soft" x="30" y="70" font-size="15">Every step leaves a file; the next step starts from that file.</text>
+
+  <text class="soft" x="80" y="106" font-size="13" font-weight="700" letter-spacing="1">STEP</text>
+  <text class="soft" x="500" y="106" font-size="13" font-weight="700" letter-spacing="1">FILE IT LEAVES</text>
+
+  <!-- step 1 -->
+  <rect class="box" x="80" y="118" width="380" height="86" rx="10"/>
+  <circle class="num" cx="80" cy="161" r="15"/><text class="numink" x="80" y="166.5" font-size="15" font-weight="700" text-anchor="middle">1</text>
+  <text class="ink" x="106" y="146" font-size="16" font-weight="700">Main writes the spec</text>
+  <text class="soft" x="106" y="168" font-size="12.5">goal · non-goals · acceptance AC-n · gates</text>
+  <text class="soft" x="106" y="186" font-size="12.5">a reader who did not write it checks it on the code</text>
+
+  <!-- step 2 -->
+  <rect class="box" x="80" y="240" width="380" height="86" rx="10"/>
+  <circle class="num" cx="80" cy="283" r="15"/><text class="numink" x="80" y="288.5" font-size="15" font-weight="700" text-anchor="middle">2</text>
+  <text class="ink" x="106" y="268" font-size="16" font-weight="700">Windows build, with their subagents</text>
+  <text class="soft" x="106" y="290" font-size="12.5">a builder in a worktree, to the spec — no redesign</text>
+  <text class="soft" x="106" y="308" font-size="12.5">stops at the named stop points</text>
+
+  <!-- step 3 -->
+  <rect class="box" x="80" y="362" width="380" height="86" rx="10"/>
+  <circle class="num" cx="80" cy="405" r="15"/><text class="numink" x="80" y="410.5" font-size="15" font-weight="700" text-anchor="middle">3</text>
+  <text class="ink" x="106" y="390" font-size="16" font-weight="700">Independent review of every diff</text>
+  <text class="soft" x="106" y="412" font-size="12.5">by an agent that did not write it — fix rounds too</text>
+  <text class="soft" x="106" y="430" font-size="12.5">each finding triaged to the layer that owns it</text>
+
+  <!-- step 4 -->
+  <rect class="main" x="80" y="484" width="380" height="86" rx="10"/>
+  <circle class="num" cx="80" cy="527" r="15"/><text class="numink" x="80" y="532.5" font-size="15" font-weight="700" text-anchor="middle">4</text>
+  <text class="ink" x="106" y="512" font-size="16" font-weight="700">Main accepts on evidence</text>
+  <text class="soft" x="106" y="534" font-size="12.5">gates run once by a script on the exact tree</text>
+  <text class="soft" x="106" y="552" font-size="12.5">main reads one real artifact itself</text>
+
+  <!-- step arrows -->
+  <path class="line" d="M270,204 L270,238" marker-end="url(#a)"/>
+  <path class="line" d="M270,326 L270,360" marker-end="url(#a)"/>
+  <path class="line" d="M270,448 L270,482" marker-end="url(#a)"/>
+
+  <!-- fix-round loop -->
+  <path class="line" d="M80,428 L40,428 L40,300 L78,300" marker-end="url(#a)"/>
+  <text class="soft" x="30" y="364" font-size="12" text-anchor="middle" transform="rotate(-90 30 364)">fix round → reviewed again</text>
+
+  <!-- files -->
+  <g>
+    <path class="file" d="M500,124 L712,124 L730,142 L730,198 L500,198 Z"/>
+    <path class="fold" d="M712,124 L712,142 L730,142 Z"/>
+    <text class="ink" x="516" y="156" font-size="14" font-weight="700">spec file</text>
+    <text class="soft" x="516" y="178" font-size="12.5">+ one brief file per window</text>
+  </g>
+  <g>
+    <path class="file" d="M500,246 L712,246 L730,264 L730,320 L500,320 Z"/>
+    <path class="fold" d="M712,246 L712,264 L730,264 Z"/>
+    <text class="ink" x="516" y="278" font-size="14" font-weight="700">report file</text>
+    <text class="soft" x="516" y="300" font-size="12.5">a message ≤ 5 lines points at it</text>
+  </g>
+  <g>
+    <path class="file" d="M500,368 L712,368 L730,386 L730,442 L500,442 Z"/>
+    <path class="fold" d="M712,368 L712,386 L730,386 Z"/>
+    <text class="ink" x="516" y="400" font-size="14" font-weight="700">findings, one ruling each</text>
+    <text class="soft" x="516" y="422" font-size="12.5">families → findings registry</text>
+  </g>
+  <g>
+    <path class="file" d="M500,490 L712,490 L730,508 L730,564 L500,564 Z"/>
+    <path class="fold" d="M712,490 L712,508 L730,508 Z"/>
+    <text class="ink" x="516" y="522" font-size="14" font-weight="700">acceptance record</text>
+    <text class="soft" x="516" y="544" font-size="12.5">+ the gate receipt for that tree</text>
+  </g>
+  <path class="thin" d="M460,161 L498,161" marker-end="url(#a)"/>
+  <path class="thin" d="M460,283 L498,283" marker-end="url(#a)"/>
+  <path class="thin" d="M460,405 L498,405" marker-end="url(#a)"/>
+  <path class="thin" d="M460,527 L498,527" marker-end="url(#a)"/>
+
+  <!-- callout -->
+  <rect class="num" x="30" y="600" width="700" height="66" rx="10"/>
+  <text class="numink" x="380" y="627" font-size="17" font-weight="700" text-anchor="middle">A report is input, never a fact.</text>
+  <text class="numink" x="380" y="650" font-size="13" text-anchor="middle">«Done» is a claim until main checks the receipt and reads the artifact.</text>
+</svg>
