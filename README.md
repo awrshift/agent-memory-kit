@@ -208,7 +208,7 @@ All are `/memory-kit:<name>` and also trigger from plain words; until a skill ru
 |---|---|---|
 | `executor` | Opus | Builds to a decided spec in its own worktree; never redesigns, reports any deviation, stops on a value with no source |
 | `recon` | Sonnet | Read-only facts with file and line; official sources for anything outside the repo |
-| `idea-validator` | Opus | Isolated critic with none of your conversation |
+| `idea-validator` | Fable | Isolated critic with none of your conversation, on a different model from the Opus author |
 | `qa` | Sonnet | One QA lens on the running product; observes, never fixes |
 
 **Role templates** — `templates/agents/`, copied into your `.claude/agents/` only on a yes (`setup` offers them), then

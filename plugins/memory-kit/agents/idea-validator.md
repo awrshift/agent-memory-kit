@@ -7,8 +7,10 @@ description: >
   model (parallel call) when you have one — different training distributions catch different
   blind spots. Trigger when the parent agent wants to stress-test a design, find blind spots
   in reasoning, or check hidden assumptions before committing to an architecture/plan.
+  Runs on Fable by default: a session and its builders usually run on Opus, and a critic on the
+  author's own model shares its blind spots.
 tools: Read, Grep, Glob, WebSearch
-model: opus
+model: fable
 color: purple
 ---
 

@@ -19,7 +19,7 @@ An unverified observation is labelled `hypothesis` and never counted in the verd
 1. **Depth.** Pick from what the user asked, default `standard`:
    - `quick` — deterministic collector + lenses 1, 4, 7 inline, no subagents. ~10 min. Use for a routine "how are we doing", or when the user asks mid-work.
    - `standard` — collector + all 7 lenses, lenses 2-6 fanned out to parallel `recon` subagents (`model="sonnet"`), synthesis + adjudication inline. The default.
-   - `deep` — standard + an independent architecture critique (`idea-validator`, `model="opus"`) and an external-family second opinion (`/memory-kit:second-opinion`), + a fresh-check of external facts (pricing, model ids, deprecated APIs) via WebSearch.
+   - `deep` — standard + an independent architecture critique (`idea-validator`, `model="fable"`) and an external-family second opinion (`/memory-kit:second-opinion`), + a fresh-check of external facts (pricing, model ids, deprecated APIs) via WebSearch.
 2. **Scope autodetect.** Run the collector (step 1) — it reports which layers actually exist in
    this repo. A lens whose layer is absent is reported as **n/a**, never invented. Never audit
    `node_modules/`, `.git/`, build output, or vendored code.

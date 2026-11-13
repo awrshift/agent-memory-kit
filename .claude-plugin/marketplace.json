@@ -10,7 +10,7 @@
       "name": "memory-kit",
       "source": "./plugins/memory-kit",
       "description": "Multi-Agent Driven Development for Claude Code (formerly Claude Memory Kit): you talk to one main agent, it orchestrates three full sessions and their subagents through brief, report and acceptance files; memory as plain dated files in your repository (nothing becomes a rule without your yes) lets any session be cleared without losing the work; guards for git, secrets and tests.",
-      "version": "8.5.0",
+      "version": "8.5.1",
       "author": {
         "name": "awrshift"
       },

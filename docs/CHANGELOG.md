@@ -4,6 +4,14 @@ All notable changes to Claude Memory Kit are documented here. Breaking changes m
 
 <a id="v850"></a>
 
+## [8.5.1] — 2026-11-13 — the critic runs on a different model from the author
+
+Nothing to migrate.
+
+- `agents/idea-validator.md` — `model: fable` (was `opus`). A session and its builders usually run on Opus; a critic on the author's
+  own model shares its blind spots. A caller can still pass `model` per call. The root README's agent table and `system-audit`'s deep
+  mode follow.
+
 ## [8.5.0] — 2026-11-13 — Multi-Agent Driven Development: you talk to one agent, it runs the team
 
 Nothing to migrate. No hook, script or skill behaviour changed; the plugin id `memory-kit`, every command name, every
